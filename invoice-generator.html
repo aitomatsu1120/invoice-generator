@@ -674,24 +674,25 @@
             return ITEM_CATEGORY_TRANSLATION[category] || category;
         }
         
+        // 修正版: 半角カタカナを全角に変換
         function toFullWidth(str) {
             if (!str) return '';
             
             let result = str;
             
-            // Step 1: 濁点・半濁点付き文字を先に変換
-            result = result
-                .replace(/ｶﾞ/g, 'ガ').replace(/ｷﾞ/g, 'ギ').replace(/ｸﾞ/g, 'グ')
-                .replace(/ｹﾞ/g, 'ゲ').replace(/ｺﾞ/g, 'ゴ')
-                .replace(/ｻﾞ/g, 'ザ').replace(/ｼﾞ/g, 'ジ').replace(/ｽﾞ/g, 'ズ')
-                .replace(/ｾﾞ/g, 'ゼ').replace(/ｿﾞ/g, 'ゾ')
-                .replace(/ﾀﾞ/g, 'ダ').replace(/ﾁﾞ/g, 'ヂ').replace(/ﾂﾞ/g, 'ヅ')
-                .replace(/ﾃﾞ/g, 'デ').replace(/ﾄﾞ/g, 'ド')
-                .replace(/ﾊﾞ/g, 'バ').replace(/ﾋﾞ/g, 'ビ').replace(/ﾌﾞ/g, 'ブ')
-                .replace(/ﾍﾞ/g, 'ベ').replace(/ﾎﾞ/g, 'ボ')
-                .replace(/ﾊﾟ/g, 'パ').replace(/ﾋﾟ/g, 'ピ').replace(/ﾌﾟ/g, 'プ')
-                .replace(/ﾍﾟ/g, 'ペ').replace(/ﾎﾟ/g, 'ポ')
-                .replace(/ｳﾞ/g, 'ヴ');
+            // Step 1: 濁点・半濁点付き文字を先に変換（2文字→1文字）
+            const dakuten = {
+                'ｶﾞ': 'ガ', 'ｷﾞ': 'ギ', 'ｸﾞ': 'グ', 'ｹﾞ': 'ゲ', 'ｺﾞ': 'ゴ',
+                'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
+                'ﾀﾞ': 'ダ', 'ﾁﾞ': 'ヂ', 'ﾂﾞ': 'ヅ', 'ﾃﾞ': 'デ', 'ﾄﾞ': 'ド',
+                'ﾊﾞ': 'バ', 'ﾋﾞ': 'ビ', 'ﾌﾞ': 'ブ', 'ﾍﾞ': 'ベ', 'ﾎﾞ': 'ボ',
+                'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ',
+                'ｳﾞ': 'ヴ'
+            };
+            
+            for (const [half, full] of Object.entries(dakuten)) {
+                result = result.split(half).join(full);
+            }
             
             // Step 2: 通常の半角カナを全角に変換
             const kanaMap = {
@@ -708,9 +709,9 @@
                 'ｰ': 'ー'
             };
             
-            result = result.replace(/[ｦ-ﾟ]/g, function(char) {
-                return kanaMap[char] || char;
-            });
+            for (const [half, full] of Object.entries(kanaMap)) {
+                result = result.split(half).join(full);
+            }
             
             return result;
         }
@@ -718,17 +719,18 @@
         function getGoodsDetail(itemName) {
             const normalized = toFullWidth(itemName || '');
             
+            console.log('=== Goods Detail Matching ===');
             console.log('Original itemName:', itemName);
             console.log('Normalized:', normalized);
             
             for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
                 if (normalized.includes(keyword)) {
-                    console.log('Matched keyword:', keyword, '→', translation);
+                    console.log('✓ Matched keyword:', keyword, '→', translation);
                     return { description: translation, matched: true };
                 }
             }
             
-            console.log('No match found for:', itemName);
+            console.log('✗ No match found → Goods');
             return { description: "Goods", matched: false };
         }
         
@@ -768,6 +770,8 @@
         }
         
         function processExcelData(jsonData) {
+            console.log('=== Processing Excel Data ===');
+            
             const validRows = jsonData.filter(row => {
                 const hasStyleNo = row['品番'] && row['品番'].toString().trim() !== '';
                 const hasItemName = row['品名'] && row['品名'].toString().trim() !== '';
@@ -775,9 +779,12 @@
                 return hasStyleNo && hasItemName && hasItemCategory;
             });
             
+            console.log('Valid rows:', validRows.length);
+            
+            // 修正版: Item Codeでグループ化
             const grouped = {};
             
-            validRows.forEach(row => {
+            validRows.forEach((row, index) => {
                 const styleNo = row['品番'] || '';
                 const itemCategory = row['アイテム'] || '';
                 const itemName = row['品名'] || '';
@@ -787,17 +794,21 @@
                 
                 const first8 = getFirst8Digits(styleNo);
                 
-                console.log('Processing row:', {
-                    styleNo: styleNo,
-                    first8: first8,
-                    itemName: itemName,
-                    itemCategory: itemCategory,
-                    quantity: quantity
-                });
+                console.log(`\n--- Row ${index + 1} ---`);
+                console.log('Item Code:', first8);
+                console.log('Item Name:', itemName);
+                console.log('Quantity:', quantity);
                 
-                if (!first8) return;
+                if (!first8) {
+                    console.log('⊗ Skipped: No item code');
+                    return;
+                }
                 
-                if (!grouped[first8]) {
+                // 既存のグループがあれば数量を加算、なければ新規作成
+                if (grouped[first8]) {
+                    grouped[first8].units += quantity;
+                    console.log(`✓ Added to existing group. New total: ${grouped[first8].units}`);
+                } else {
                     const categoryEN = translateCategory(itemCategory);
                     let description, matched;
                     
@@ -812,7 +823,7 @@
                     
                     grouped[first8] = {
                         itemCode: first8,
-                        units: 0,
+                        units: quantity,
                         weightPerUnit: getWeightByCategory(itemCategory),
                         measure: 'PCS',
                         description: description,
@@ -823,16 +834,20 @@
                         totalValue: 0,
                         rawData: row
                     };
+                    console.log(`✓ Created new group`);
                 }
-                
-                grouped[first8].units += quantity;
             });
             
+            // グループ化されたデータを配列に変換
             productData = Object.values(grouped);
+            
+            console.log('\n=== Final Grouped Data ===');
+            console.log('Total unique items:', productData.length);
             
             productData.forEach(item => {
                 item.totalValue = item.units * item.unitValue;
                 item.weight = item.weightPerUnit * item.units;
+                console.log(`${item.itemCode}: ${item.description} (${item.units}) → ${item.matched ? '✓' : '⚠'}`);
             });
             
             renderDataTable();
