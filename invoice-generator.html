@@ -309,6 +309,7 @@
         }
         
         .data-section.hidden { display: none; }
+        .data-section.active { display: block; }
         
         .data-section-header {
             display: flex;
@@ -439,32 +440,6 @@
         
         .btn-add-row:hover {
             background-color: #059669;
-        }
-
-        .btn-clear-data {
-            margin-top: 1rem;
-            padding: 0.5rem 1rem;
-            background-color: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            transition: background-color 0.2s;
-            margin-left: 0.5rem;
-        }
-        
-        .btn-clear-data:hover {
-            background-color: #dc2626;
-        }
-
-        .button-group {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 1rem;
         }
         
         .btn-generate {
@@ -801,7 +776,7 @@
             </div>
         </div>
         
-        <div id="dataSection" class="data-section">
+        <div id="dataSection" class="data-section hidden">
             <div class="data-section-header">
                 <div class="data-section-title">
                     <h2 class="section-title">商品明細リスト / Product Details List</h2>
@@ -831,13 +806,6 @@
                     </thead>
                     <tbody id="dataTableBody"></tbody>
                 </table>
-            </div>
-            
-            <div class="button-group">
-                <button class="btn-clear-data" onclick="clearProductData()">
-                    <i data-lucide="trash-2" size="16"></i>
-                    データをクリア / Clear Data
-                </button>
             </div>
         </div>
         
@@ -1104,51 +1072,6 @@
             document.getElementById('invoiceSerial').value = '';
         }
         
-        function clearProductData() {
-            if (confirm('商品明細リストのデータをすべて削除しますか？\nClear all product data?')) {
-                console.log('Before clear - productData length:', productData.length);
-                
-                // データ配列をクリア
-                productData = [];
-                
-                console.log('After clear - productData length:', productData.length);
-                
-                // テーブルボディを取得して確認
-                const tbody = document.getElementById('dataTableBody');
-                console.log('Table body found:', tbody);
-                console.log('Rows before clear:', tbody ? tbody.rows.length : 'tbody not found');
-                
-                // テーブルを完全にクリア
-                if (tbody) {
-                    tbody.innerHTML = '';
-                    console.log('Rows after clear:', tbody.rows.length);
-                }
-                
-                // 合計をリセット
-                const totalElement = document.getElementById('totalItemsCount1');
-                if (totalElement) {
-                    totalElement.textContent = '0';
-                    console.log('Total reset to 0');
-                }
-                
-                // アップロードセクションを再表示
-                const uploadSection = document.getElementById('uploadSection');
-                if (uploadSection) {
-                    uploadSection.style.display = 'block';
-                    console.log('Upload section displayed');
-                }
-                
-                // 全体合計を更新
-                updateGrandTotal();
-                console.log('Grand total updated');
-                
-                // アイコンを再生成
-                lucide.createIcons();
-                
-                alert('商品明細リストをクリアしました / Product list cleared');
-            }
-        }
-        
         function toFullWidth(str) {
             if (!str) return '';
             let result = str;
@@ -1258,6 +1181,7 @@
                     processExcelData(jsonData);
                     hideLoading();
                     document.getElementById('uploadSection').style.display = 'none';
+                    document.getElementById('dataSection').classList.add('active');
                     setInvoiceNumber();
                     updateGrandTotal();
                     lucide.createIcons();
