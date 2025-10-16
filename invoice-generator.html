@@ -677,7 +677,10 @@
         function toFullWidth(str) {
             if (!str) return '';
             
-            return str
+            let result = str;
+            
+            // Step 1: 濁点・半濁点付き文字を先に変換
+            result = result
                 .replace(/ｶﾞ/g, 'ガ').replace(/ｷﾞ/g, 'ギ').replace(/ｸﾞ/g, 'グ')
                 .replace(/ｹﾞ/g, 'ゲ').replace(/ｺﾞ/g, 'ゴ')
                 .replace(/ｻﾞ/g, 'ザ').replace(/ｼﾞ/g, 'ジ').replace(/ｽﾞ/g, 'ズ')
@@ -688,10 +691,28 @@
                 .replace(/ﾍﾞ/g, 'ベ').replace(/ﾎﾞ/g, 'ボ')
                 .replace(/ﾊﾟ/g, 'パ').replace(/ﾋﾟ/g, 'ピ').replace(/ﾌﾟ/g, 'プ')
                 .replace(/ﾍﾟ/g, 'ペ').replace(/ﾎﾟ/g, 'ポ')
-                .replace(/ｳﾞ/g, 'ヴ')
-                .replace(/[ｦ-ﾟ]/g, function(s) {
-                    return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
-                });
+                .replace(/ｳﾞ/g, 'ヴ');
+            
+            // Step 2: 通常の半角カナを全角に変換
+            const kanaMap = {
+                'ｧ': 'ァ', 'ｱ': 'ア', 'ｨ': 'ィ', 'ｲ': 'イ', 'ｩ': 'ゥ', 'ｳ': 'ウ', 'ｪ': 'ェ', 'ｴ': 'エ', 'ｫ': 'ォ', 'ｵ': 'オ',
+                'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ',
+                'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
+                'ﾀ': 'タ', 'ﾁ': 'チ', 'ｯ': 'ッ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト',
+                'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
+                'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ',
+                'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
+                'ｬ': 'ャ', 'ﾔ': 'ヤ', 'ｭ': 'ュ', 'ﾕ': 'ユ', 'ｮ': 'ョ', 'ﾖ': 'ヨ',
+                'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
+                'ﾜ': 'ワ', 'ｦ': 'ヲ', 'ﾝ': 'ン',
+                'ｰ': 'ー'
+            };
+            
+            result = result.replace(/[ｦ-ﾟ]/g, function(char) {
+                return kanaMap[char] || char;
+            });
+            
+            return result;
         }
         
         function getGoodsDetail(itemName) {
@@ -713,7 +734,7 @@
         
         function getFirst8Digits(styleNo) {
             if (!styleNo) return '';
-            const cleanStyleNo = styleNo.toString().trim();
+            const cleanStyleNo = styleNo.toString().trim().replace(/\s+/g, '');
             return cleanStyleNo.substring(0, 8);
         }
         
@@ -765,6 +786,14 @@
                 const country = row['原産国'] || 'CN';
                 
                 const first8 = getFirst8Digits(styleNo);
+                
+                console.log('Processing row:', {
+                    styleNo: styleNo,
+                    first8: first8,
+                    itemName: itemName,
+                    itemCategory: itemCategory,
+                    quantity: quantity
+                });
                 
                 if (!first8) return;
                 
