@@ -1527,6 +1527,262 @@
         document.getElementById('generalInfoModal').addEventListener('click', function(e) {
             if (e.target === this) closeGeneralInfoModal();
         });
+
+        // ===== Invoice Preview Functions =====
+
+        function openInvoicePreview(invoiceNo) {
+            generateInvoiceHTML(invoiceNo);
+            document.getElementById('invoicePreviewModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // スクロール防止
+            lucide.createIcons();
+        }
+        
+        function closeInvoicePreview() {
+            document.getElementById('invoicePreviewModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function printInvoice() {
+            window.print();
+        }
+        
+        function generateInvoiceHTML(invoiceNo) {
+            const doc = document.getElementById('invoiceDocument');
+            
+            // 日付フォーマット
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            // General Info取得
+            const exporter = {
+                name: generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.',
+                address: generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN',
+                tel: generalInfo.exporterTel || '81-3-3498-1345',
+                fax: generalInfo.exporterFax || '81-3-3486-7145'
+            };
+            
+            const consignee = {
+                name: generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED',
+                address: generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong',
+                contact: generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)',
+                tel: generalInfo.consigneeTel || '2127-4660',
+                email: generalInfo.consigneeEmail || 'fls.wh@fls.com.hk'
+            };
+            
+            const importer = {
+                name: generalInfo.importerName || 'Heritage R LTD.',
+                address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
+                tel: generalInfo.importerTel || '852-2956-3266',
+                fax: generalInfo.importerFax || '852-2956-1230'
+            };
+            
+            // 合計計算
+            const totalPackages = productData.length + noCommercialData.length;
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            // 商品テーブル行生成
+            let productRows = '';
+            
+            // Product Data
+            productData.forEach(item => {
+                productRows += `
+                    <tr>
+                        <td>1</td>
+                        <td>${item.units}</td>
+                        <td class="align-right">${item.weight.toFixed(2)}</td>
+                        <td>${item.measure}</td>
+                        <td>${item.description}</td>
+                        <td>${item.hsCode}</td>
+                        <td>${item.country}</td>
+                        <td class="align-right">${item.unitValue.toLocaleString()}</td>
+                        <td class="align-right">${item.totalValue.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            
+            // No Commercial Data
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    productRows += `
+                        <tr>
+                            <td>1</td>
+                            <td>${item.units}</td>
+                            <td class="align-right">${item.weight.toFixed(2)}</td>
+                            <td>${item.measure}</td>
+                            <td>${item.description}</td>
+                            <td>${item.hsCode}</td>
+                            <td>${item.country}</td>
+                            <td class="align-right">${item.unitValue.toLocaleString()}</td>
+                            <td class="align-right">${item.totalValue.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            // Non-Commercial Note
+            let nonCommercialNote = '';
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                const itemList = nonCommItems.map(item => `${item.description} (${item.quantity})`).join(', ');
+                nonCommercialNote = `
+                    <div class="invoice-notes">
+                        <strong>Non-Commercial Value Items (無償提供品):</strong><br>
+                        ${itemList}<br>
+                        <em>※ These items are not included in the invoice amount / 金額に含まれません</em>
+                    </div>
+                `;
+            }
+            
+            // HTML生成
+            doc.innerHTML = `
+                <div class="invoice-logo-header">
+                    <img src="https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634" 
+                         alt="45RPM Studio" class="invoice-logo">
+                    <div class="invoice-company-info">
+                        <div class="invoice-company-name">45rpm Studio. co., ltd</div>
+                        <div>Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062</div>
+                    </div>
+                </div>
+                
+                <div class="invoice-title-section">
+                    <h1 class="invoice-title">Commercial Invoice</h1>
+                    <div class="invoice-page-number">Page 1 of 1</div>
+                </div>
+                
+                <div class="invoice-info-grid">
+                    <div class="invoice-info-block">
+                        <h4>EXPORTER:</h4>
+                        <p><strong>${exporter.name}</strong></p>
+                        <p>${exporter.address}</p>
+                        <p><span class="invoice-info-label">TEL:</span> ${exporter.tel}</p>
+                        <p><span class="invoice-info-label">FAX:</span> ${exporter.fax}</p>
+                    </div>
+                    
+                    <div class="invoice-info-block">
+                        <p><span class="invoice-info-label">Ship Date:</span> ${dateStr}</p>
+                        <p><span class="invoice-info-label">Invoice No.:</span> ${invoiceNo}</p>
+                        <p><span class="invoice-info-label">Payment Terms:</span> Bill 3rd Party</p>
+                        <p><span class="invoice-info-label">Purpose of Shipment:</span> SOLD</p>
+                        <p><span class="invoice-info-label">Currency Code:</span> JPY</p>
+                    </div>
+                    
+                    <div class="invoice-info-block">
+                        <h4>SOLD TO / IMPORTER:</h4>
+                        <p><strong>${importer.name}</strong></p>
+                        <p>${importer.address}</p>
+                        <p><span class="invoice-info-label">TEL:</span> ${importer.tel}</p>
+                        <p><span class="invoice-info-label">FAX:</span> ${importer.fax}</p>
+                    </div>
+                </div>
+                
+                <div class="invoice-info-grid" style="margin-top: 1rem;">
+                    <div class="invoice-info-block">
+                        <h4>CONSIGNEE:</h4>
+                        <p><strong>${consignee.name}</strong></p>
+                        <p>${consignee.address}</p>
+                        <p><span class="invoice-info-label">Contact:</span> ${consignee.contact}</p>
+                        <p><span class="invoice-info-label">TEL:</span> ${consignee.tel}</p>
+                        <p><span class="invoice-info-label">Email:</span> ${consignee.email}</p>
+                    </div>
+                    <div class="invoice-info-block">
+                        <p><span class="invoice-info-label">Parties to Transaction:</span> Non-Related</p>
+                    </div>
+                </div>
+                
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">No. of Pkgs</th>
+                            <th style="width: 7%;">No. of Units</th>
+                            <th style="width: 8%;">Net Weight (KG)</th>
+                            <th style="width: 8%;">Unit of Measure</th>
+                            <th style="width: 22%;">Description of Goods</th>
+                            <th style="width: 12%;">Harmonized Tariff Number</th>
+                            <th style="width: 10%;">Country/Terr. of MFR</th>
+                            <th style="width: 12%;">Unit Value (JPY)</th>
+                            <th style="width: 12%;">Total Value (JPY)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${productRows}
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight: 600; background-color: #f3f4f6;">
+                            <td>${totalPackages}</td>
+                            <td>${totalUnits}</td>
+                            <td class="align-right">${totalWeight.toFixed(2)} KG</td>
+                            <td colspan="5"></td>
+                            <td class="align-right"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="invoice-totals">
+                    <table class="invoice-totals-table">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td>JPY ${subtotal.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td>Insurance:</td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Freight:</td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Packing:</td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Handling:</td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Other:</td>
+                            <td>0.00</td>
+                        </tr>
+                        <tr>
+                            <td>Invoice Total:</td>
+                            <td>JPY ${subtotal.toLocaleString()}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                ${nonCommercialNote}
+                
+                <div class="invoice-footer">
+                    <div class="invoice-declaration">
+                        <strong>Declaration Statement:</strong><br>
+                        I declare that all the information contained in this invoice to be true and correct.
+                    </div>
+                    
+                    <div class="invoice-signature">
+                        <div class="invoice-signature-line">
+                            Signature / Title / Date: ${dateStr}
+                        </div>
+                        <div class="invoice-signature-line">
+                            ${exporter.name}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // モーダル外クリックで閉じる
+        document.getElementById('invoicePreviewModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeInvoicePreview();
+        });
     </script>
 
     <!-- Invoice Preview Modal -->
