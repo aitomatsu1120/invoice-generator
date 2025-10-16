@@ -357,15 +357,16 @@
             font-size: 0.9rem;
         }
         
-        .data-table th:nth-child(1) { width: 8%; }
-        .data-table th:nth-child(2) { width: 7%; }
-        .data-table th:nth-child(3) { width: 8%; }
-        .data-table th:nth-child(4) { width: 9%; }
-        .data-table th:nth-child(5) { width: 18%; }
-        .data-table th:nth-child(6) { width: 13%; }
-        .data-table th:nth-child(7) { width: 9%; }
-        .data-table th:nth-child(8) { width: 13%; }
-        .data-table th:nth-child(9) { width: 15%; }
+        .data-table th:nth-child(1) { width: 7%; }
+        .data-table th:nth-child(2) { width: 6%; }
+        .data-table th:nth-child(3) { width: 7%; }
+        .data-table th:nth-child(4) { width: 8%; }
+        .data-table th:nth-child(5) { width: 17%; }
+        .data-table th:nth-child(6) { width: 12%; }
+        .data-table th:nth-child(7) { width: 8%; }
+        .data-table th:nth-child(8) { width: 12%; }
+        .data-table th:nth-child(9) { width: 14%; }
+        .data-table th:nth-child(10) { width: 5%; }
         
         .data-table td {
             padding: 0.6rem 0.4rem;
@@ -474,6 +475,10 @@
             font-weight: 600;
             font-size: 0.9rem;
         }
+
+        .nc-table th:nth-child(1) { width: 65%; }
+        .nc-table th:nth-child(2) { width: 25%; }
+        .nc-table th:nth-child(3) { width: 10%; }
         
         .nc-table td {
             padding: 0.6rem 0.8rem;
@@ -575,18 +580,21 @@
         
         .btn-delete {
             background-color: transparent;
-            color: #9ca3af;
-            border: 1px solid #e5e7eb;
-            padding: 0.5rem;
-            border-radius: 6px;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
             cursor: pointer;
             transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         
         .btn-delete:hover {
-            background-color: #f3f4f6;
-            color: #6b7280;
-            border-color: #d1d5db;
+            background-color: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
         }
         
         .btn-add {
@@ -787,6 +795,7 @@
                             <th>Country/Terr. of MFR</th>
                             <th>Unit Value (JPY)</th>
                             <th>Total Value (JPY)</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody"></tbody>
@@ -844,8 +853,9 @@
                 <table class="nc-table" id="nonCommercialTable">
                     <thead>
                         <tr>
-                            <th style="width: 70%;">Description</th>
-                            <th style="width: 30%;">Quantity</th>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="nonCommercialBody"></tbody>
@@ -1246,13 +1256,30 @@
             renderNoCommercialTable();
         }
 
+        function deleteNoCommercialRow(idx) {
+            if (noCommercialData.length > 1) {
+                noCommercialData.splice(idx, 1);
+                renderNoCommercialTable();
+            } else {
+                alert('最低1行は必要です / At least 1 row is required');
+            }
+        }
+            noCommercialData[idx].units = parseInt(val) || 0;
+            noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
+            const matched = Object.keys(presets).find(n => n === noCommercialData[idx].description);
+            if (matched && presets[matched]) {
+                noCommercialData[idx].weight = noCommercialData[idx].units * (presets[matched].weight_per_unit || 0.1);
+            } else {
+                noCommercialData[idx].weight = noCommercialData[idx].units * 0.1;
+            }
+            renderNoCommercialTable();
+        }
+        
         function updateNoCommercialUnitValue(idx, val) {
             noCommercialData[idx].unitValue = parseInt(val.replace(/,/g, '')) || 0;
             noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
             renderNoCommercialTable();
         }
-        
-        function renderNoCommercialTable() {
             const tbody = document.getElementById('noCommercialBody');
             tbody.innerHTML = '';
             let totalUnits = 0;
@@ -1283,6 +1310,15 @@
             renderNonCommercialTable();
         }
         
+        function deleteNonCommercialRow(idx) {
+            if (nonCommercialData.length > 1) {
+                nonCommercialData.splice(idx, 1);
+                renderNonCommercialTable();
+            } else {
+                alert('最低1行は必要です / At least 1 row is required');
+            }
+        }
+        
         function renderNonCommercialTable() {
             const tbody = document.getElementById('nonCommercialBody');
             tbody.innerHTML = '';
@@ -1291,8 +1327,10 @@
                 row.innerHTML = `
                     <td><input type="text" value="${item.description}" placeholder="Enter description"></td>
                     <td><input type="number" value="${item.quantity}" min="0"></td>
+                    <td><button class="btn-delete" onclick="deleteNonCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
                 `;
             });
+            lucide.createIcons();
         }
         
         function updateGrandTotal() {
