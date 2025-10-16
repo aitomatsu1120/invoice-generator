@@ -1,4 +1,51 @@
-<!DOCTYPE html>
+function processExcelData(jsonData) {
+            // Filter out rows without style number (品番)
+            const validRows = jsonData.filter(row => row['品番']);
+            
+            // Group by first 8 digits of style number
+            const grouped = {};
+            
+            validRows.forEach(row => {
+                const styleNo = row['品番'] || '';
+                const itemCategory = row['アイテム'] || '';
+                const itemName = row['品名'] || '';
+                const quantity = row['数量'] || 0;
+                const originalPrice = row['上代'] || 0;
+                const country = row['原産国'] || 'CN';
+                
+                const first8 = getFirst8Digits(styleNo);
+                
+                if (!grouped[first8]) {
+                    const categoryEN = translateCategory(itemCategory);
+                    const description = itemCategory === 'グッズ' ? getGoodsDetail(itemName) : categoryEN;
+                    
+                    grouped[first8] = {
+                        itemCode: first8,
+                        units: 0,
+                        weight: getWeightByCategory(itemCategory),
+                        measure: 'PCS',
+                        description: description,
+                        hsCode: '',
+                        country: country,
+                        unitValue: calculatePrice(originalPrice),
+                        totalValue: 0,
+                        rawData: row
+                    };
+                }
+                
+                grouped[first8].units += quantity;
+            });
+            
+            // Convert to array
+            productData = Object.values(grouped);
+            
+            // Calculate total values
+            productData.forEach(item => {
+                item.totalValue = item.units * item.unitValue;
+            });
+            
+            renderDataTable();
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -261,6 +308,32 @@
             display: block;
         }
         
+        .data-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .data-section-title {
+            flex: 1;
+        }
+        
+        .data-section-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .total-items {
+            font-size: 1rem;
+            color: #1c2940;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+        }
+        
         .data-table-wrapper {
             overflow-x: auto;
             margin-top: 1.5rem;
@@ -311,18 +384,23 @@
             cursor: not-allowed;
         }
         
+        .data-table input.align-right {
+            text-align: right;
+        }
+        
         .btn-generate {
-            width: 100%;
-            padding: 1rem;
+            padding: 0.75rem 1.5rem;
             background-color: #10b981;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 1rem;
-            margin-top: 2rem;
+            font-size: 0.95rem;
             transition: background-color 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
         
         .btn-generate:hover {
@@ -529,13 +607,27 @@
         
         <!-- Data Section -->
         <div id="dataSection" class="data-section">
-            <h2 class="section-title">商品明細リスト / Product Details List</h2>
-            <p class="section-subtitle">編集可能です。変更後、下のボタンをクリックしてください / Editable. Click the button below after making changes</p>
+            <div class="data-section-header">
+                <div class="data-section-title">
+                    <h2 class="section-title">商品明細リスト / Product Details List</h2>
+                    <p class="section-subtitle">編集可能です。変更後、右のボタンをクリックしてください / Editable. Click the button after making changes</p>
+                </div>
+                <div class="data-section-info">
+                    <div class="total-items">
+                        合計点数 / Total: <span id="totalItemsCount">0</span>
+                    </div>
+                    <button class="btn-generate" onclick="generateInvoice()">
+                        <i data-lucide="file-text" size="20"></i>
+                        インボイスを生成 / Generate Invoice
+                    </button>
+                </div>
+            </div>
             
             <div class="data-table-wrapper">
                 <table class="data-table" id="dataTable">
                     <thead>
                         <tr>
+                            <th>Item Code</th>
                             <th>No. of Units</th>
                             <th>Net Weight (KG)</th>
                             <th>Unit of Measure</th>
@@ -551,11 +643,6 @@
                     </tbody>
                 </table>
             </div>
-            
-            <button class="btn-generate" onclick="generateInvoice()">
-                <i data-lucide="file-text"></i>
-                インボイスを生成 / Generate Invoice
-            </button>
         </div>
     </div>
     
@@ -610,6 +697,23 @@
             "グッズ": "Goods"
         };
         
+        const GOODS_KEYWORDS = {
+            "ストール": "Stole",
+            "マフラー": "Muffler",
+            "ポーチ": "Pouch",
+            "バッグ": "Bag",
+            "ネックレス": "Necklace",
+            "イヤリング": "Earrings",
+            "ブレスレット": "Bracelet",
+            "リング": "Ring",
+            "帽子": "Hat",
+            "キャップ": "Cap",
+            "ベルト": "Belt",
+            "タイ": "Tie",
+            "ハンカチ": "Handkerchief",
+            "靴下": "Socks"
+        };
+        
         const DEFAULT_PRESETS = {
             "Paper Catalog": {
                 hs_code: "49019900",
@@ -660,6 +764,20 @@
         
         function translateCategory(category) {
             return ITEM_CATEGORY_TRANSLATION[category] || category;
+        }
+        
+        function getGoodsDetail(itemName) {
+            for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
+                if (itemName && itemName.includes(keyword)) {
+                    return translation;
+                }
+            }
+            return "Goods";
+        }
+        
+        function getFirst8Digits(styleNo) {
+            if (!styleNo) return '';
+            return styleNo.toString().substring(0, 8);
         }
         
         // File processing
@@ -730,9 +848,14 @@
             const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = '';
             
+            let totalUnits = 0;
+            
             productData.forEach((item, index) => {
+                totalUnits += item.units;
+                
                 const row = tbody.insertRow();
                 row.innerHTML = `
+                    <td><input type="text" value="${item.itemCode}" onchange="updateRow(${index}, 'itemCode', this.value)"></td>
                     <td><input type="number" value="${item.units}" onchange="updateRow(${index}, 'units', this.value)" min="0" step="1"></td>
                     <td><input type="number" value="${item.weight}" onchange="updateRow(${index}, 'weight', this.value)" min="0" step="0.1"></td>
                     <td>
@@ -745,14 +868,26 @@
                     <td><input type="text" value="${item.description}" onchange="updateRow(${index}, 'description', this.value)"></td>
                     <td><input type="text" value="${item.hsCode}" onchange="updateRow(${index}, 'hsCode', this.value)" placeholder="HS Code"></td>
                     <td><input type="text" value="${item.country}" onchange="updateRow(${index}, 'country', this.value)"></td>
-                    <td><input type="number" value="${item.unitValue}" onchange="updateRow(${index}, 'unitValue', this.value)" min="0" step="10"></td>
-                    <td><input type="number" value="${item.totalValue}" readonly></td>
+                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" onchange="updateRow(${index}, 'unitValue', this.value.replace(/,/g, ''))" ></td>
+                    <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
                 `;
             });
+            
+            // Update total count
+            document.getElementById('totalItemsCount').textContent = totalUnits;
+            
+            // Re-initialize icons
+            lucide.createIcons();
         }
         
         function updateRow(index, field, value) {
-            productData[index][field] = field === 'units' || field === 'weight' || field === 'unitValue' ? parseFloat(value) : value;
+            if (field === 'units' || field === 'weight') {
+                productData[index][field] = parseFloat(value) || 0;
+            } else if (field === 'unitValue') {
+                productData[index][field] = parseFloat(value) || 0;
+            } else {
+                productData[index][field] = value;
+            }
             
             // Recalculate total value
             if (field === 'units' || field === 'unitValue') {
