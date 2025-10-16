@@ -57,9 +57,9 @@
         }
         
         .container {
-            max-width: 1600px;
-            margin: 2rem auto;
-            padding: 0 1rem;
+            max-width: 98%;
+            margin: 1rem auto;
+            padding: 0 0.5rem;
         }
         
         .upload-section {
@@ -212,7 +212,7 @@
         .data-section {
             display: none;
             background: white;
-            padding: 2rem;
+            padding: 1rem;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             margin-bottom: 2rem;
@@ -224,7 +224,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
+            margin-bottom: 1rem;
         }
         
         .data-section-title { flex: 1; }
@@ -236,7 +236,7 @@
         }
         
         .total-items {
-            font-size: 1rem;
+            font-size: 0.9rem;
             color: #1c2940;
             font-weight: 600;
             padding: 0.5rem 1rem;
@@ -246,30 +246,37 @@
         
         .data-table-wrapper {
             overflow-x: auto;
-            margin-top: 1.5rem;
+            margin-top: 1rem;
         }
         
         .data-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.9rem;
+            font-size: 0.75rem;
+            table-layout: fixed;
         }
         
         .data-table th {
             background-color: #1c2940;
             color: white;
-            padding: 0.75rem;
+            padding: 0.5rem 0.3rem;
             text-align: left;
             font-weight: 600;
-            white-space: nowrap;
+            font-size: 0.75rem;
         }
         
-        .data-table th:first-child {
-            min-width: 150px;
-        }
+        .data-table th:nth-child(1) { width: 8%; }
+        .data-table th:nth-child(2) { width: 7%; }
+        .data-table th:nth-child(3) { width: 8%; }
+        .data-table th:nth-child(4) { width: 9%; }
+        .data-table th:nth-child(5) { width: 18%; }
+        .data-table th:nth-child(6) { width: 13%; }
+        .data-table th:nth-child(7) { width: 9%; }
+        .data-table th:nth-child(8) { width: 13%; }
+        .data-table th:nth-child(9) { width: 15%; }
         
         .data-table td {
-            padding: 0.75rem;
+            padding: 0.5rem 0.3rem;
             border-bottom: 1px solid #e5e7eb;
         }
         
@@ -280,15 +287,11 @@
         .data-table input,
         .data-table select {
             width: 100%;
-            padding: 0.5rem;
+            padding: 0.3rem;
             border: 1px solid #d1d5db;
             border-radius: 4px;
             font-family: 'Roboto', sans-serif;
-            font-size: 0.9rem;
-        }
-        
-        .data-table td:first-child input {
-            min-width: 120px;
+            font-size: 0.75rem;
         }
         
         .data-table input:focus,
@@ -307,14 +310,14 @@
         }
         
         .btn-generate {
-            padding: 0.75rem 1.5rem;
+            padding: 0.6rem 1.2rem;
             background-color: #10b981;
             color: white;
             border: none;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             transition: background-color 0.2s;
             display: flex;
             align-items: center;
@@ -519,8 +522,8 @@
                         合計点数 / Total: <span id="totalItemsCount">0</span>
                     </div>
                     <button class="btn-generate" onclick="generateInvoice()">
-                        <i data-lucide="file-text" size="20"></i>
-                        インボイスを生成 / Generate Invoice
+                        <i data-lucide="file-text" size="18"></i>
+                        インボイスを生成
                     </button>
                 </div>
             </div>
@@ -690,7 +693,6 @@
                 const hasStyleNo = row['品番'] && row['品番'].toString().trim() !== '';
                 const hasItemName = row['品名'] && row['品名'].toString().trim() !== '';
                 const hasItemCategory = row['アイテム'] && row['アイテム'].toString().trim() !== '';
-                
                 return hasStyleNo && hasItemName && hasItemCategory;
             });
             
