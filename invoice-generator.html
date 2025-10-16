@@ -683,7 +683,6 @@
             jsonData.forEach(row => {
                 const itemCategory = row['アイテム'] || '';
                 const styleNo = row['品番'] || '';
-                const description = row['Item Description'] || '';
                 const quantity = row['数量'] || 0;
                 const originalPrice = row['上代'] || 0;
                 const country = row['原産国'] || 'CN';
@@ -696,7 +695,7 @@
                     units: quantity,
                     weight: weight,
                     measure: 'PCS',
-                    description: description || styleNo,
+                    description: itemCategory || styleNo,
                     hsCode: '', // Will be populated by HS code logic
                     country: country,
                     unitValue: unitPrice,
