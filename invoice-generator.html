@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/lucide/0.263.1/umd/lucide.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -292,13 +292,9 @@
             width: 60px;
         }
 
-        .invoice-number-input input.serial:invalid,
-        .invoice-number-input input.serial:placeholder-shown {
+        .invoice-number-input input.serial:not(:focus):invalid,
+        .invoice-number-input input.serial:not(:focus):placeholder-shown {
             background-color: #ffc9c9;
-        }
-
-        .invoice-number-input input.serial:not(:placeholder-shown):valid {
-            background-color: rgba(255,255,255,0.9);
         }
         
         .data-section {
@@ -795,7 +791,6 @@
                             <th>Country/Terr. of MFR</th>
                             <th>Unit Value (JPY)</th>
                             <th>Total Value (JPY)</th>
-                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody"></tbody>
@@ -829,6 +824,7 @@
                             <th>Country/Terr. of MFR</th>
                             <th>Unit Value (JPY)</th>
                             <th>Total Value (JPY)</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="noCommercialBody"></tbody>
@@ -1244,6 +1240,15 @@
             renderNoCommercialTable();
         }
         
+        function deleteNoCommercialRow(idx) {
+            if (noCommercialData.length > 1) {
+                noCommercialData.splice(idx, 1);
+                renderNoCommercialTable();
+            } else {
+                alert('最低1行は必要です / At least 1 row is required');
+            }
+        }
+        
         function updateNoCommercialDescription(idx, val) {
             noCommercialData[idx].description = val;
             const matched = Object.keys(presets).find(n => n === val);
@@ -1256,14 +1261,7 @@
             renderNoCommercialTable();
         }
 
-        function deleteNoCommercialRow(idx) {
-            if (noCommercialData.length > 1) {
-                noCommercialData.splice(idx, 1);
-                renderNoCommercialTable();
-            } else {
-                alert('最低1行は必要です / At least 1 row is required');
-            }
-        }
+        function updateNoCommercialUnits(idx, val) {
             noCommercialData[idx].units = parseInt(val) || 0;
             noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
             const matched = Object.keys(presets).find(n => n === noCommercialData[idx].description);
@@ -1274,12 +1272,14 @@
             }
             renderNoCommercialTable();
         }
-        
+
         function updateNoCommercialUnitValue(idx, val) {
             noCommercialData[idx].unitValue = parseInt(val.replace(/,/g, '')) || 0;
             noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
             renderNoCommercialTable();
         }
+        
+        function renderNoCommercialTable() {
             const tbody = document.getElementById('noCommercialBody');
             tbody.innerHTML = '';
             let totalUnits = 0;
@@ -1289,8 +1289,8 @@
                 const presetOpts = Object.keys(presets).map(n => `<option value="${n}">`).join('');
                 row.innerHTML = `
                     <td><input type="text" value="${item.itemCode}" onchange="noCommercialData[${idx}].itemCode = this.value"></td>
-                    <td><input type="number" value="${item.units}" min="0" onchange="noCommercialData[${idx}].units = parseInt(this.value) || 0; noCommercialData[${idx}].totalValue = noCommercialData[${idx}].units * noCommercialData[${idx}].unitValue; renderNoCommercialTable()"></td>
-                    <td><input type="number" value="${item.weight}" min="0" step="0.1" onchange="noCommercialData[${idx}].weight = parseFloat(this.value) || 0"></td>
+                    <td><input type="number" value="${item.units}" min="0" onchange="updateNoCommercialUnits(${idx}, this.value)"></td>
+                    <td><input type="number" value="${item.weight.toFixed(1)}" min="0" step="0.1" onchange="noCommercialData[${idx}].weight = parseFloat(this.value) || 0"></td>
                     <td><select><option value="PCS">PCS</option></select></td>
                     <td><input type="text" value="${item.description}" onchange="updateNoCommercialDescription(${idx}, this.value)" list="presets-${idx}" placeholder="選択または入力">
                         <datalist id="presets-${idx}">${presetOpts}</datalist></td>
@@ -1298,12 +1298,15 @@
                     <td><input type="text" value="${item.country}" onchange="noCommercialData[${idx}].country = this.value"></td>
                     <td><input type="text" class="align-right editable-readonly" value="${item.unitValue.toLocaleString()}" onchange="updateNoCommercialUnitValue(${idx}, this.value)"></td>
                     <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
+                    <td><button class="btn-delete" onclick="deleteNoCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
                 `;
             });
             document.getElementById('totalItemsCount2').textContent = totalUnits;
             updateGrandTotal();
             lucide.createIcons();
         }
+        
+        function addNonCommercialRow() {
             nonCommercialData.push({ description: '', quantity: 0 });
             renderNonCommercialTable();
         }
