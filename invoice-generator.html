@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator V2</title>
+    <title>Invoice Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -237,7 +237,7 @@
         .total-summary {
             display: flex;
             align-items: center;
-            gap: 2rem;
+            gap: 3rem;
         }
         
         .summary-item {
@@ -290,6 +290,15 @@
 
         .invoice-number-input input.serial {
             width: 60px;
+        }
+
+        .invoice-number-input input.serial:invalid,
+        .invoice-number-input input.serial:placeholder-shown {
+            background-color: #ffc9c9;
+        }
+
+        .invoice-number-input input.serial:not(:placeholder-shown):valid {
+            background-color: rgba(255,255,255,0.9);
         }
         
         .data-section {
@@ -679,7 +688,7 @@
     <header class="header">
         <div class="header-title">
             <i data-lucide="package" size="28"></i>
-            Invoice Generator V2
+            Invoice Generator
         </div>
         <div class="header-actions">
             <button class="btn btn-primary" onclick="openGeneralInfoModal()">
@@ -733,7 +742,7 @@
                             <span>RPM-EC-</span>
                             <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM">
                             <span>-</span>
-                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" placeholder="001">
+                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" required>
                         </div>
                     </div>
                     <div class="summary-item">
