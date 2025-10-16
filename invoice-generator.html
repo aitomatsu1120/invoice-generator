@@ -309,6 +309,11 @@
             text-align: right;
         }
         
+        .needs-review {
+            background-color: #fef3c7 !important;
+            border: 2px solid #f59e0b !important;
+        }
+        
         .btn-generate {
             padding: 0.6rem 1.2rem;
             background-color: #10b981;
@@ -596,20 +601,101 @@
         };
         
         const GOODS_KEYWORDS = {
-            "ストール": "Stole",
-            "マフラー": "Muffler",
-            "ポーチ": "Pouch",
-            "バッグ": "Bag",
+            // Necklace
+            "チョーカー": "Necklace",
+            "ﾁｮｰｶｰ": "Necklace",
+            "リボン": "Necklace",
+            "ﾘﾎﾞﾝ": "Necklace",
             "ネックレス": "Necklace",
+            "ﾈｯｸﾚｽ": "Necklace",
+            
+            // Earrings
             "イヤリング": "Earrings",
+            "ｲﾔﾘﾝｸﾞ": "Earrings",
+            
+            // Bracelet
+            "バングル": "Bracelet",
+            "ﾊﾞﾝｸﾞﾙ": "Bracelet",
             "ブレスレット": "Bracelet",
-            "リング": "Ring",
+            "ﾌﾞﾚｽﾚｯﾄ": "Bracelet",
+            
+            // Scarf
+            "バンダナ": "Scarf",
+            "ﾊﾞﾝﾀﾞﾅ": "Scarf",
+            "マフラー": "Scarf",
+            "ﾏﾌﾗｰ": "Scarf",
+            "Furoshikii": "Scarf",
+            "ポンチョ": "Scarf",
+            "ﾎﾟﾝﾁｮ": "Scarf",
+            "Tie": "Scarf",
+            "タイ": "Scarf",
+            "ﾀｲ": "Scarf",
+            "ワカメ": "Scarf",
+            "ﾜｶﾒ": "Scarf",
+            "こんぶ": "Scarf",
+            "ｺﾝﾌﾞ": "Scarf",
+            "風呂敷": "Scarf",
+            "ﾌﾛｼｷ": "Scarf",
+            "ネクタイ": "Scarf",
+            "ﾈｸﾀｲ": "Scarf",
+            "ストール": "Scarf",
+            "ｽﾄｰﾙ": "Scarf",
+            
+            // Hat
+            "キャップ": "Hat",
+            "ｷｬｯﾌﾟ": "Hat",
+            "ハット": "Hat",
+            "ﾊｯﾄ": "Hat",
+            "ニット帽": "Hat",
+            "ﾆｯﾄ帽": "Hat",
+            "ﾆｯﾄﾎﾞｳ": "Hat",
+            "ヘアバンド": "Hat",
+            "ﾍｱﾊﾞﾝﾄﾞ": "Hat",
+            "ベレー": "Hat",
+            "ﾍﾞﾚｰ": "Hat",
             "帽子": "Hat",
-            "キャップ": "Cap",
+            "ﾎﾞｳｼ": "Hat",
+            "Cap": "Hat",
+            
+            // Socks
+            "ソックス": "Socks",
+            "ｿｯｸｽ": "Socks",
+            "靴下": "Socks",
+            "ｸﾂｼﾀ": "Socks",
+            
+            // Bag
+            "トート": "Bag",
+            "ﾄｰﾄ": "Bag",
+            "トートバッグ": "Bag",
+            "ﾄｰﾄﾊﾞｯｸﾞ": "Bag",
+            "バッグ": "Bag",
+            "ﾊﾞｯｸﾞ": "Bag",
+            "ポーチ": "Bag",
+            "ﾎﾟｰﾁ": "Bag",
+            "Bag": "Bag",
+            
+            // Belt
             "ベルト": "Belt",
-            "タイ": "Tie",
-            "ハンカチ": "Handkerchief",
-            "靴下": "Socks"
+            "ﾍﾞﾙﾄ": "Belt",
+            "Belt": "Belt",
+            
+            // Umbrella
+            "日傘": "Umbrella",
+            "ﾋｶﾞｻ": "Umbrella",
+            "傘": "Umbrella",
+            "ｶｻ": "Umbrella",
+            
+            // Shoes
+            "シューズ": "Shoes",
+            "ｼｭｰｽﾞ": "Shoes",
+            "靴": "Shoes",
+            "ｸﾂ": "Shoes",
+            
+            // Key Holder
+            "キーホルダー": "Key Holder",
+            "ｷｰﾎﾙﾀﾞｰ": "Key Holder",
+            "キーリング": "Key Holder",
+            "ｷｰﾘﾝｸﾞ": "Key Holder"
         };
         
         const DEFAULT_PRESETS = {
@@ -644,13 +730,23 @@
             return ITEM_CATEGORY_TRANSLATION[category] || category;
         }
         
+        function toFullWidth(str) {
+            if (!str) return '';
+            return str.replace(/[ｦ-ﾟ]/g, function(s) {
+                return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
+            });
+        }
+        
         function getGoodsDetail(itemName) {
+            const normalized = toFullWidth(itemName);
+            
             for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
-                if (itemName && itemName.includes(keyword)) {
-                    return translation;
+                if (normalized.includes(keyword)) {
+                    return { description: translation, matched: true };
                 }
             }
-            return "Goods";
+            
+            return { description: "Goods", matched: false };
         }
         
         function getFirst8Digits(styleNo) {
@@ -710,7 +806,16 @@
                 
                 if (!grouped[first8]) {
                     const categoryEN = translateCategory(itemCategory);
-                    const description = itemCategory === 'グッズ' ? getGoodsDetail(itemName) : categoryEN;
+                    let description, matched;
+                    
+                    if (itemCategory === 'グッズ') {
+                        const result = getGoodsDetail(itemName);
+                        description = result.description;
+                        matched = result.matched;
+                    } else {
+                        description = categoryEN;
+                        matched = true;
+                    }
                     
                     grouped[first8] = {
                         itemCode: first8,
@@ -718,6 +823,7 @@
                         weightPerUnit: getWeightByCategory(itemCategory),
                         measure: 'PCS',
                         description: description,
+                        matched: matched,
                         hsCode: '',
                         country: country,
                         unitValue: calculatePrice(originalPrice),
@@ -760,7 +866,7 @@
                             <option value="DOZ" ${item.measure === 'DOZ' ? 'selected' : ''}>DOZ</option>
                         </select>
                     </td>
-                    <td><input type="text" value="${item.description}" onchange="updateRow(${index}, 'description', this.value)"></td>
+                    <td><input type="text" value="${item.description}" onchange="updateRow(${index}, 'description', this.value)" class="${!item.matched ? 'needs-review' : ''}"></td>
                     <td><input type="text" value="${item.hsCode}" onchange="updateRow(${index}, 'hsCode', this.value)" placeholder="HS Code"></td>
                     <td><input type="text" value="${item.country}" onchange="updateRow(${index}, 'country', this.value)"></td>
                     <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" onchange="updateRow(${index}, 'unitValue', this.value.replace(/,/g, ''))"></td>
