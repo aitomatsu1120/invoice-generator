@@ -590,7 +590,7 @@
         };
         
         const ITEM_CATEGORY_TRANSLATION = {
-            "ブルゾン・ジャケット": "Blouson/Jacket",
+            "ブルゾン・ジャケット": "Jacket",
             "コート": "Coat",
             "シャツ": "Shirt",
             "スカート": "Skirt",
@@ -732,9 +732,22 @@
         
         function toFullWidth(str) {
             if (!str) return '';
-            return str.replace(/[ｦ-ﾟ]/g, function(s) {
-                return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
-            });
+            
+            return str
+                .replace(/ｶﾞ/g, 'ガ').replace(/ｷﾞ/g, 'ギ').replace(/ｸﾞ/g, 'グ')
+                .replace(/ｹﾞ/g, 'ゲ').replace(/ｺﾞ/g, 'ゴ')
+                .replace(/ｻﾞ/g, 'ザ').replace(/ｼﾞ/g, 'ジ').replace(/ｽﾞ/g, 'ズ')
+                .replace(/ｾﾞ/g, 'ゼ').replace(/ｿﾞ/g, 'ゾ')
+                .replace(/ﾀﾞ/g, 'ダ').replace(/ﾁﾞ/g, 'ヂ').replace(/ﾂﾞ/g, 'ヅ')
+                .replace(/ﾃﾞ/g, 'デ').replace(/ﾄﾞ/g, 'ド')
+                .replace(/ﾊﾞ/g, 'バ').replace(/ﾋﾞ/g, 'ビ').replace(/ﾌﾞ/g, 'ブ')
+                .replace(/ﾍﾞ/g, 'ベ').replace(/ﾎﾞ/g, 'ボ')
+                .replace(/ﾊﾟ/g, 'パ').replace(/ﾋﾟ/g, 'ピ').replace(/ﾌﾟ/g, 'プ')
+                .replace(/ﾍﾟ/g, 'ペ').replace(/ﾎﾟ/g, 'ポ')
+                .replace(/ｳﾞ/g, 'ヴ')
+                .replace(/[ｦ-ﾟ]/g, function(s) {
+                    return String.fromCharCode(s.charCodeAt(0) + 0xFEE0);
+                });
         }
         
         function getGoodsDetail(itemName) {
