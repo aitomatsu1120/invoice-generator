@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator</title>
+    <title>Invoice Generator V2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -878,6 +878,10 @@
                             <label>FAX</label>
                             <input type="text" id="exporterFax" value="81-3-3486-7145">
                         </div>
+                        <div class="form-group">
+                            <label>卸値パーセンテージ / Wholesale Percentage (%)</label>
+                            <input type="number" id="pricePercentage" value="42" min="0" max="100" step="1">
+                        </div>
                     </div>
                 </div>
 
@@ -886,7 +890,7 @@
                     <div class="form-grid">
                         <div class="form-group full-width">
                             <label>Company Name / 会社名</label>
-                            <input type="text" id="consigneeName" value="">
+                            <input type="text" id="consigneeName" value="FENIX LOGISTIC SERVICES LIMITED">
                         </div>
                         <div class="form-group full-width">
                             <label>Address / 住所</label>
@@ -1008,21 +1012,22 @@
             "マフラー": "Scarf", "ポンチョ": "Scarf", "ストール": "Scarf",
             "帽子": "Hat", "キャップ": "Hat", "ハット": "Hat",
             "靴下": "Socks", "ソックス": "Socks",
-            "バッグ": "Bag", "トート": "Bag", "ベルト": "Belt"
+            "バッグ": "Bag", "トート": "Bag", "ベルト": "Belt",
+            "ポーチ": "Pouch"
         };
         
         const DEFAULT_PRESETS = {
             "Paper Catalog": { hs_code: "49019900", unit_value: 100 },
-            "Calendar": { hs_code: "49100000", unit_value: 50 },
-            "Tote Bag": { hs_code: "42029260", unit_value: 200 }
+            "Calendar": { hs_code: "49100000", unit_value: 50 }
         };
         
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
         let generalInfo = JSON.parse(localStorage.getItem('generalInfo')) || {};
+        let pricePercentage = parseFloat(localStorage.getItem('pricePercentage')) || 42;
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
-        function calculatePrice(p) { return Math.round((p * 0.42) / 10) * 10; }
+        function calculatePrice(p) { return Math.round((p * (pricePercentage / 100)) / 10) * 10; }
         function getWeightByCategory(c) { return ITEM_WEIGHT_MAP[c] || 0.5; }
         function translateCategory(c) { return ITEM_CATEGORY_TRANSLATION[c] || c; }
         
@@ -1174,7 +1179,7 @@
                         weightPerUnit: getWeightByCategory(row['アイテム']),
                         measure: 'PCS', description: hsResult.description,
                         matched: hsResult.descMatched, hsCode: hsResult.hsCode,
-                        country: 'Japan', unitValue: calculatePrice(row['上代'] || 0),
+                        country: row['原産国'] || 'Japan', unitValue: calculatePrice(row['上代'] || 0),
                         totalValue: 0, matchType: hsResult.matchType
                     };
                 }
@@ -1344,8 +1349,9 @@
             document.getElementById('exporterAddress').value = generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN';
             document.getElementById('exporterTel').value = generalInfo.exporterTel || '81-3-3498-1345';
             document.getElementById('exporterFax').value = generalInfo.exporterFax || '81-3-3486-7145';
+            document.getElementById('pricePercentage').value = pricePercentage;
             
-            document.getElementById('consigneeName').value = generalInfo.consigneeName || '';
+            document.getElementById('consigneeName').value = generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED';
             document.getElementById('consigneeAddress').value = generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong';
             document.getElementById('consigneeContact').value = generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)';
             document.getElementById('consigneeTel').value = generalInfo.consigneeTel || '2127-4660';
@@ -1358,6 +1364,9 @@
         }
 
         function saveGeneralInfo() {
+            pricePercentage = parseFloat(document.getElementById('pricePercentage').value) || 42;
+            localStorage.setItem('pricePercentage', pricePercentage);
+            
             generalInfo = {
                 exporterName: document.getElementById('exporterName').value,
                 exporterAddress: document.getElementById('exporterAddress').value,
