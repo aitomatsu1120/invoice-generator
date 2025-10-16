@@ -1,87 +1,19 @@
-function processExcelData(jsonData) {
-            // Filter out rows without style number (品番) AND rows that only have values in column J (集計行)
-            const validRows = jsonData.filter(row => {
-                const hasStyleNo = row['品番'] && row['品番'].toString().trim() !== '';
-                const hasItemName = row['品名'] && row['品名'].toString().trim() !== '';
-                return hasStyleNo && hasItemName;
-            });
-            
-            // Group by first 8 digits of style number
-            const grouped = {};
-            
-            validRows.forEach(row => {
-                const styleNo = row['品番'] || '';
-                const itemCategory = row['アイテム'] || '';
-                const itemName = row['品名'] || '';
-                const quantity = row['数量'] || 0;
-                const originalPrice = row['上代'] || 0;
-                const country = row['原産国'] || 'CN';
-                
-                const first8 = getFirst8Digits(styleNo);
-                
-                if (!grouped[first8]) {
-                    const categoryEN = translateCategory(itemCategory);
-                    // Description: Only category, unless it's Goods
-                    const description = itemCategory === 'グッズ' ? getGoodsDetail(itemName) : categoryEN;
-                    
-                    grouped[first8] = {
-                        itemCode: first8,
-                        units: 0,
-                        weightPerUnit: getWeightByCategory(itemCategory),
-                        measure: 'PCS',
-                        description: description,
-                        hsCode: '',
-                        country: country,
-                        unitValue: calculatePrice(originalPrice),
-                        totalValue: 0,
-                        rawData: row
-                    };
-                }
-                
-                grouped[first8].units += quantity;
-            });
-            
-            // Convert to array
-            productData = Object.values(grouped);
-            
-            // Calculate total values and weights
-            productData.forEach(item => {
-                item.totalValue = item.units * item.unitValue;
-                item.weight = item.weightPerUnit * item.units;
-            });
-            
-            renderDataTable();
-        }<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Invoice Generator</title>
-    
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- SheetJS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background-color: #f5f7fa; }
         
-        body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f7fa;
-        }
-        
-        /* Header */
         .header {
             background-color: #1c2940;
             color: white;
@@ -99,11 +31,6 @@ function processExcelData(jsonData) {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-        
-        .header-actions {
-            display: flex;
-            gap: 1rem;
         }
         
         .btn {
@@ -129,7 +56,6 @@ function processExcelData(jsonData) {
             background-color: #e8eaf0;
         }
         
-        /* Main Container */
         .container {
             max-width: 1400px;
             margin: 2rem auto;
@@ -165,7 +91,6 @@ function processExcelData(jsonData) {
             background-color: #f8fafc;
             transition: all 0.3s ease;
             cursor: pointer;
-            position: relative;
         }
         
         .drop-zone:hover {
@@ -187,13 +112,8 @@ function processExcelData(jsonData) {
             pointer-events: none;
         }
         
-        .drop-zone-icon {
-            color: #94a3b8;
-        }
-        
-        .drop-zone.drag-over .drop-zone-icon {
-            color: #1c2940;
-        }
+        .drop-zone-icon { color: #94a3b8; }
+        .drop-zone.drag-over .drop-zone-icon { color: #1c2940; }
         
         .drop-zone-text {
             color: #64748b;
@@ -201,9 +121,7 @@ function processExcelData(jsonData) {
             font-weight: 500;
         }
         
-        .drop-zone.drag-over .drop-zone-text {
-            color: #1c2940;
-        }
+        .drop-zone.drag-over .drop-zone-text { color: #1c2940; }
         
         .or-text {
             color: #94a3b8;
@@ -211,14 +129,8 @@ function processExcelData(jsonData) {
             margin: 0.5rem 0;
         }
         
-        .file-input-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-        
-        .file-input-wrapper input[type="file"] {
-            display: none;
-        }
+        .file-input-wrapper { position: relative; display: inline-block; }
+        .file-input-wrapper input[type="file"] { display: none; }
         
         .file-input-label {
             display: inline-flex;
@@ -247,7 +159,6 @@ function processExcelData(jsonData) {
             margin-top: 1rem;
         }
         
-        /* Loading Spinner */
         .loading-overlay {
             display: none;
             position: fixed;
@@ -261,9 +172,7 @@ function processExcelData(jsonData) {
             justify-content: center;
         }
         
-        .loading-overlay.active {
-            display: flex;
-        }
+        .loading-overlay.active { display: flex; }
         
         .loading-content {
             background: white;
@@ -300,7 +209,6 @@ function processExcelData(jsonData) {
             font-size: 0.9rem;
         }
         
-        /* Data Table */
         .data-section {
             display: none;
             background: white;
@@ -310,9 +218,7 @@ function processExcelData(jsonData) {
             margin-bottom: 2rem;
         }
         
-        .data-section.active {
-            display: block;
-        }
+        .data-section.active { display: block; }
         
         .data-section-header {
             display: flex;
@@ -321,9 +227,7 @@ function processExcelData(jsonData) {
             margin-bottom: 1.5rem;
         }
         
-        .data-section-title {
-            flex: 1;
-        }
+        .data-section-title { flex: 1; }
         
         .data-section-info {
             display: flex;
@@ -413,7 +317,6 @@ function processExcelData(jsonData) {
             background-color: #059669;
         }
         
-        /* Modal */
         .modal {
             display: none;
             position: fixed;
@@ -427,9 +330,7 @@ function processExcelData(jsonData) {
             justify-content: center;
         }
         
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         
         .modal-content {
             background: white;
@@ -465,9 +366,7 @@ function processExcelData(jsonData) {
             transition: color 0.2s;
         }
         
-        .btn-close:hover {
-            color: #1c2940;
-        }
+        .btn-close:hover { color: #1c2940; }
         
         .modal-body {
             padding: 1.5rem;
@@ -531,9 +430,7 @@ function processExcelData(jsonData) {
             transition: background-color 0.2s;
         }
         
-        .btn-add:hover {
-            background-color: #059669;
-        }
+        .btn-add:hover { background-color: #059669; }
         
         .modal-footer {
             padding: 1.5rem;
@@ -548,22 +445,17 @@ function processExcelData(jsonData) {
             color: #374151;
         }
         
-        .btn-secondary:hover {
-            background-color: #d1d5db;
-        }
+        .btn-secondary:hover { background-color: #d1d5db; }
         
         .btn-save {
             background-color: #1c2940;
             color: white;
         }
         
-        .btn-save:hover {
-            background-color: #2a3d5f;
-        }
+        .btn-save:hover { background-color: #2a3d5f; }
     </style>
 </head>
 <body>
-    <!-- Header -->
     <header class="header">
         <div class="header-title">
             <i data-lucide="package" size="28"></i>
@@ -577,7 +469,6 @@ function processExcelData(jsonData) {
         </div>
     </header>
     
-    <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -586,9 +477,7 @@ function processExcelData(jsonData) {
         </div>
     </div>
     
-    <!-- Main Container -->
     <div class="container">
-        <!-- Upload Section -->
         <div id="uploadSection" class="upload-section">
             <h2 class="section-title">商品明細のエクセルファイルをアップロード</h2>
             <p class="section-subtitle">Upload Product List Excel File</p>
@@ -611,7 +500,6 @@ function processExcelData(jsonData) {
             </div>
         </div>
         
-        <!-- Data Section -->
         <div id="dataSection" class="data-section">
             <div class="data-section-header">
                 <div class="data-section-title">
@@ -644,15 +532,12 @@ function processExcelData(jsonData) {
                             <th>Total Value (JPY)</th>
                         </tr>
                     </thead>
-                    <tbody id="dataTableBody">
-                        <!-- Data rows will be inserted here -->
-                    </tbody>
+                    <tbody id="dataTableBody"></tbody>
                 </table>
             </div>
         </div>
     </div>
     
-    <!-- Preset Management Modal -->
     <div id="presetModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -661,9 +546,7 @@ function processExcelData(jsonData) {
                     <i data-lucide="x" size="24"></i>
                 </button>
             </div>
-            <div class="modal-body" id="presetList">
-                <!-- Preset items will be rendered here -->
-            </div>
+            <div class="modal-body" id="presetList"></div>
             <div style="padding: 0 1.5rem;">
                 <button class="btn-add" onclick="addNewPreset()">
                     <i data-lucide="plus" size="18"></i> Add New Preset
@@ -677,10 +560,8 @@ function processExcelData(jsonData) {
     </div>
     
     <script>
-        // Initialize Lucide icons
         lucide.createIcons();
         
-        // Constants
         const ITEM_WEIGHT_MAP = {
             "ブルゾン・ジャケット": 0.8,
             "コート": 1.2,
@@ -721,37 +602,17 @@ function processExcelData(jsonData) {
         };
         
         const DEFAULT_PRESETS = {
-            "Paper Catalog": {
-                hs_code: "49019900",
-                unit_value: 100
-            },
-            "Calendar": {
-                hs_code: "49100000",
-                unit_value: 50
-            },
-            "Tote Bag": {
-                hs_code: "42029260",
-                unit_value: 200
-            },
-            "Cotton Materials": {
-                hs_code: "52093900",
-                unit_value: 150
-            },
-            "Gift Box": {
-                hs_code: "48191000",
-                unit_value: 80
-            },
-            "Red Pocket": {
-                hs_code: "48171000",
-                unit_value: 30
-            }
+            "Paper Catalog": { hs_code: "49019900", unit_value: 100 },
+            "Calendar": { hs_code: "49100000", unit_value: 50 },
+            "Tote Bag": { hs_code: "42029260", unit_value: 200 },
+            "Cotton Materials": { hs_code: "52093900", unit_value: 150 },
+            "Gift Box": { hs_code: "48191000", unit_value: 80 },
+            "Red Pocket": { hs_code: "48171000", unit_value: 30 }
         };
         
-        // Global variables
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
         let productData = [];
         
-        // Utility functions
         function showLoading() {
             document.getElementById('loadingOverlay').classList.add('active');
         }
@@ -787,7 +648,6 @@ function processExcelData(jsonData) {
             return cleanStyleNo.substring(0, 8);
         }
         
-        // File processing
         function processFile(file) {
             if (!file.name.match(/\.(xlsx|xls)$/i)) {
                 alert('Excelファイル (.xlsx または .xls) をアップロードしてください\nPlease upload an Excel file (.xlsx or .xls)');
@@ -818,34 +678,50 @@ function processExcelData(jsonData) {
         }
         
         function processExcelData(jsonData) {
-            productData = [];
+            const validRows = jsonData.filter(row => {
+                const hasStyleNo = row['品番'] && row['品番'].toString().trim() !== '';
+                const hasItemName = row['品名'] && row['品名'].toString().trim() !== '';
+                return hasStyleNo && hasItemName;
+            });
             
-            jsonData.forEach(row => {
-                const itemCategory = row['アイテム'] || '';
-                const itemDescriptionJP = row['品名'] || '';
+            const grouped = {};
+            
+            validRows.forEach(row => {
                 const styleNo = row['品番'] || '';
+                const itemCategory = row['アイテム'] || '';
+                const itemName = row['品名'] || '';
                 const quantity = row['数量'] || 0;
                 const originalPrice = row['上代'] || 0;
                 const country = row['原産国'] || 'CN';
                 
-                const unitPrice = calculatePrice(originalPrice);
-                const totalValue = unitPrice * quantity;
-                const weight = getWeightByCategory(itemCategory);
-                const categoryEN = translateCategory(itemCategory);
+                const first8 = getFirst8Digits(styleNo);
                 
-                // Description: Category (EN) + Item Description (JP)
-                const description = categoryEN + (itemDescriptionJP ? ', ' + itemDescriptionJP : '');
+                if (!grouped[first8]) {
+                    const categoryEN = translateCategory(itemCategory);
+                    const description = itemCategory === 'グッズ' ? getGoodsDetail(itemName) : categoryEN;
+                    
+                    grouped[first8] = {
+                        itemCode: first8,
+                        units: 0,
+                        weightPerUnit: getWeightByCategory(itemCategory),
+                        measure: 'PCS',
+                        description: description,
+                        hsCode: '',
+                        country: country,
+                        unitValue: calculatePrice(originalPrice),
+                        totalValue: 0,
+                        rawData: row
+                    };
+                }
                 
-                productData.push({
-                    units: quantity,
-                    weight: weight,
-                    measure: 'PCS',
-                    description: description,
-                    hsCode: '', // Will be populated by HS code logic
-                    country: country,
-                    unitValue: unitPrice,
-                    totalValue: totalValue
-                });
+                grouped[first8].units += quantity;
+            });
+            
+            productData = Object.values(grouped);
+            
+            productData.forEach(item => {
+                item.totalValue = item.units * item.unitValue;
+                item.weight = item.weightPerUnit * item.units;
             });
             
             renderDataTable();
@@ -864,7 +740,7 @@ function processExcelData(jsonData) {
                 row.innerHTML = `
                     <td><input type="text" value="${item.itemCode}" onchange="updateRow(${index}, 'itemCode', this.value)"></td>
                     <td><input type="number" value="${item.units}" onchange="updateRow(${index}, 'units', this.value)" min="0" step="1"></td>
-                    <td><input type="number" value="${item.weight}" onchange="updateRow(${index}, 'weight', this.value)" min="0" step="0.1"></td>
+                    <td><input type="number" value="${item.weight.toFixed(2)}" onchange="updateRow(${index}, 'weight', this.value)" min="0" step="0.1"></td>
                     <td>
                         <select onchange="updateRow(${index}, 'measure', this.value)">
                             <option value="PCS" ${item.measure === 'PCS' ? 'selected' : ''}>PCS</option>
@@ -875,15 +751,12 @@ function processExcelData(jsonData) {
                     <td><input type="text" value="${item.description}" onchange="updateRow(${index}, 'description', this.value)"></td>
                     <td><input type="text" value="${item.hsCode}" onchange="updateRow(${index}, 'hsCode', this.value)" placeholder="HS Code"></td>
                     <td><input type="text" value="${item.country}" onchange="updateRow(${index}, 'country', this.value)"></td>
-                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" onchange="updateRow(${index}, 'unitValue', this.value.replace(/,/g, ''))" ></td>
+                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" onchange="updateRow(${index}, 'unitValue', this.value.replace(/,/g, ''))"></td>
                     <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
                 `;
             });
             
-            // Update total count
             document.getElementById('totalItemsCount').textContent = totalUnits;
-            
-            // Re-initialize icons
             lucide.createIcons();
         }
         
@@ -896,7 +769,6 @@ function processExcelData(jsonData) {
                 productData[index][field] = value;
             }
             
-            // Recalculate total value
             if (field === 'units' || field === 'unitValue') {
                 productData[index].totalValue = productData[index].units * productData[index].unitValue;
                 renderDataTable();
@@ -908,21 +780,15 @@ function processExcelData(jsonData) {
             console.log('Product Data:', productData);
         }
         
-        // File input handler
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
-            if (file) {
-                processFile(file);
-            }
+            if (file) processFile(file);
         });
         
-        // Drag and Drop
         const dropZone = document.getElementById('dropZone');
         
         dropZone.addEventListener('click', function(e) {
-            if (e.target.closest('.file-input-wrapper')) {
-                return;
-            }
+            if (e.target.closest('.file-input-wrapper')) return;
             document.getElementById('fileInput').click();
         });
         
@@ -947,12 +813,9 @@ function processExcelData(jsonData) {
         
         dropZone.addEventListener('drop', function(e) {
             const files = e.dataTransfer.files;
-            if (files.length > 0) {
-                processFile(files[0]);
-            }
+            if (files.length > 0) processFile(files[0]);
         }, false);
         
-        // Preset Management
         function openPresetModal() {
             document.getElementById('presetModal').classList.add('active');
             renderPresets();
@@ -994,10 +857,7 @@ function processExcelData(jsonData) {
         
         function addNewPreset() {
             const newName = `New Item ${Object.keys(presets).length + 1}`;
-            presets[newName] = {
-                hs_code: "",
-                unit_value: 0
-            };
+            presets[newName] = { hs_code: "", unit_value: 0 };
             renderPresets();
         }
         
@@ -1032,11 +892,8 @@ function processExcelData(jsonData) {
             closePresetModal();
         }
         
-        // Close modal on outside click
         document.getElementById('presetModal').addEventListener('click', function(e) {
-            if (e.target === this) {
-                closePresetModal();
-            }
+            if (e.target === this) closePresetModal();
         });
     </script>
 </body>
