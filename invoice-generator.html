@@ -80,23 +80,109 @@
             padding: 0 2rem;
         }
         
-}
+        .upload-section {
+            background: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-section h2 {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 16px;
+            padding: 4rem 2rem;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .drop-zone:hover {
+            border-color: #64748b;
+            background-color: #f1f5f9;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #1c2940;
+            background-color: #e0e7ff;
+            border-width: 3px;
+        }
+        
+        .drop-zone-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            pointer-events: none;
+        }
+        
+        .drop-zone-icon {
+            color: #94a3b8;
+        }
+        
+        .drop-zone.drag-over .drop-zone-icon {
+            color: #1c2940;
+        }
+        
+        .drop-zone-text {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .drop-zone.drag-over .drop-zone-text {
+            color: #1c2940;
+        }
+        
+        .or-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .file-input-wrapper input[type="file"] {
+            display: none;
+        }
         
         .file-input-label {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.75rem 1.5rem;
+            padding: 0.875rem 2rem;
             background-color: #1c2940;
             color: white;
             border-radius: 8px;
             cursor: pointer;
             font-weight: 500;
+            font-size: 0.95rem;
             transition: all 0.2s;
+            pointer-events: auto;
         }
         
         .file-input-label:hover {
             background-color: #2a3d5f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(28, 41, 64, 0.3);
+        }
+        
+        .format-text {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 1rem;
         }
         
         /* Modal */
@@ -189,17 +275,19 @@
         }
         
         .btn-delete {
-            background-color: #ef4444;
-            color: white;
-            border: none;
+            background-color: transparent;
+            color: #9ca3af;
+            border: 1px solid #e5e7eb;
             padding: 0.5rem;
             border-radius: 6px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.2s;
         }
         
         .btn-delete:hover {
-            background-color: #dc2626;
+            background-color: #f3f4f6;
+            color: #6b7280;
+            border-color: #d1d5db;
         }
         
         .btn-add {
@@ -264,14 +352,23 @@
     <!-- Main Container -->
     <div class="container">
         <div class="upload-section">
-            <h2>Upload Excel File</h2>
-            <p style="color: #6b7280; margin-bottom: 1.5rem;">Upload your product list (.xlsx or .xls format)</p>
-            <div class="file-input-wrapper">
-                <input type="file" id="fileInput" accept=".xlsx,.xls" onchange="handleFileUpload(event)">
-                <label for="fileInput" class="file-input-label">
-                    <i data-lucide="upload" size="20"></i>
-                    Choose File
-                </label>
+            <h2>商品明細のエクセルファイルをUploadして</h2>
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-content">
+                    <div class="drop-zone-icon">
+                        <i data-lucide="file-spreadsheet" size="56"></i>
+                    </div>
+                    <p class="drop-zone-text">ファイルをドラッグ&ドロップ</p>
+                    <p class="or-text">または</p>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls">
+                        <label for="fileInput" class="file-input-label">
+                            <i data-lucide="upload" size="20"></i>
+                            Choose File
+                        </label>
+                    </div>
+                    <p class="format-text">.xlsx または .xls 形式</p>
+                </div>
             </div>
         </div>
         
@@ -417,14 +514,63 @@
             closePresetModal();
         }
         
-        // File upload handler
-        function handleFileUpload(event) {
-            const file = event.target.files[0];
-            if (file) {
-                alert(`File "${file.name}" uploaded. Processing will be implemented next.`);
-                // TODO: Implement Excel file processing
+        // File processing
+        function processFile(file) {
+            if (!file.name.match(/\.(xlsx|xls)$/i)) {
+                alert('Excelファイル (.xlsx または .xls) をアップロードしてください');
+                return;
             }
+            alert(`ファイル "${file.name}" がアップロードされました。\n処理機能は次のステップで実装します。`);
+            // TODO: Implement Excel file processing
         }
+        
+        // File input handler
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        });
+        
+        // Drag and Drop functionality
+        const dropZone = document.getElementById('dropZone');
+        
+        // Click to open file dialog
+        dropZone.addEventListener('click', function(e) {
+            if (e.target.closest('.file-input-wrapper')) {
+                return;
+            }
+            document.getElementById('fileInput').click();
+        });
+        
+        // Prevent default drag behaviors
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }, false);
+        });
+        
+        // Highlight drop zone when item is dragged over it
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function() {
+                this.classList.add('drag-over');
+            }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropZone.addEventListener(eventName, function() {
+                this.classList.remove('drag-over');
+            }, false);
+        });
+        
+        // Handle dropped files
+        dropZone.addEventListener('drop', function(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }, false);
         
         // Close modal on outside click
         document.getElementById('presetModal').addEventListener('click', function(e) {
