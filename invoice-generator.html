@@ -1026,8 +1026,8 @@
         };
         
         const DEFAULT_PRESETS = {
-            "Paper Catalog": { hs_code: "49019900", unit_value: 100 },
-            "Calendar": { hs_code: "49100000", unit_value: 50 }
+            "Paper Catalog": { hs_code: "49019900", unit_value: 100, weight_per_unit: 0.1 },
+            "Calendar": { hs_code: "49100000", unit_value: 50, weight_per_unit: 0.1 }
         };
         
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
@@ -1241,6 +1241,7 @@
                 const preset = presets[matched];
                 noCommercialData[idx].hsCode = preset.hs_code;
                 noCommercialData[idx].unitValue = preset.unit_value;
+                noCommercialData[idx].weight = noCommercialData[idx].units * (preset.weight_per_unit || 0.1);
             }
             renderNoCommercialTable();
         }
@@ -1426,7 +1427,7 @@
         
         function addNewPreset() {
             const newName = `New Item ${Object.keys(presets).length + 1}`;
-            presets[newName] = { hs_code: "", unit_value: 0 };
+            presets[newName] = { hs_code: "", unit_value: 0, weight_per_unit: 0.1 };
             renderPresets();
         }
         
@@ -1445,7 +1446,8 @@
                 if (name) {
                     newPresets[name] = {
                         hs_code: hsInput.value.trim(),
-                        unit_value: parseFloat(valueInput.value) || 0
+                        unit_value: parseFloat(valueInput.value) || 0,
+                        weight_per_unit: 0.1
                     };
                 }
             });
