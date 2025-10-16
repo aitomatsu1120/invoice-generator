@@ -697,12 +697,17 @@
         function getGoodsDetail(itemName) {
             const normalized = toFullWidth(itemName || '');
             
+            console.log('Original itemName:', itemName);
+            console.log('Normalized:', normalized);
+            
             for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
                 if (normalized.includes(keyword)) {
+                    console.log('Matched keyword:', keyword, '→', translation);
                     return { description: translation, matched: true };
                 }
             }
             
+            console.log('No match found for:', itemName);
             return { description: "Goods", matched: false };
         }
         
@@ -760,6 +765,14 @@
                 const country = row['原産国'] || 'CN';
                 
                 const first8 = getFirst8Digits(styleNo);
+                
+                console.log('Processing row:', {
+                    styleNo: styleNo,
+                    first8: first8,
+                    itemName: itemName,
+                    itemCategory: itemCategory,
+                    quantity: quantity
+                });
                 
                 if (!first8) return;
                 
