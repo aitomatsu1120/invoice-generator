@@ -22,9 +22,6 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
         
         .header-title {
@@ -68,103 +65,6 @@
             max-width: 98%;
             margin: 1rem auto;
             padding: 0 0.5rem;
-        }
-        
-        .upload-section {
-            background: white;
-            padding: 2rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .section-title {
-            font-family: 'Montserrat', sans-serif;
-            color: #1c2940;
-            margin-bottom: 0.5rem;
-            font-size: 1.5rem;
-        }
-        
-        .section-subtitle {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .drop-zone {
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 2rem 1.5rem;
-            background-color: #f8fafc;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .drop-zone:hover {
-            border-color: #64748b;
-            background-color: #f1f5f9;
-        }
-        
-        .drop-zone.drag-over {
-            border-color: #1c2940;
-            background-color: #e0e7ff;
-            border-width: 3px;
-        }
-        
-        .drop-zone-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.25rem;
-            pointer-events: none;
-        }
-        
-        .drop-zone-icon { color: #94a3b8; }
-        .drop-zone.drag-over .drop-zone-icon { color: #1c2940; }
-        
-        .drop-zone-text {
-            color: #64748b;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-        
-        .drop-zone.drag-over .drop-zone-text { color: #1c2940; }
-        
-        .or-text {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin: 0.5rem 0;
-        }
-        
-        .file-input-wrapper { position: relative; display: inline-block; }
-        .file-input-wrapper input[type="file"] { display: none; }
-        
-        .file-input-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.875rem 2rem;
-            background-color: #1c2940;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            pointer-events: auto;
-        }
-        
-        .file-input-label:hover {
-            background-color: #2a3d5f;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(28, 41, 64, 0.3);
-        }
-        
-        .format-text {
-            color: #94a3b8;
-            font-size: 0.85rem;
-            margin-top: 1rem;
         }
         
         .loading-overlay {
@@ -218,7 +118,7 @@
         }
         
         .control-section {
-            display: flex;
+            display: none;
             background: linear-gradient(135deg, #5a6c8a 0%, #6b7a94 100%);
             padding: 1.5rem 2rem;
             border-radius: 12px;
@@ -301,6 +201,7 @@
         }
         
         .data-section {
+            display: none;
             background: white;
             padding: 1rem;
             border-radius: 12px;
@@ -308,7 +209,6 @@
             margin-bottom: 2rem;
         }
         
-        .data-section.hidden { display: none; }
         .data-section.active { display: block; }
         
         .data-section-header {
@@ -319,6 +219,19 @@
         }
         
         .data-section-title { flex: 1; }
+        
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .section-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
         
         .data-section-info {
             display: flex;
@@ -370,10 +283,6 @@
         .data-table td {
             padding: 0.6rem 0.4rem;
             border-bottom: 1px solid #e5e7eb;
-        }
-        
-        .data-table td:last-child {
-            text-align: center;
         }
         
         .data-table tbody tr:hover {
@@ -479,13 +388,9 @@
             font-size: 0.9rem;
         }
 
-        .nc-table th:nth-child(1) { width: 63.5%; }
-        .nc-table th:nth-child(2) { width: 22.5%; }
-        .nc-table th:nth-child(3) { width: 4%; text-align: center; }
-        
-        .nc-table td:last-child {
-            text-align: center;
-        }
+        .nc-table th:nth-child(1) { width: 65%; }
+        .nc-table th:nth-child(2) { width: 25%; }
+        .nc-table th:nth-child(3) { width: 10%; }
         
         .nc-table td {
             padding: 0.6rem 0.8rem;
@@ -706,6 +611,10 @@
             Invoice Generator
         </div>
         <div class="header-actions">
+            <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">
+                <i data-lucide="upload" size="18"></i>
+                Upload Excel
+            </button>
             <button class="btn btn-primary" onclick="openGeneralInfoModal()">
                 <i data-lucide="file-text" size="18"></i>
                 General Info
@@ -717,6 +626,8 @@
         </div>
     </header>
     
+    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+    
     <div id="loadingOverlay" class="loading-overlay">
         <div class="loading-content">
             <div class="spinner"></div>
@@ -726,28 +637,6 @@
     </div>
     
     <div class="container">
-        <div id="uploadSection" class="upload-section">
-            <h2 class="section-title">商品明細のエクセルファイルをアップロード（オプション）</h2>
-            <p class="section-subtitle">Upload Product List Excel File (Optional)</p>
-            <div class="drop-zone" id="dropZone">
-                <div class="drop-zone-content">
-                    <div class="drop-zone-icon">
-                        <i data-lucide="file-spreadsheet" size="48"></i>
-                    </div>
-                    <p class="drop-zone-text">ファイルをドラッグ&ドロップ / Drag & Drop File</p>
-                    <p class="or-text">または / or</p>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="fileInput" accept=".xlsx,.xls">
-                        <label for="fileInput" class="file-input-label">
-                            <i data-lucide="upload" size="18"></i>
-                            Choose File
-                        </label>
-                    </div>
-                    <p class="format-text">.xlsx または .xls 形式 / .xlsx or .xls format</p>
-                </div>
-            </div>
-        </div>
-        
         <div id="controlSection" class="control-section">
             <div class="control-content">
                 <div class="total-summary">
@@ -776,7 +665,7 @@
             </div>
         </div>
         
-        <div id="dataSection" class="data-section hidden">
+        <div id="dataSection" class="data-section">
             <div class="data-section-header">
                 <div class="data-section-title">
                     <h2 class="section-title">商品明細リスト / Product Details List</h2>
@@ -802,11 +691,17 @@
                             <th>Country/Terr. of MFR</th>
                             <th>Unit Value (JPY)</th>
                             <th>Total Value (JPY)</th>
+                            <th></th>
                         </tr>
                     </thead>
                     <tbody id="dataTableBody"></tbody>
                 </table>
             </div>
+            
+            <button class="btn-add-row" onclick="addProductRow()">
+                <i data-lucide="plus" size="16"></i>
+                行を追加 / Add Row
+            </button>
         </div>
         
         <div id="noCommercialSection" class="data-section">
@@ -995,14 +890,6 @@
         let nonCommercialData = [];
         let uploadDate = new Date();
         
-        // 初期化：デフォルト行を追加
-        window.addEventListener('DOMContentLoaded', function() {
-            addNoCommercialRow();
-            addNonCommercialRow();
-            setInvoiceNumber();
-            lucide.createIcons();
-        });
-        
         const ITEM_WEIGHT_MAP = {
             "ブルゾン・ジャケット": 0.8, "コート": 1.2, "シャツ": 0.3,
             "スカート": 0.4, "ワンピース": 0.5, "パンツ": 0.5,
@@ -1058,6 +945,19 @@
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
         let generalInfo = JSON.parse(localStorage.getItem('generalInfo')) || {};
         let pricePercentage = parseFloat(localStorage.getItem('pricePercentage')) || 42;
+        
+        // 初期化
+        window.addEventListener('DOMContentLoaded', function() {
+            addProductRow();
+            addNoCommercialRow();
+            addNonCommercialRow();
+            setInvoiceNumber();
+            document.getElementById('controlSection').classList.add('active');
+            document.getElementById('dataSection').classList.add('active');
+            document.getElementById('noCommercialSection').classList.add('active');
+            document.getElementById('nonCommercialSection').classList.add('active');
+            lucide.createIcons();
+        });
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
@@ -1168,7 +1068,16 @@
         function getFirst8Digits(s) { return s ? s.toString().trim().substring(0, 8) : ''; }
         
         function processFile(file) {
-            if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('Excelファイルをアップロードしてください'); return; }
+            if (!file.name.match(/\.(xlsx|xls)$/i)) { 
+                alert('Excelファイルをアップロードしてください'); 
+                return; 
+            }
+            
+            if (!confirm('Excelファイルをアップロードすると、既存の商品明細データは上書きされます。続行しますか？\nUploading Excel will overwrite existing product data. Continue?')) {
+                document.getElementById('fileInput').value = '';
+                return;
+            }
+            
             showLoading();
             uploadDate = new Date();
             const reader = new FileReader();
@@ -1180,14 +1089,15 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     processExcelData(jsonData);
                     hideLoading();
-                    document.getElementById('uploadSection').style.display = 'none';
-                    document.getElementById('dataSection').classList.add('active');
                     setInvoiceNumber();
                     updateGrandTotal();
                     lucide.createIcons();
+                    document.getElementById('fileInput').value = '';
+                    alert('Excelファイルが正常に読み込まれました / Excel file loaded successfully');
                 } catch (error) {
                     hideLoading();
-                    alert('ファイル読み込みエラー: ' + error.message);
+                    alert('ファイル読み込みエラー / File reading error: ' + error.message);
+                    document.getElementById('fileInput').value = '';
                 }
             };
             reader.readAsArrayBuffer(file);
@@ -1221,6 +1131,41 @@
             renderDataTable();
         }
         
+        function addProductRow() {
+            productData.push({
+                itemCode: '', units: 0, weight: 0, weightPerUnit: 0.5, measure: 'PCS',
+                description: '', hsCode: '', country: 'Japan', unitValue: 0, totalValue: 0, matchType: 'manual'
+            });
+            renderDataTable();
+        }
+        
+        function deleteProductRow(idx) {
+            if (productData.length === 1) {
+                alert('最低1行は必要です / At least 1 row is required');
+                return;
+            }
+            productData.splice(idx, 1);
+            renderDataTable();
+        }
+        
+        function updateProductField(idx, field, value) {
+            if (field === 'units' || field === 'unitValue') {
+                productData[idx][field] = parseInt(value.replace(/,/g, '')) || 0;
+                productData[idx].totalValue = productData[idx].units * productData[idx].unitValue;
+                if (field === 'units') {
+                    productData[idx].weight = productData[idx].units * productData[idx].weightPerUnit;
+                }
+            } else if (field === 'weight') {
+                productData[idx].weight = parseFloat(value) || 0;
+                if (productData[idx].units > 0) {
+                    productData[idx].weightPerUnit = productData[idx].weight / productData[idx].units;
+                }
+            } else {
+                productData[idx][field] = value;
+            }
+            renderDataTable();
+        }
+        
         function renderDataTable() {
             const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = '';
@@ -1230,15 +1175,16 @@
                 const row = tbody.insertRow();
                 if (item.matchType === 'default') row.classList.add('hs-match-default');
                 row.innerHTML = `
-                    <td><input type="text" value="${item.itemCode}"></td>
-                    <td><input type="number" value="${item.units}" min="0"></td>
-                    <td><input type="number" value="${item.weight.toFixed(2)}" min="0" step="0.1"></td>
-                    <td><select><option value="PCS">PCS</option></select></td>
-                    <td><input type="text" value="${item.description}"></td>
-                    <td><input type="text" value="${item.hsCode}"></td>
-                    <td><input type="text" value="${item.country}"></td>
-                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}"></td>
+                    <td><input type="text" value="${item.itemCode}" onchange="updateProductField(${idx}, 'itemCode', this.value)"></td>
+                    <td><input type="number" value="${item.units}" min="0" onchange="updateProductField(${idx}, 'units', this.value)"></td>
+                    <td><input type="number" value="${item.weight.toFixed(2)}" min="0" step="0.1" onchange="updateProductField(${idx}, 'weight', this.value)"></td>
+                    <td><select onchange="updateProductField(${idx}, 'measure', this.value)"><option value="PCS" ${item.measure === 'PCS' ? 'selected' : ''}>PCS</option></select></td>
+                    <td><input type="text" value="${item.description}" onchange="updateProductField(${idx}, 'description', this.value)"></td>
+                    <td><input type="text" value="${item.hsCode}" onchange="updateProductField(${idx}, 'hsCode', this.value)"></td>
+                    <td><input type="text" value="${item.country}" onchange="updateProductField(${idx}, 'country', this.value)"></td>
+                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" onchange="updateProductField(${idx}, 'unitValue', this.value)"></td>
                     <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
+                    <td><button class="btn-delete" onclick="deleteProductRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
                 `;
             });
             document.getElementById('totalItemsCount1').textContent = totalUnits;
@@ -1255,8 +1201,8 @@
         }
         
         function deleteNoCommercialRow(idx) {
-            if (idx === 0) {
-                alert('最初の行は削除できません / Cannot delete the first row');
+            if (noCommercialData.length === 1) {
+                alert('最低1行は必要です / At least 1 row is required');
                 return;
             }
             noCommercialData.splice(idx, 1);
@@ -1326,8 +1272,8 @@
         }
         
         function deleteNonCommercialRow(idx) {
-            if (idx === 0) {
-                alert('最初の行は削除できません / Cannot delete the first row');
+            if (nonCommercialData.length === 1) {
+                alert('最低1行は必要です / At least 1 row is required');
                 return;
             }
             nonCommercialData.splice(idx, 1);
@@ -1374,29 +1320,6 @@
             const file = e.target.files[0];
             if (file) processFile(file);
         });
-        
-        const dropZone = document.getElementById('dropZone');
-        dropZone.addEventListener('click', function(e) {
-            if (e.target.closest('.file-input-wrapper')) return;
-            document.getElementById('fileInput').click();
-        });
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
-            dropZone.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); }, false);
-        });
-        
-        ['dragenter', 'dragover'].forEach(ev => {
-            dropZone.addEventListener(ev, function() { this.classList.add('drag-over'); }, false);
-        });
-        
-        ['dragleave', 'drop'].forEach(ev => {
-            dropZone.addEventListener(ev, function() { this.classList.remove('drag-over'); }, false);
-        });
-        
-        dropZone.addEventListener('drop', function(e) {
-            const files = e.dataTransfer.files;
-            if (files.length > 0) processFile(files[0]);
-        }, false);
 
         function openGeneralInfoModal() {
             document.getElementById('generalInfoModal').classList.add('active');
