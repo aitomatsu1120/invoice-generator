@@ -40,6 +40,15 @@
             display: flex;
             gap: 0.75rem;
         }
+
+        .file-input-wrapper-header { 
+            position: relative; 
+            display: inline-block; 
+        }
+        
+        .file-input-wrapper-header input[type="file"] { 
+            display: none; 
+        }
         
         .btn {
             padding: 0.5rem 1rem;
@@ -68,103 +77,6 @@
             max-width: 98%;
             margin: 1rem auto;
             padding: 0 0.5rem;
-        }
-        
-        .upload-section {
-            background: white;
-            padding: 2rem 1.5rem;
-            border-radius: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-            text-align: center;
-            margin-bottom: 2rem;
-        }
-        
-        .section-title {
-            font-family: 'Montserrat', sans-serif;
-            color: #1c2940;
-            margin-bottom: 0.5rem;
-            font-size: 1.5rem;
-        }
-        
-        .section-subtitle {
-            color: #64748b;
-            font-size: 0.9rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .drop-zone {
-            border: 2px dashed #cbd5e1;
-            border-radius: 12px;
-            padding: 2rem 1.5rem;
-            background-color: #f8fafc;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-        
-        .drop-zone:hover {
-            border-color: #64748b;
-            background-color: #f1f5f9;
-        }
-        
-        .drop-zone.drag-over {
-            border-color: #1c2940;
-            background-color: #e0e7ff;
-            border-width: 3px;
-        }
-        
-        .drop-zone-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1.25rem;
-            pointer-events: none;
-        }
-        
-        .drop-zone-icon { color: #94a3b8; }
-        .drop-zone.drag-over .drop-zone-icon { color: #1c2940; }
-        
-        .drop-zone-text {
-            color: #64748b;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-        
-        .drop-zone.drag-over .drop-zone-text { color: #1c2940; }
-        
-        .or-text {
-            color: #94a3b8;
-            font-size: 0.9rem;
-            margin: 0.5rem 0;
-        }
-        
-        .file-input-wrapper { position: relative; display: inline-block; }
-        .file-input-wrapper input[type="file"] { display: none; }
-        
-        .file-input-label {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.875rem 2rem;
-            background-color: #1c2940;
-            color: white;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s;
-            pointer-events: auto;
-        }
-        
-        .file-input-label:hover {
-            background-color: #2a3d5f;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(28, 41, 64, 0.3);
-        }
-        
-        .format-text {
-            color: #94a3b8;
-            font-size: 0.85rem;
-            margin-top: 1rem;
         }
         
         .loading-overlay {
@@ -226,8 +138,6 @@
             margin-bottom: 2rem;
             color: white;
         }
-        
-        .control-section.active { display: flex; }
         
         .control-content {
             display: flex;
@@ -300,6 +210,19 @@
             background-color: #ffc9c9;
         }
         
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .section-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
         .data-section {
             background: white;
             padding: 1rem;
@@ -309,7 +232,6 @@
         }
         
         .data-section.hidden { display: none; }
-        .data-section.active { display: block; }
         
         .data-section-header {
             display: flex;
@@ -371,7 +293,7 @@
             padding: 0.6rem 0.4rem;
             border-bottom: 1px solid #e5e7eb;
         }
-        
+
         .data-table td:last-child {
             text-align: center;
         }
@@ -483,13 +405,13 @@
         .nc-table th:nth-child(2) { width: 22.5%; }
         .nc-table th:nth-child(3) { width: 4%; text-align: center; }
         
-        .nc-table td:last-child {
-            text-align: center;
-        }
-        
         .nc-table td {
             padding: 0.6rem 0.8rem;
             border-bottom: 1px solid #e5e7eb;
+        }
+
+        .nc-table td:last-child {
+            text-align: center;
         }
         
         .nc-table input {
@@ -706,6 +628,13 @@
             Invoice Generator
         </div>
         <div class="header-actions">
+            <div class="file-input-wrapper-header">
+                <input type="file" id="fileInputHeader" accept=".xlsx,.xls">
+                <label for="fileInputHeader" class="btn btn-primary">
+                    <i data-lucide="upload" size="18"></i>
+                    Upload Excel
+                </label>
+            </div>
             <button class="btn btn-primary" onclick="openGeneralInfoModal()">
                 <i data-lucide="file-text" size="18"></i>
                 General Info
@@ -726,28 +655,6 @@
     </div>
     
     <div class="container">
-        <div id="uploadSection" class="upload-section">
-            <h2 class="section-title">商品明細のエクセルファイルをアップロード（オプション）</h2>
-            <p class="section-subtitle">Upload Product List Excel File (Optional)</p>
-            <div class="drop-zone" id="dropZone">
-                <div class="drop-zone-content">
-                    <div class="drop-zone-icon">
-                        <i data-lucide="file-spreadsheet" size="48"></i>
-                    </div>
-                    <p class="drop-zone-text">ファイルをドラッグ&ドロップ / Drag & Drop File</p>
-                    <p class="or-text">または / or</p>
-                    <div class="file-input-wrapper">
-                        <input type="file" id="fileInput" accept=".xlsx,.xls">
-                        <label for="fileInput" class="file-input-label">
-                            <i data-lucide="upload" size="18"></i>
-                            Choose File
-                        </label>
-                    </div>
-                    <p class="format-text">.xlsx または .xls 形式 / .xlsx or .xls format</p>
-                </div>
-            </div>
-        </div>
-        
         <div id="controlSection" class="control-section">
             <div class="control-content">
                 <div class="total-summary">
@@ -995,7 +902,6 @@
         let nonCommercialData = [];
         let uploadDate = new Date();
         
-        // 初期化：デフォルト行を追加
         window.addEventListener('DOMContentLoaded', function() {
             addNoCommercialRow();
             addNonCommercialRow();
@@ -1180,8 +1086,7 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     processExcelData(jsonData);
                     hideLoading();
-                    document.getElementById('uploadSection').style.display = 'none';
-                    document.getElementById('dataSection').classList.add('active');
+                    document.getElementById('dataSection').classList.remove('hidden');
                     setInvoiceNumber();
                     updateGrandTotal();
                     lucide.createIcons();
@@ -1370,33 +1275,10 @@
             alert('インボイス生成機能は次のステップで実装します\nInvoice No: ' + invoiceNo);
         }
         
-        document.getElementById('fileInput').addEventListener('change', function(e) {
+        document.getElementById('fileInputHeader').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) processFile(file);
         });
-        
-        const dropZone = document.getElementById('dropZone');
-        dropZone.addEventListener('click', function(e) {
-            if (e.target.closest('.file-input-wrapper')) return;
-            document.getElementById('fileInput').click();
-        });
-        
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
-            dropZone.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); }, false);
-        });
-        
-        ['dragenter', 'dragover'].forEach(ev => {
-            dropZone.addEventListener(ev, function() { this.classList.add('drag-over'); }, false);
-        });
-        
-        ['dragleave', 'drop'].forEach(ev => {
-            dropZone.addEventListener(ev, function() { this.classList.remove('drag-over'); }, false);
-        });
-        
-        dropZone.addEventListener('drop', function(e) {
-            const files = e.dataTransfer.files;
-            if (files.length > 0) processFile(files[0]);
-        }, false);
 
         function openGeneralInfoModal() {
             document.getElementById('generalInfoModal').classList.add('active');
@@ -1421,103 +1303,4 @@
             document.getElementById('consigneeEmail').value = generalInfo.consigneeEmail || 'fls.wh@fls.com.hk';
             
             document.getElementById('importerName').value = generalInfo.importerName || 'Heritage R LTD.';
-            document.getElementById('importerAddress').value = generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG';
-            document.getElementById('importerTel').value = generalInfo.importerTel || '852-2956-3266';
-            document.getElementById('importerFax').value = generalInfo.importerFax || '852-2956-1230';
-        }
-
-        function saveGeneralInfo() {
-            pricePercentage = parseFloat(document.getElementById('pricePercentage').value) || 42;
-            localStorage.setItem('pricePercentage', pricePercentage);
-            
-            generalInfo = {
-                exporterName: document.getElementById('exporterName').value,
-                exporterAddress: document.getElementById('exporterAddress').value,
-                exporterTel: document.getElementById('exporterTel').value,
-                exporterFax: document.getElementById('exporterFax').value,
-                
-                consigneeName: document.getElementById('consigneeName').value,
-                consigneeAddress: document.getElementById('consigneeAddress').value,
-                consigneeContact: document.getElementById('consigneeContact').value,
-                consigneeTel: document.getElementById('consigneeTel').value,
-                consigneeEmail: document.getElementById('consigneeEmail').value,
-                
-                importerName: document.getElementById('importerName').value,
-                importerAddress: document.getElementById('importerAddress').value,
-                importerTel: document.getElementById('importerTel').value,
-                importerFax: document.getElementById('importerFax').value
-            };
-            localStorage.setItem('generalInfo', JSON.stringify(generalInfo));
-            alert('保存しました / Saved successfully!');
-            closeGeneralInfoModal();
-        }
-        
-        function openPresetModal() {
-            document.getElementById('presetModal').classList.add('active');
-            renderPresets();
-        }
-        
-        function closePresetModal() {
-            document.getElementById('presetModal').classList.remove('active');
-        }
-        
-        function renderPresets() {
-            const container = document.getElementById('presetList');
-            container.innerHTML = '';
-            for (const [name, data] of Object.entries(presets)) {
-                const item = document.createElement('div');
-                item.className = 'preset-item';
-                item.innerHTML = `
-                    <div><label>Description</label><input type="text" value="${name}" data-field="name" data-original="${name}"></div>
-                    <div><label>HS Code</label><input type="text" value="${data.hs_code}" data-field="hs_code" data-name="${name}"></div>
-                    <div><label>Unit Value (JPY)</label><input type="number" value="${data.unit_value}" data-field="unit_value" data-name="${name}"></div>
-                    <button class="btn-delete" onclick="deletePreset('${name}')"><i data-lucide="trash-2" size="18"></i></button>
-                `;
-                container.appendChild(item);
-            }
-            lucide.createIcons();
-        }
-        
-        function addNewPreset() {
-            const newName = `New Item ${Object.keys(presets).length + 1}`;
-            presets[newName] = { hs_code: "", unit_value: 0, weight_per_unit: 0.1 };
-            renderPresets();
-        }
-        
-        function deletePreset(name) {
-            if (confirm(`Delete "${name}"?`)) { delete presets[name]; renderPresets(); }
-        }
-        
-        function savePresets() {
-            const items = document.querySelectorAll('.preset-item');
-            const newPresets = {};
-            items.forEach(item => {
-                const nameInput = item.querySelector('[data-field="name"]');
-                const hsInput = item.querySelector('[data-field="hs_code"]');
-                const valueInput = item.querySelector('[data-field="unit_value"]');
-                const name = nameInput.value.trim();
-                if (name) {
-                    newPresets[name] = {
-                        hs_code: hsInput.value.trim(),
-                        unit_value: parseFloat(valueInput.value) || 0,
-                        weight_per_unit: 0.1
-                    };
-                }
-            });
-            presets = newPresets;
-            localStorage.setItem('invoicePresets', JSON.stringify(presets));
-            alert('保存しました / Presets saved successfully!');
-            closePresetModal();
-            renderNoCommercialTable();
-        }
-        
-        document.getElementById('presetModal').addEventListener('click', function(e) {
-            if (e.target === this) closePresetModal();
-        });
-
-        document.getElementById('generalInfoModal').addEventListener('click', function(e) {
-            if (e.target === this) closeGeneralInfoModal();
-        });
-    </script>
-</body>
-</html>
+            document.getElementById('importerAddress').value = generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM
