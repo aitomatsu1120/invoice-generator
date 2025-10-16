@@ -881,21 +881,21 @@
         width: 100%;
         border-collapse: collapse;
         margin: 1.5rem 0;
-        font-size: 0.75rem;
+        font-size: 0.55rem;
     }
     
     .invoice-table th {
         background-color: #1c2940;
         color: white;
-        padding: 0.5rem 0.3rem;
+        padding: 0.4rem 0.25rem;
         text-align: left;
         font-weight: 600;
-        font-size: 0.7rem;
+        font-size: 0.6rem;
         border: 1px solid #1c2940;
     }
     
     .invoice-table td {
-        padding: 0.4rem 0.3rem;
+        padding: 0.35rem 0.25rem;
         border: 1px solid #d1d5db;
         vertical-align: top;
     }
@@ -1526,6 +1526,10 @@
                 if (!first8) return;
                 if (grouped[first8]) {
                     grouped[first8].units += (row['数量'] || 0);
+                    const cno = row['C/No.'] || 1;
+                    if (!grouped[first8].packageNos.includes(cno)) {
+                        grouped[first8].packageNos.push(cno);
+                    }
                 } else {
                     const hsResult = determineHSCode(row);
                     grouped[first8] = {
@@ -1534,7 +1538,8 @@
                         measure: 'PCS', description: hsResult.description,
                         matched: hsResult.descMatched, hsCode: hsResult.hsCode,
                         country: row['原産国'] || 'Japan', unitValue: calculatePrice(row['上代'] || 0),
-                        totalValue: 0, matchType: hsResult.matchType
+                        totalValue: 0, matchType: hsResult.matchType,
+                        packageNos: [row['C/No.'] || 1]
                     };
                 }
             });
@@ -1542,6 +1547,10 @@
             productData.forEach(item => {
                 item.totalValue = item.units * item.unitValue;
                 item.weight = item.weightPerUnit * item.units;
+                item.packageCount = item.packageNos.length;
+                item.remarksText = item.packageNos.length > 0 
+                    ? 'C/No. ' + item.packageNos.sort((a,b) => a-b).join(', ')
+                    : '';
             });
             renderDataTable();
         }
