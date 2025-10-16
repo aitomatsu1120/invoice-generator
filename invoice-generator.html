@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator</title>
+    <title>Invoice Generator V2</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -566,54 +566,13 @@
         }
         
         .btn-save:hover { background-color: #2a3d5f; }
-        
-        .debug-summary {
-            background: #1e293b;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            font-family: 'Courier New', monospace;
-            font-size: 0.85rem;
-        }
-        
-        .debug-summary h4 {
-            color: #60a5fa;
-            margin-bottom: 0.5rem;
-        }
-
-        .editable-select-wrapper {
-            position: relative;
-            width: 100%;
-        }
-
-        .editable-select-wrapper input[type="text"] {
-            width: 100%;
-            padding: 0.4rem 2rem 0.4rem 0.4rem;
-        }
-
-        .editable-select-wrapper select {
-            position: absolute;
-            right: 0;
-            top: 0;
-            height: 100%;
-            width: 2rem;
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            opacity: 0.5;
-        }
-
-        .editable-select-wrapper select:hover {
-            opacity: 1;
-        }
     </style>
 </head>
 <body>
     <header class="header">
         <div class="header-title">
             <i data-lucide="package" size="28"></i>
-            Invoice Generator
+            Invoice Generator V2
         </div>
         <div class="header-actions">
             <button class="btn btn-primary" onclick="openPresetModal()">
@@ -653,8 +612,6 @@
                 </div>
             </div>
         </div>
-        
-        <div id="debugSummary" class="debug-summary" style="display: none;"></div>
         
         <div id="controlSection" class="control-section">
             <div class="control-content">
@@ -799,7 +756,6 @@
         </div>
     </div>
     
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script>
         lucide.createIcons();
         
@@ -808,27 +764,15 @@
         let nonCommercialData = [];
         
         const ITEM_WEIGHT_MAP = {
-            "ブルゾン・ジャケット": 0.8,
-            "コート": 1.2,
-            "シャツ": 0.3,
-            "スカート": 0.4,
-            "ワンピース": 0.5,
-            "パンツ": 0.5,
-            "カットソー": 0.3,
-            "ニット": 0.4,
-            "グッズ": 0.2
+            "ブルゾン・ジャケット": 0.8, "コート": 1.2, "シャツ": 0.3,
+            "スカート": 0.4, "ワンピース": 0.5, "パンツ": 0.5,
+            "カットソー": 0.3, "ニット": 0.4, "グッズ": 0.2
         };
         
         const ITEM_CATEGORY_TRANSLATION = {
-            "ブルゾン・ジャケット": "Jacket",
-            "コート": "Coat",
-            "シャツ": "Shirt",
-            "スカート": "Skirt",
-            "ワンピース": "Dress",
-            "パンツ": "Pants",
-            "カットソー": "Knit Top",
-            "ニット": "Knit Top",
-            "グッズ": "Goods"
+            "ブルゾン・ジャケット": "Jacket", "コート": "Coat", "シャツ": "Shirt",
+            "スカート": "Skirt", "ワンピース": "Dress", "パンツ": "Pants",
+            "カットソー": "Knit Top", "ニット": "Knit Top", "グッズ": "Goods"
         };
         
         const MATERIAL_BUCKETS = {
@@ -841,34 +785,20 @@
         };
         
         const HS_CODE_RULES = {
-            "Jacket-Knit-M-Wool": "61033100",
-            "Jacket-Knit-M-Cotton": "61033200",
-            "Jacket-Knit-W-Wool": "61043100",
-            "Jacket-Knit-W-Cotton": "61043200",
-            "Jacket-Woven-M-Wool": "62033100",
-            "Jacket-Woven-M-Cotton": "62033290",
-            "Jacket-Woven-W-Wool": "62043100",
-            "Jacket-Woven-W-Cotton": "62043290",
-            "Coat-Knit-M-Wool": "61019010",
-            "Coat-Knit-M-Cotton": "61012000",
-            "Coat-Knit-W-Wool": "61021000",
-            "Coat-Knit-W-Cotton": "61022000",
-            "Coat-Woven-M-Wool": "62012000",
-            "Coat-Woven-M-Cotton": "62013090",
-            "Coat-Woven-W-Wool": "62022000",
-            "Coat-Woven-W-Cotton": "62023090",
-            "Shirt-Woven-M-Cotton": "62052020",
-            "Shirt-Woven-W-Cotton": "62063010",
-            "Knit Top-Knit-M-Cotton": "61091010",
-            "Knit Top-Knit-W-Cotton": "61091010",
-            "Skirt-Knit-W-Cotton": "61045200",
-            "Skirt-Woven-W-Cotton": "62045290",
-            "Dress-Knit-W-Cotton": "61044200",
-            "Dress-Woven-W-Cotton": "62044290",
-            "Pants-Knit-M-Cotton": "61034210",
-            "Pants-Knit-W-Cotton": "61046210",
-            "Pants-Woven-M-Cotton": "62034240",
-            "Pants-Woven-W-Cotton": "62046280",
+            "Jacket-Knit-M-Wool": "61033100", "Jacket-Knit-M-Cotton": "61033200",
+            "Jacket-Knit-W-Wool": "61043100", "Jacket-Knit-W-Cotton": "61043200",
+            "Jacket-Woven-M-Wool": "62033100", "Jacket-Woven-M-Cotton": "62033290",
+            "Jacket-Woven-W-Wool": "62043100", "Jacket-Woven-W-Cotton": "62043290",
+            "Coat-Knit-M-Wool": "61019010", "Coat-Knit-M-Cotton": "61012000",
+            "Coat-Knit-W-Wool": "61021000", "Coat-Knit-W-Cotton": "61022000",
+            "Coat-Woven-M-Wool": "62012000", "Coat-Woven-M-Cotton": "62013090",
+            "Coat-Woven-W-Wool": "62022000", "Coat-Woven-W-Cotton": "62023090",
+            "Shirt-Woven-M-Cotton": "62052020", "Shirt-Woven-W-Cotton": "62063010",
+            "Knit Top-Knit-M-Cotton": "61091010", "Knit Top-Knit-W-Cotton": "61091010",
+            "Skirt-Knit-W-Cotton": "61045200", "Skirt-Woven-W-Cotton": "62045290",
+            "Dress-Knit-W-Cotton": "61044200", "Dress-Woven-W-Cotton": "62044290",
+            "Pants-Knit-M-Cotton": "61034210", "Pants-Knit-W-Cotton": "61046210",
+            "Pants-Woven-M-Cotton": "62034240", "Pants-Woven-W-Cotton": "62046280",
             "Goods": "42029260"
         };
         
@@ -876,8 +806,7 @@
             "マフラー": "Scarf", "ポンチョ": "Scarf", "ストール": "Scarf",
             "帽子": "Hat", "キャップ": "Hat", "ハット": "Hat",
             "靴下": "Socks", "ソックス": "Socks",
-            "バッグ": "Bag", "トート": "Bag",
-            "ベルト": "Belt"
+            "バッグ": "Bag", "トート": "Bag", "ベルト": "Belt"
         };
         
         const DEFAULT_PRESETS = {
@@ -888,25 +817,11 @@
         
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
         
-        function showLoading() {
-            document.getElementById('loadingOverlay').classList.add('active');
-        }
-        
-        function hideLoading() {
-            document.getElementById('loadingOverlay').classList.remove('active');
-        }
-        
-        function calculatePrice(originalPrice) {
-            return Math.round((originalPrice * 0.42) / 10) * 10;
-        }
-        
-        function getWeightByCategory(category) {
-            return ITEM_WEIGHT_MAP[category] || 0.5;
-        }
-        
-        function translateCategory(category) {
-            return ITEM_CATEGORY_TRANSLATION[category] || category;
-        }
+        function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
+        function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+        function calculatePrice(p) { return Math.round((p * 0.42) / 10) * 10; }
+        function getWeightByCategory(c) { return ITEM_WEIGHT_MAP[c] || 0.5; }
+        function translateCategory(c) { return ITEM_CATEGORY_TRANSLATION[c] || c; }
         
         function toFullWidth(str) {
             if (!str) return '';
@@ -916,81 +831,49 @@
                 'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
                 'ﾀﾞ': 'ダ', 'ﾁﾞ': 'ヂ', 'ﾂﾞ': 'ヅ', 'ﾃﾞ': 'デ', 'ﾄﾞ': 'ド',
                 'ﾊﾞ': 'バ', 'ﾋﾞ': 'ビ', 'ﾌﾞ': 'ブ', 'ﾍﾞ': 'ベ', 'ﾎﾞ': 'ボ',
-                'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ',
-                'ｳﾞ': 'ヴ'
+                'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ', 'ｳﾞ': 'ヴ'
             };
-            for (const [half, full] of Object.entries(dakuten)) {
-                result = result.split(half).join(full);
-            }
+            for (const [h, f] of Object.entries(dakuten)) result = result.split(h).join(f);
             const kanaMap = {
                 'ｧ': 'ァ', 'ｱ': 'ア', 'ｨ': 'ィ', 'ｲ': 'イ', 'ｩ': 'ゥ', 'ｳ': 'ウ', 'ｪ': 'ェ', 'ｴ': 'エ', 'ｫ': 'ォ', 'ｵ': 'オ',
-                'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ',
-                'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
-                'ﾀ': 'タ', 'ﾁ': 'チ', 'ｯ': 'ッ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト',
-                'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
-                'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ',
-                'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
-                'ｬ': 'ャ', 'ﾔ': 'ヤ', 'ｭ': 'ュ', 'ﾕ': 'ユ', 'ｮ': 'ョ', 'ﾖ': 'ヨ',
-                'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
+                'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ', 'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
+                'ﾀ': 'タ', 'ﾁ': 'チ', 'ｯ': 'ッ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト', 'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
+                'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ', 'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
+                'ｬ': 'ャ', 'ﾔ': 'ヤ', 'ｭ': 'ュ', 'ﾕ': 'ユ', 'ｮ': 'ョ', 'ﾖ': 'ヨ', 'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
                 'ﾜ': 'ワ', 'ｦ': 'ヲ', 'ﾝ': 'ン', 'ｰ': 'ー'
             };
-            for (const [half, full] of Object.entries(kanaMap)) {
-                result = result.split(half).join(full);
-            }
+            for (const [h, f] of Object.entries(kanaMap)) result = result.split(h).join(f);
             return result;
         }
         
-        function normalizeMaterial(materialText) {
-            if (!materialText) return "Other";
-            const material = materialText.toString().toUpperCase().trim();
-            for (const [keyword, bucket] of Object.entries(MATERIAL_BUCKETS)) {
-                if (material.includes(keyword.toUpperCase())) {
-                    return bucket;
-                }
+        function normalizeMaterial(m) {
+            if (!m) return "Other";
+            const mat = m.toString().toUpperCase().trim();
+            for (const [k, b] of Object.entries(MATERIAL_BUCKETS)) {
+                if (mat.includes(k.toUpperCase())) return b;
             }
             return "Other";
         }
         
         function determineKnitWoven(item, productName) {
-            const itemLower = (item || '').toLowerCase();
-            const nameLower = toFullWidth(productName || '').toLowerCase();
-            const combined = itemLower + ' ' + nameLower;
+            const itemL = (item || '').toLowerCase();
+            const nameL = toFullWidth(productName || '').toLowerCase();
+            const combined = itemL + ' ' + nameL;
             
-            if (itemLower.includes('シャツ'.toLowerCase())) {
-                return { result: 'Woven', matchType: 'item_rule' };
-            }
-            if (itemLower.includes('カットソー'.toLowerCase()) || itemLower.includes('ニット'.toLowerCase())) {
+            if (itemL.includes('シャツ'.toLowerCase())) return { result: 'Woven', matchType: 'item_rule' };
+            if (itemL.includes('カットソー'.toLowerCase()) || itemL.includes('ニット'.toLowerCase())) 
                 return { result: 'Knit', matchType: 'item_rule' };
-            }
-            if (itemLower.includes('グッズ'.toLowerCase())) {
-                return { result: null, matchType: 'item_rule' };
-            }
+            if (itemL.includes('グッズ'.toLowerCase())) return { result: null, matchType: 'item_rule' };
             
-            const wovenKeywords = ['ジャージフラノ', 'ｼﾞｬｰｼﾞﾌﾗﾉ', 'denim', 'デニム', 'シャツ', 'twill', 'ツイル'];
-            const knitKeywords = ['ニット', 'sweater', 'スウェット', 'cardigan', 'カーディガン', 'カットソー', '編み'];
+            const wovenKw = ['ジャージフラノ', 'ｼﾞｬｰｼﾞﾌﾗﾉ', 'denim', 'デニム', 'シャツ', 'twill', 'ツイル'];
+            const knitKw = ['ニット', 'sweater', 'スウェット', 'cardigan', 'カーディガン', 'カットソー', '編み'];
             
-            for (const keyword of wovenKeywords) {
-                if (combined.includes(keyword.toLowerCase())) {
-                    return { result: 'Woven', matchType: 'keyword' };
-                }
-            }
+            for (const kw of wovenKw) if (combined.includes(kw.toLowerCase())) return { result: 'Woven', matchType: 'keyword' };
+            for (const kw of knitKw) if (combined.includes(kw.toLowerCase())) return { result: 'Knit', matchType: 'keyword' };
             
-            for (const keyword of knitKeywords) {
-                if (combined.includes(keyword.toLowerCase())) {
-                    return { result: 'Knit', matchType: 'keyword' };
-                }
-            }
-            
-            const defaults = {
-                'ブルゾン・ジャケット': 'Woven',
-                'コート': 'Woven',
-                'スカート': 'Woven',
-                'ワンピース': 'Woven',
-                'パンツ': 'Woven'
-            };
-            
-            const defaultValue = defaults[item] || 'Woven';
-            return { result: defaultValue, matchType: 'default' };
+            const defaults = { 'ブルゾン・ジャケット': 'Woven', 'コート': 'Woven', 'スカート': 'Woven', 
+                              'ワンピース': 'Woven', 'パンツ': 'Woven' };
+            return { result: defaults[item] || 'Woven', matchType: 'default' };
         }
         
         function determineHSCode(row) {
@@ -1005,20 +888,15 @@
             
             if (item === 'グッズ') {
                 const normalized = toFullWidth(productName);
-                for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
-                    if (normalized.includes(keyword)) {
-                        description = translation;
-                        break;
-                    }
+                for (const [kw, trans] of Object.entries(GOODS_KEYWORDS)) {
+                    if (normalized.includes(kw)) { description = trans; break; }
                 }
-                if (description === 'Goods') {
-                    descMatched = false;
-                }
+                if (description === 'Goods') descMatched = false;
             }
             
-            const knitWovenResult = determineKnitWoven(item, productName);
-            const knitWoven = knitWovenResult.result;
-            const matchType = knitWovenResult.matchType;
+            const kwResult = determineKnitWoven(item, productName);
+            const knitWoven = kwResult.result;
+            const matchType = kwResult.matchType;
             
             let hsCode = 'N/A';
             
@@ -1027,39 +905,22 @@
             } else if (knitWoven) {
                 const key = `${categoryEN}-${knitWoven}-${gender}-${material}`;
                 hsCode = HS_CODE_RULES[key];
-                
                 if (!hsCode) {
-                    const keyNoMaterial = `${categoryEN}-${knitWoven}-${gender}`;
-                    for (const ruleKey of Object.keys(HS_CODE_RULES)) {
-                        if (ruleKey.startsWith(keyNoMaterial)) {
-                            hsCode = HS_CODE_RULES[ruleKey];
-                            break;
-                        }
+                    const keyNoMat = `${categoryEN}-${knitWoven}-${gender}`;
+                    for (const rk of Object.keys(HS_CODE_RULES)) {
+                        if (rk.startsWith(keyNoMat)) { hsCode = HS_CODE_RULES[rk]; break; }
                     }
                 }
             }
             
-            return {
-                description: description,
-                descMatched: descMatched,
-                hsCode: hsCode || 'N/A',
-                matchType: matchType
-            };
+            return { description, descMatched, hsCode: hsCode || 'N/A', matchType };
         }
         
-        function getFirst8Digits(styleNo) {
-            if (!styleNo) return '';
-            return styleNo.toString().trim().substring(0, 8);
-        }
+        function getFirst8Digits(s) { return s ? s.toString().trim().substring(0, 8) : ''; }
         
         function processFile(file) {
-            if (!file.name.match(/\.(xlsx|xls)$/i)) {
-                alert('Excelファイルをアップロードしてください');
-                return;
-            }
-            
+            if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('Excelファイルをアップロードしてください'); return; }
             showLoading();
-            
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -1067,19 +928,15 @@
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
-                    
                     processExcelData(jsonData);
-                    
                     hideLoading();
                     document.getElementById('uploadSection').style.display = 'none';
                     document.getElementById('controlSection').classList.add('active');
                     document.getElementById('dataSection').classList.add('active');
                     document.getElementById('noCommercialSection').classList.add('active');
                     document.getElementById('nonCommercialSection').classList.add('active');
-                    
                     addNoCommercialRow();
                     addNonCommercialRow();
-                    
                     updateGrandTotal();
                     lucide.createIcons();
                 } catch (error) {
@@ -1091,59 +948,41 @@
         }
         
         function processExcelData(jsonData) {
-            const validRows = jsonData.filter(row => {
-                return row['品番'] && row['品名'] && row['アイテム'];
-            });
-            
+            const validRows = jsonData.filter(r => r['品番'] && r['品名'] && r['アイテム']);
             const grouped = {};
-            
             validRows.forEach(row => {
                 const first8 = getFirst8Digits(row['品番']);
                 if (!first8) return;
-                
                 if (grouped[first8]) {
                     grouped[first8].units += (row['数量'] || 0);
                 } else {
                     const hsResult = determineHSCode(row);
                     grouped[first8] = {
-                        itemCode: first8,
-                        units: row['数量'] || 0,
+                        itemCode: first8, units: row['数量'] || 0,
                         weightPerUnit: getWeightByCategory(row['アイテム']),
-                        measure: 'PCS',
-                        description: hsResult.description,
-                        matched: hsResult.descMatched,
-                        hsCode: hsResult.hsCode,
-                        country: 'Japan',
-                        unitValue: calculatePrice(row['上代'] || 0),
-                        totalValue: 0,
-                        matchType: hsResult.matchType
+                        measure: 'PCS', description: hsResult.description,
+                        matched: hsResult.descMatched, hsCode: hsResult.hsCode,
+                        country: 'Japan', unitValue: calculatePrice(row['上代'] || 0),
+                        totalValue: 0, matchType: hsResult.matchType
                     };
                 }
             });
-            
             productData = Object.values(grouped);
             productData.forEach(item => {
                 item.totalValue = item.units * item.unitValue;
                 item.weight = item.weightPerUnit * item.units;
             });
-            
             renderDataTable();
         }
         
         function renderDataTable() {
             const tbody = document.getElementById('dataTableBody');
             tbody.innerHTML = '';
-            
             let totalUnits = 0;
-            
-            productData.forEach((item, index) => {
+            productData.forEach((item, idx) => {
                 totalUnits += item.units;
                 const row = tbody.insertRow();
-                
-                if (item.matchType === 'default') {
-                    row.classList.add('hs-match-default');
-                }
-                
+                if (item.matchType === 'default') row.classList.add('hs-match-default');
                 row.innerHTML = `
                     <td><input type="text" value="${item.itemCode}"></td>
                     <td><input type="number" value="${item.units}" min="0"></td>
@@ -1156,7 +995,6 @@
                     <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
                 `;
             });
-            
             document.getElementById('totalItemsCount1').textContent = totalUnits;
             updateGrandTotal();
             lucide.createIcons();
@@ -1165,72 +1003,43 @@
         function addNoCommercialRow() {
             noCommercialData.push({
                 itemCode: '', units: 0, weight: 0, measure: 'PCS',
-                description: '', hsCode: '', country: 'Japan',
-                unitValue: 0, totalValue: 0
+                description: '', hsCode: '', country: 'Japan', unitValue: 0, totalValue: 0
             });
             renderNoCommercialTable();
         }
         
-        function selectPreset(index, presetName) {
-            if (!presetName || !presets[presetName]) {
-                noCommercialData[index].description = '';
-                noCommercialData[index].hsCode = '';
-                noCommercialData[index].unitValue = 0;
+        function updateNoCommercialDescription(idx, val) {
+            noCommercialData[idx].description = val;
+            const matched = Object.keys(presets).find(n => n === val);
+            if (matched) {
+                const preset = presets[matched];
+                noCommercialData[idx].hsCode = preset.hs_code;
+                noCommercialData[idx].unitValue = preset.unit_value;
                 renderNoCommercialTable();
-                return;
-            }
-            const preset = presets[presetName];
-            noCommercialData[index].description = presetName;
-            noCommercialData[index].hsCode = preset.hs_code;
-            noCommercialData[index].unitValue = preset.unit_value;
-            renderNoCommercialTable();
-        }
-
-        function updateNoCommercialDescription(index, value) {
-            noCommercialData[index].description = value;
-            const matchedPreset = Object.keys(presets).find(name => name === value);
-            if (matchedPreset) {
-                selectPreset(index, matchedPreset);
             }
         }
         
         function renderNoCommercialTable() {
             const tbody = document.getElementById('noCommercialBody');
             tbody.innerHTML = '';
-            
             let totalUnits = 0;
-            
-            noCommercialData.forEach((item, index) => {
+            noCommercialData.forEach((item, idx) => {
                 totalUnits += item.units;
                 const row = tbody.insertRow();
-                
-                const presetOptions = Object.keys(presets).map(name => 
-                    `<option value="${name}">${name}</option>`
-                ).join('');
-                
+                const presetOpts = Object.keys(presets).map(n => `<option value="${n}">`).join('');
                 row.innerHTML = `
-                    <td><input type="text" value="${item.itemCode}" onchange="noCommercialData[${index}].itemCode = this.value"></td>
-                    <td><input type="number" value="${item.units}" min="0" onchange="noCommercialData[${index}].units = parseInt(this.value) || 0; noCommercialData[${index}].totalValue = noCommercialData[${index}].units * noCommercialData[${index}].unitValue; renderNoCommercialTable()"></td>
-                    <td><input type="number" value="${item.weight}" min="0" step="0.1" onchange="noCommercialData[${index}].weight = parseFloat(this.value) || 0"></td>
+                    <td><input type="text" value="${item.itemCode}" onchange="noCommercialData[${idx}].itemCode = this.value"></td>
+                    <td><input type="number" value="${item.units}" min="0" onchange="noCommercialData[${idx}].units = parseInt(this.value) || 0; noCommercialData[${idx}].totalValue = noCommercialData[${idx}].units * noCommercialData[${idx}].unitValue; renderNoCommercialTable()"></td>
+                    <td><input type="number" value="${item.weight}" min="0" step="0.1" onchange="noCommercialData[${idx}].weight = parseFloat(this.value) || 0"></td>
                     <td><select><option value="PCS">PCS</option></select></td>
-                    <td>
-                        <div class="editable-select-wrapper">
-                            <input type="text" value="${item.description}" 
-                                   onchange="updateNoCommercialDescription(${index}, this.value)"
-                                   list="presets-${index}"
-                                   placeholder="選択または入力 / Select or type">
-                            <datalist id="presets-${index}">
-                                ${Object.keys(presets).map(name => `<option value="${name}">`).join('')}
-                            </datalist>
-                        </div>
-                    </td>
+                    <td><input type="text" value="${item.description}" onchange="updateNoCommercialDescription(${idx}, this.value)" list="presets-${idx}" placeholder="選択または入力">
+                        <datalist id="presets-${idx}">${presetOpts}</datalist></td>
                     <td><input type="text" value="${item.hsCode}" readonly></td>
-                    <td><input type="text" value="${item.country}" onchange="noCommercialData[${index}].country = this.value"></td>
+                    <td><input type="text" value="${item.country}" onchange="noCommercialData[${idx}].country = this.value"></td>
                     <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" readonly></td>
                     <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
                 `;
             });
-            
             document.getElementById('totalItemsCount2').textContent = totalUnits;
             updateGrandTotal();
             lucide.createIcons();
@@ -1244,10 +1053,8 @@
         function renderNonCommercialTable() {
             const tbody = document.getElementById('nonCommercialBody');
             tbody.innerHTML = '';
-            
             let totalUnits = 0;
-            
-            nonCommercialData.forEach((item, index) => {
+            nonCommercialData.forEach((item, idx) => {
                 totalUnits += item.quantity;
                 const row = tbody.insertRow();
                 row.innerHTML = `
@@ -1255,21 +1062,18 @@
                     <td><input type="number" value="${item.quantity}" min="0"></td>
                 `;
             });
-            
             document.getElementById('totalItemsCount3').textContent = totalUnits;
             updateGrandTotal();
         }
         
         function updateGrandTotal() {
-            const total1 = productData.reduce((sum, item) => sum + item.units, 0);
-            const total2 = noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const total3 = nonCommercialData.reduce((sum, item) => sum + item.quantity, 0);
-            const grandTotal = total1 + total2 + total3;
-            
-            const amount1 = productData.reduce((sum, item) => sum + item.totalValue, 0);
-            const amount2 = noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
-            const grandAmount = amount1 + amount2;
-            
+            const t1 = productData.reduce((s, i) => s + i.units, 0);
+            const t2 = noCommercialData.reduce((s, i) => s + i.units, 0);
+            const t3 = nonCommercialData.reduce((s, i) => s + i.quantity, 0);
+            const grandTotal = t1 + t2 + t3;
+            const a1 = productData.reduce((s, i) => s + i.totalValue, 0);
+            const a2 = noCommercialData.reduce((s, i) => s + i.totalValue, 0);
+            const grandAmount = a1 + a2;
             document.getElementById('grandTotalItems').textContent = grandTotal;
             document.getElementById('grandTotalAmount').textContent = `JPY ${grandAmount.toLocaleString()}`;
         }
@@ -1292,23 +1096,16 @@
             document.getElementById('fileInput').click();
         });
         
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }, false);
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); }, false);
         });
         
-        ['dragenter', 'dragover'].forEach(eventName => {
-            dropZone.addEventListener(eventName, function() {
-                this.classList.add('drag-over');
-            }, false);
+        ['dragenter', 'dragover'].forEach(ev => {
+            dropZone.addEventListener(ev, function() { this.classList.add('drag-over'); }, false);
         });
         
-        ['dragleave', 'drop'].forEach(eventName => {
-            dropZone.addEventListener(eventName, function() {
-                this.classList.remove('drag-over');
-            }, false);
+        ['dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, function() { this.classList.remove('drag-over'); }, false);
         });
         
         dropZone.addEventListener('drop', function(e) {
@@ -1328,26 +1125,14 @@
         function renderPresets() {
             const container = document.getElementById('presetList');
             container.innerHTML = '';
-            
             for (const [name, data] of Object.entries(presets)) {
                 const item = document.createElement('div');
                 item.className = 'preset-item';
                 item.innerHTML = `
-                    <div>
-                        <label>Description</label>
-                        <input type="text" value="${name}" data-field="name" data-original="${name}">
-                    </div>
-                    <div>
-                        <label>HS Code</label>
-                        <input type="text" value="${data.hs_code}" data-field="hs_code" data-name="${name}">
-                    </div>
-                    <div>
-                        <label>Unit Value (JPY)</label>
-                        <input type="number" value="${data.unit_value}" data-field="unit_value" data-name="${name}">
-                    </div>
-                    <button class="btn-delete" onclick="deletePreset('${name}')">
-                        <i data-lucide="trash-2" size="18"></i>
-                    </button>
+                    <div><label>Description</label><input type="text" value="${name}" data-field="name" data-original="${name}"></div>
+                    <div><label>HS Code</label><input type="text" value="${data.hs_code}" data-field="hs_code" data-name="${name}"></div>
+                    <div><label>Unit Value (JPY)</label><input type="number" value="${data.unit_value}" data-field="unit_value" data-name="${name}"></div>
+                    <button class="btn-delete" onclick="deletePreset('${name}')"><i data-lucide="trash-2" size="18"></i></button>
                 `;
                 container.appendChild(item);
             }
@@ -1361,21 +1146,16 @@
         }
         
         function deletePreset(name) {
-            if (confirm(`Delete "${name}"?`)) {
-                delete presets[name];
-                renderPresets();
-            }
+            if (confirm(`Delete "${name}"?`)) { delete presets[name]; renderPresets(); }
         }
         
         function savePresets() {
             const items = document.querySelectorAll('.preset-item');
             const newPresets = {};
-            
             items.forEach(item => {
                 const nameInput = item.querySelector('[data-field="name"]');
                 const hsInput = item.querySelector('[data-field="hs_code"]');
                 const valueInput = item.querySelector('[data-field="unit_value"]');
-                
                 const name = nameInput.value.trim();
                 if (name) {
                     newPresets[name] = {
@@ -1384,7 +1164,6 @@
                     };
                 }
             });
-            
             presets = newPresets;
             localStorage.setItem('invoicePresets', JSON.stringify(presets));
             alert('保存しました / Presets saved successfully!');
