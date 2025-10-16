@@ -599,6 +599,17 @@
             "グッズ": 0.2
         };
         
+        const ITEM_CATEGORY_TRANSLATION = {
+            "ブルゾン・ジャケット": "Blouson/Jacket",
+            "コート": "Coat",
+            "シャツ": "Shirt",
+            "スカート": "Skirt",
+            "ワンピース": "Dress",
+            "パンツ": "Pants",
+            "ニット": "Knit",
+            "グッズ": "Goods"
+        };
+        
         const DEFAULT_PRESETS = {
             "Paper Catalog": {
                 hs_code: "49019900",
@@ -647,6 +658,10 @@
             return ITEM_WEIGHT_MAP[category] || 0.5;
         }
         
+        function translateCategory(category) {
+            return ITEM_CATEGORY_TRANSLATION[category] || category;
+        }
+        
         // File processing
         function processFile(file) {
             if (!file.name.match(/\.(xlsx|xls)$/i)) {
@@ -682,6 +697,7 @@
             
             jsonData.forEach(row => {
                 const itemCategory = row['アイテム'] || '';
+                const itemDescriptionJP = row['品名'] || '';
                 const styleNo = row['品番'] || '';
                 const quantity = row['数量'] || 0;
                 const originalPrice = row['上代'] || 0;
@@ -690,12 +706,16 @@
                 const unitPrice = calculatePrice(originalPrice);
                 const totalValue = unitPrice * quantity;
                 const weight = getWeightByCategory(itemCategory);
+                const categoryEN = translateCategory(itemCategory);
+                
+                // Description: Category (EN) + Item Description (JP)
+                const description = categoryEN + (itemDescriptionJP ? ', ' + itemDescriptionJP : '');
                 
                 productData.push({
                     units: quantity,
                     weight: weight,
                     measure: 'PCS',
-                    description: itemCategory || styleNo,
+                    description: description,
                     hsCode: '', // Will be populated by HS code logic
                     country: country,
                     unitValue: unitPrice,
