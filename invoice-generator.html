@@ -681,7 +681,9 @@
             const validRows = jsonData.filter(row => {
                 const hasStyleNo = row['品番'] && row['品番'].toString().trim() !== '';
                 const hasItemName = row['品名'] && row['品名'].toString().trim() !== '';
-                return hasStyleNo && hasItemName;
+                const hasItemCategory = row['アイテム'] && row['アイテム'].toString().trim() !== '';
+                
+                return hasStyleNo && hasItemName && hasItemCategory;
             });
             
             const grouped = {};
