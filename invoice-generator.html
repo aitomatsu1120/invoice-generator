@@ -734,7 +734,7 @@
         
         function getFirst8Digits(styleNo) {
             if (!styleNo) return '';
-            const cleanStyleNo = styleNo.toString().trim().replace(/\s+/g, '');
+            const cleanStyleNo = styleNo.toString().trim();
             return cleanStyleNo.substring(0, 8);
         }
         
