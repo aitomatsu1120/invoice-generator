@@ -773,7 +773,7 @@
             </div>
         </div>
         
-        <div id="dataSection" class="data-section">
+        <div id="dataSection" class="data-section hidden">
             <div class="data-section-header">
                 <div class="data-section-title">
                     <h2 class="section-title">商品明細リスト / Product Details List</h2>
@@ -1177,6 +1177,7 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     processExcelData(jsonData);
                     hideLoading();
+                    document.getElementById('uploadSection').style.display = 'none';
                     document.getElementById('dataSection').classList.add('active');
                     setInvoiceNumber();
                     updateGrandTotal();
