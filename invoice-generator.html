@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invoice Generator V2</title>
+    <title>Invoice Generator</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
@@ -31,6 +31,11 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
         }
         
         .btn {
@@ -226,6 +231,7 @@
             justify-content: space-between;
             align-items: center;
             width: 100%;
+            gap: 2rem;
         }
         
         .total-summary {
@@ -249,6 +255,41 @@
             font-size: 1.5rem;
             font-weight: 700;
             font-family: 'Montserrat', sans-serif;
+        }
+
+        .invoice-number-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .invoice-number-input span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .invoice-number-input input {
+            padding: 0.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.9);
+            color: #1c2940;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            width: 80px;
+            text-align: center;
+        }
+
+        .invoice-number-input input:focus {
+            outline: none;
+            border-color: white;
+            background: white;
+        }
+
+        .invoice-number-input input.serial {
+            width: 60px;
         }
         
         .data-section {
@@ -345,6 +386,15 @@
         .data-table input[readonly] {
             background-color: #f3f4f6;
             cursor: not-allowed;
+        }
+
+        .data-table input.editable-readonly {
+            background-color: #f9fafb;
+            cursor: text;
+        }
+
+        .data-table input.editable-readonly:focus {
+            background-color: white;
         }
         
         .data-table input.align-right {
@@ -449,8 +499,8 @@
             background: white;
             border-radius: 12px;
             width: 90%;
-            max-width: 800px;
-            max-height: 80vh;
+            max-width: 900px;
+            max-height: 85vh;
             overflow: hidden;
             display: flex;
             flex-direction: column;
@@ -566,6 +616,63 @@
         }
         
         .btn-save:hover { background-color: #2a3d5f; }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background-color: #f9fafb;
+        }
+
+        .form-section h4 {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 0.625rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1c2940;
+        }
     </style>
 </head>
 <body>
@@ -575,6 +682,10 @@
             Invoice Generator V2
         </div>
         <div class="header-actions">
+            <button class="btn btn-primary" onclick="openGeneralInfoModal()">
+                <i data-lucide="file-text" size="18"></i>
+                General Info
+            </button>
             <button class="btn btn-primary" onclick="openPresetModal()">
                 <i data-lucide="settings" size="18"></i>
                 Manage Presets
@@ -616,6 +727,15 @@
         <div id="controlSection" class="control-section">
             <div class="control-content">
                 <div class="total-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Invoice No.</span>
+                        <div class="invoice-number-input">
+                            <span>RPM-EC-</span>
+                            <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM">
+                            <span>-</span>
+                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" placeholder="001">
+                        </div>
+                    </div>
                     <div class="summary-item">
                         <span class="summary-label">全体合計点数 / Total Items</span>
                         <span class="summary-value" id="grandTotalItems">0</span>
@@ -709,11 +829,6 @@
                     <h2 class="section-title">無償提供品 / Non-Commercial Value Items</h2>
                     <p class="section-subtitle">無償サンプル・資料など / Free Samples, Documents (金額に含まれません / Not included in invoice amount)</p>
                 </div>
-                <div class="data-section-info">
-                    <div class="total-items">
-                        合計点数 / Total: <span id="totalItemsCount3">0</span>
-                    </div>
-                </div>
             </div>
             
             <div class="data-table-wrapper">
@@ -735,6 +850,92 @@
         </div>
     </div>
     
+    <div id="generalInfoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>General Information / 基本情報</h3>
+                <button class="btn-close" onclick="closeGeneralInfoModal()">
+                    <i data-lucide="x" size="24"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <h4>EXPORTER / 輸出者</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Company Name / 会社名</label>
+                            <input type="text" id="exporterName" value="45RPM STUDIO Co.,Ltd.">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Address / 住所</label>
+                            <textarea id="exporterAddress">7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>TEL</label>
+                            <input type="text" id="exporterTel" value="81-3-3498-1345">
+                        </div>
+                        <div class="form-group">
+                            <label>FAX</label>
+                            <input type="text" id="exporterFax" value="81-3-3486-7145">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>CONSIGNEE / 荷受人（実際の配送先）</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Company Name / 会社名</label>
+                            <input type="text" id="consigneeName" value="">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Address / 住所</label>
+                            <textarea id="consigneeAddress">4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Person / 担当者</label>
+                            <input type="text" id="consigneeContact" value="Kawa (Mr.) / Kit (Mr.)">
+                        </div>
+                        <div class="form-group">
+                            <label>TEL</label>
+                            <input type="text" id="consigneeTel" value="2127-4660">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Email</label>
+                            <input type="email" id="consigneeEmail" value="fls.wh@fls.com.hk">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>SOLD TO / IMPORTER / 買主・輸入者</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Company Name / 会社名</label>
+                            <input type="text" id="importerName" value="Heritage R LTD.">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Address / 住所</label>
+                            <textarea id="importerAddress">36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>TEL</label>
+                            <input type="text" id="importerTel" value="852-2956-3266">
+                        </div>
+                        <div class="form-group">
+                            <label>FAX</label>
+                            <input type="text" id="importerFax" value="852-2956-1230">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeGeneralInfoModal()">Cancel</button>
+                <button class="btn btn-save" onclick="saveGeneralInfo()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <div id="presetModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -762,6 +963,7 @@
         let productData = [];
         let noCommercialData = [];
         let nonCommercialData = [];
+        let uploadDate = new Date();
         
         const ITEM_WEIGHT_MAP = {
             "ブルゾン・ジャケット": 0.8, "コート": 1.2, "シャツ": 0.3,
@@ -816,12 +1018,20 @@
         };
         
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
+        let generalInfo = JSON.parse(localStorage.getItem('generalInfo')) || {};
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
         function calculatePrice(p) { return Math.round((p * 0.42) / 10) * 10; }
         function getWeightByCategory(c) { return ITEM_WEIGHT_MAP[c] || 0.5; }
         function translateCategory(c) { return ITEM_CATEGORY_TRANSLATION[c] || c; }
+        
+        function setInvoiceNumber() {
+            const yy = uploadDate.getFullYear().toString().slice(-2);
+            const mm = (uploadDate.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('invoiceYYMM').value = yy + mm;
+            document.getElementById('invoiceSerial').value = '';
+        }
         
         function toFullWidth(str) {
             if (!str) return '';
@@ -921,6 +1131,7 @@
         function processFile(file) {
             if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('Excelファイルをアップロードしてください'); return; }
             showLoading();
+            uploadDate = new Date();
             const reader = new FileReader();
             reader.onload = function(e) {
                 try {
@@ -935,6 +1146,7 @@
                     document.getElementById('dataSection').classList.add('active');
                     document.getElementById('noCommercialSection').classList.add('active');
                     document.getElementById('nonCommercialSection').classList.add('active');
+                    setInvoiceNumber();
                     addNoCommercialRow();
                     addNonCommercialRow();
                     updateGrandTotal();
@@ -1015,8 +1227,14 @@
                 const preset = presets[matched];
                 noCommercialData[idx].hsCode = preset.hs_code;
                 noCommercialData[idx].unitValue = preset.unit_value;
-                renderNoCommercialTable();
             }
+            renderNoCommercialTable();
+        }
+
+        function updateNoCommercialUnitValue(idx, val) {
+            noCommercialData[idx].unitValue = parseInt(val.replace(/,/g, '')) || 0;
+            noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
+            renderNoCommercialTable();
         }
         
         function renderNoCommercialTable() {
@@ -1036,7 +1254,7 @@
                         <datalist id="presets-${idx}">${presetOpts}</datalist></td>
                     <td><input type="text" value="${item.hsCode}" readonly></td>
                     <td><input type="text" value="${item.country}" onchange="noCommercialData[${idx}].country = this.value"></td>
-                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}" readonly></td>
+                    <td><input type="text" class="align-right editable-readonly" value="${item.unitValue.toLocaleString()}" onchange="updateNoCommercialUnitValue(${idx}, this.value)"></td>
                     <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
                 `;
             });
@@ -1053,17 +1271,13 @@
         function renderNonCommercialTable() {
             const tbody = document.getElementById('nonCommercialBody');
             tbody.innerHTML = '';
-            let totalUnits = 0;
             nonCommercialData.forEach((item, idx) => {
-                totalUnits += item.quantity;
                 const row = tbody.insertRow();
                 row.innerHTML = `
                     <td><input type="text" value="${item.description}" placeholder="Enter description"></td>
                     <td><input type="number" value="${item.quantity}" min="0"></td>
                 `;
             });
-            document.getElementById('totalItemsCount3').textContent = totalUnits;
-            updateGrandTotal();
         }
         
         function updateGrandTotal() {
@@ -1079,10 +1293,13 @@
         }
         
         function generateInvoice() {
+            const invoiceNo = 'RPM-EC-' + document.getElementById('invoiceYYMM').value + '-' + document.getElementById('invoiceSerial').value;
+            console.log('Invoice No:', invoiceNo);
             console.log('Product Data:', productData);
             console.log('No Commercial:', noCommercialData);
             console.log('Non-Commercial:', nonCommercialData);
-            alert('インボイス生成機能は次のステップで実装します');
+            console.log('General Info:', generalInfo);
+            alert('インボイス生成機能は次のステップで実装します\nInvoice No: ' + invoiceNo);
         }
         
         document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -1112,6 +1329,56 @@
             const files = e.dataTransfer.files;
             if (files.length > 0) processFile(files[0]);
         }, false);
+
+        function openGeneralInfoModal() {
+            document.getElementById('generalInfoModal').classList.add('active');
+            loadGeneralInfo();
+        }
+
+        function closeGeneralInfoModal() {
+            document.getElementById('generalInfoModal').classList.remove('active');
+        }
+
+        function loadGeneralInfo() {
+            document.getElementById('exporterName').value = generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.';
+            document.getElementById('exporterAddress').value = generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN';
+            document.getElementById('exporterTel').value = generalInfo.exporterTel || '81-3-3498-1345';
+            document.getElementById('exporterFax').value = generalInfo.exporterFax || '81-3-3486-7145';
+            
+            document.getElementById('consigneeName').value = generalInfo.consigneeName || '';
+            document.getElementById('consigneeAddress').value = generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong';
+            document.getElementById('consigneeContact').value = generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)';
+            document.getElementById('consigneeTel').value = generalInfo.consigneeTel || '2127-4660';
+            document.getElementById('consigneeEmail').value = generalInfo.consigneeEmail || 'fls.wh@fls.com.hk';
+            
+            document.getElementById('importerName').value = generalInfo.importerName || 'Heritage R LTD.';
+            document.getElementById('importerAddress').value = generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG';
+            document.getElementById('importerTel').value = generalInfo.importerTel || '852-2956-3266';
+            document.getElementById('importerFax').value = generalInfo.importerFax || '852-2956-1230';
+        }
+
+        function saveGeneralInfo() {
+            generalInfo = {
+                exporterName: document.getElementById('exporterName').value,
+                exporterAddress: document.getElementById('exporterAddress').value,
+                exporterTel: document.getElementById('exporterTel').value,
+                exporterFax: document.getElementById('exporterFax').value,
+                
+                consigneeName: document.getElementById('consigneeName').value,
+                consigneeAddress: document.getElementById('consigneeAddress').value,
+                consigneeContact: document.getElementById('consigneeContact').value,
+                consigneeTel: document.getElementById('consigneeTel').value,
+                consigneeEmail: document.getElementById('consigneeEmail').value,
+                
+                importerName: document.getElementById('importerName').value,
+                importerAddress: document.getElementById('importerAddress').value,
+                importerTel: document.getElementById('importerTel').value,
+                importerFax: document.getElementById('importerFax').value
+            };
+            localStorage.setItem('generalInfo', JSON.stringify(generalInfo));
+            alert('保存しました / Saved successfully!');
+            closeGeneralInfoModal();
+        }
         
         function openPresetModal() {
             document.getElementById('presetModal').classList.add('active');
@@ -1173,6 +1440,10 @@
         
         document.getElementById('presetModal').addEventListener('click', function(e) {
             if (e.target === this) closePresetModal();
+        });
+
+        document.getElementById('generalInfoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGeneralInfoModal();
         });
     </script>
 </body>
