@@ -41,7 +41,7 @@
     <script src="https://unpkg.com/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.js"></script>
   
     <py-config>
-        packages = ["pandas", "openpyxl"]   
+        packages = ["pandas", "openpyxl", "xlrd"]    
     </py-config>
 
     <script type="py">
