@@ -766,14 +766,6 @@
                 
                 const first8 = getFirst8Digits(styleNo);
                 
-                console.log('Processing row:', {
-                    styleNo: styleNo,
-                    first8: first8,
-                    itemName: itemName,
-                    itemCategory: itemCategory,
-                    quantity: quantity
-                });
-                
                 if (!first8) return;
                 
                 if (!grouped[first8]) {
