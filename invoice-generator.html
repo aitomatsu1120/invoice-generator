@@ -1361,13 +1361,22 @@
         }
         
         function generateInvoice() {
-            const invoiceNo = 'RPM-EC-' + document.getElementById('invoiceYYMM').value + '-' + document.getElementById('invoiceSerial').value;
+            // バリデーション：3桁の連番のみチェック
+            const serialInput = document.getElementById('invoiceSerial').value;
+            
+            if (!serialInput || serialInput.length !== 3) {
+                alert('Invoice番号の連番（3桁）を入力してください\nPlease enter the 3-digit serial number');
+                document.getElementById('invoiceSerial').focus();
+                return;
+            }
+            
+            const yymmInput = document.getElementById('invoiceYYMM').value;
+            const invoiceNo = 'RPM-EC-' + yymmInput + '-' + serialInput;
+            
             console.log('Invoice No:', invoiceNo);
-            console.log('Product Data:', productData);
-            console.log('No Commercial:', noCommercialData);
-            console.log('Non-Commercial:', nonCommercialData);
-            console.log('General Info:', generalInfo);
-            alert('インボイス生成機能は次のステップで実装します\nInvoice No: ' + invoiceNo);
+            
+            // プレビューモーダルを開く
+            openInvoicePreview(invoiceNo);
         }
         
         document.getElementById('fileInput').addEventListener('change', function(e) {
