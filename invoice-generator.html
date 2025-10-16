@@ -1528,5 +1528,36 @@
             if (e.target === this) closeGeneralInfoModal();
         });
     </script>
+
+    <!-- Invoice Preview Modal -->
+    <div id="invoicePreviewModal" class="invoice-preview-modal">
+        <div class="invoice-preview-header">
+            <div class="invoice-preview-title">📄 Invoice Preview</div>
+            <div class="invoice-preview-actions">
+                <button class="btn btn-back" onclick="closeInvoicePreview()">
+                    <i data-lucide="arrow-left" size="18"></i>
+                    戻る / Back
+                </button>
+                <button class="btn btn-print" onclick="printInvoice()">
+                    <i data-lucide="printer" size="18"></i>
+                    印刷 / Print
+                </button>
+                <button class="btn btn-primary btn-disabled" disabled>
+                    <i data-lucide="file-down" size="18"></i>
+                    PDF
+                </button>
+                <button class="btn btn-primary btn-disabled" disabled>
+                    <i data-lucide="file-spreadsheet" size="18"></i>
+                    Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="invoice-preview-container">
+            <div class="invoice-document" id="invoiceDocument">
+                <!-- Invoice content will be generated here -->
+            </div>
+        </div>
+    </div>
 </body>
 </html>
