@@ -1373,10 +1373,25 @@
             const yymmInput = document.getElementById('invoiceYYMM').value;
             const invoiceNo = 'RPM-EC-' + yymmInput + '-' + serialInput;
             
+            console.log('=== DEBUG START ===');
             console.log('Invoice No:', invoiceNo);
+            console.log('Modal element:', document.getElementById('invoicePreviewModal'));
+            console.log('openInvoicePreview function exists:', typeof openInvoicePreview);
+            
+            // テスト：モーダルが存在するか
+            const modal = document.getElementById('invoicePreviewModal');
+            if (!modal) {
+                alert('エラー: invoicePreviewModal が見つかりません');
+                return;
+            }
             
             // プレビューモーダルを開く
-            openInvoicePreview(invoiceNo);
+            try {
+                openInvoicePreview(invoiceNo);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('エラーが発生しました: ' + error.message);
+            }
         }
         
         document.getElementById('fileInput').addEventListener('change', function(e) {
