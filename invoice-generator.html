@@ -69,7 +69,7 @@
         
         .upload-section {
             background: white;
-            padding: 3rem 2rem;
+            padding: 2rem 1.5rem;
             border-radius: 12px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
             text-align: center;
@@ -91,8 +91,8 @@
         
         .drop-zone {
             border: 2px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 4rem 2rem;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
             background-color: #f8fafc;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -215,7 +215,7 @@
         }
         
         .control-section {
-            display: none;
+            display: flex;
             background: linear-gradient(135deg, #5a6c8a 0%, #6b7a94 100%);
             padding: 1.5rem 2rem;
             border-radius: 12px;
@@ -298,7 +298,7 @@
         }
         
         .data-section {
-            display: none;
+            display: block;
             background: white;
             padding: 1rem;
             border-radius: 12px;
@@ -367,6 +367,10 @@
         .data-table td {
             padding: 0.6rem 0.4rem;
             border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-table td:last-child {
+            text-align: center;
         }
         
         .data-table tbody tr:hover {
@@ -472,9 +476,13 @@
             font-size: 0.9rem;
         }
 
-        .nc-table th:nth-child(1) { width: 65%; }
-        .nc-table th:nth-child(2) { width: 25%; }
-        .nc-table th:nth-child(3) { width: 10%; }
+        .nc-table th:nth-child(1) { width: 63.5%; }
+        .nc-table th:nth-child(2) { width: 22.5%; }
+        .nc-table th:nth-child(3) { width: 4%; text-align: center; }
+        
+        .nc-table td:last-child {
+            text-align: center;
+        }
         
         .nc-table td {
             padding: 0.6rem 0.8rem;
@@ -716,19 +724,19 @@
     
     <div class="container">
         <div id="uploadSection" class="upload-section">
-            <h2 class="section-title">商品明細のエクセルファイルをアップロード</h2>
-            <p class="section-subtitle">Upload Product List Excel File</p>
+            <h2 class="section-title">商品明細のエクセルファイルをアップロード（オプション）</h2>
+            <p class="section-subtitle">Upload Product List Excel File (Optional)</p>
             <div class="drop-zone" id="dropZone">
                 <div class="drop-zone-content">
                     <div class="drop-zone-icon">
-                        <i data-lucide="file-spreadsheet" size="56"></i>
+                        <i data-lucide="file-spreadsheet" size="48"></i>
                     </div>
                     <p class="drop-zone-text">ファイルをドラッグ&ドロップ / Drag & Drop File</p>
                     <p class="or-text">または / or</p>
                     <div class="file-input-wrapper">
                         <input type="file" id="fileInput" accept=".xlsx,.xls">
                         <label for="fileInput" class="file-input-label">
-                            <i data-lucide="upload" size="20"></i>
+                            <i data-lucide="upload" size="18"></i>
                             Choose File
                         </label>
                     </div>
@@ -984,6 +992,14 @@
         let nonCommercialData = [];
         let uploadDate = new Date();
         
+        // 初期化：デフォルト行を追加
+        window.addEventListener('DOMContentLoaded', function() {
+            addNoCommercialRow();
+            addNonCommercialRow();
+            setInvoiceNumber();
+            lucide.createIcons();
+        });
+        
         const ITEM_WEIGHT_MAP = {
             "ブルゾン・ジャケット": 0.8, "コート": 1.2, "シャツ": 0.3,
             "スカート": 0.4, "ワンピース": 0.5, "パンツ": 0.5,
@@ -1161,14 +1177,8 @@
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet);
                     processExcelData(jsonData);
                     hideLoading();
-                    document.getElementById('uploadSection').style.display = 'none';
-                    document.getElementById('controlSection').classList.add('active');
                     document.getElementById('dataSection').classList.add('active');
-                    document.getElementById('noCommercialSection').classList.add('active');
-                    document.getElementById('nonCommercialSection').classList.add('active');
                     setInvoiceNumber();
-                    addNoCommercialRow();
-                    addNonCommercialRow();
                     updateGrandTotal();
                     lucide.createIcons();
                 } catch (error) {
@@ -1241,12 +1251,12 @@
         }
         
         function deleteNoCommercialRow(idx) {
-            if (noCommercialData.length > 1) {
-                noCommercialData.splice(idx, 1);
-                renderNoCommercialTable();
-            } else {
-                alert('最低1行は必要です / At least 1 row is required');
+            if (idx === 0) {
+                alert('最初の行は削除できません / Cannot delete the first row');
+                return;
             }
+            noCommercialData.splice(idx, 1);
+            renderNoCommercialTable();
         }
         
         function updateNoCommercialDescription(idx, val) {
@@ -1312,12 +1322,12 @@
         }
         
         function deleteNonCommercialRow(idx) {
-            if (nonCommercialData.length > 1) {
-                nonCommercialData.splice(idx, 1);
-                renderNonCommercialTable();
-            } else {
-                alert('最低1行は必要です / At least 1 row is required');
+            if (idx === 0) {
+                alert('最初の行は削除できません / Cannot delete the first row');
+                return;
             }
+            nonCommercialData.splice(idx, 1);
+            renderNonCommercialTable();
         }
         
         function renderNonCommercialTable() {
