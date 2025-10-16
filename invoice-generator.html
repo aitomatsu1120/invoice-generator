@@ -1106,12 +1106,28 @@
         
         function clearProductData() {
             if (confirm('商品明細リストのデータをすべて削除しますか？\nClear all product data?')) {
+                // データ配列をクリア
                 productData = [];
-                document.getElementById('dataTableBody').innerHTML = '';
+                
+                // テーブルボディを完全にクリア
+                const tbody = document.getElementById('dataTableBody');
+                while (tbody.firstChild) {
+                    tbody.removeChild(tbody.firstChild);
+                }
+                
+                // 合計をリセット
                 document.getElementById('totalItemsCount1').textContent = '0';
+                
+                // アップロードセクションを再表示
                 document.getElementById('uploadSection').style.display = 'block';
+                
+                // 全体合計を更新
                 updateGrandTotal();
+                
+                // アイコンを再生成
                 lucide.createIcons();
+                
+                alert('商品明細リストをクリアしました / Product list cleared');
             }
         }
         
