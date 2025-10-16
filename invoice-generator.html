@@ -314,6 +314,19 @@
             border: 2px solid #f59e0b !important;
         }
         
+        /* HSコード判定ハイライト */
+        .hs-match-item-rule {
+            background-color: #d4edda !important;
+        }
+        
+        .hs-match-keyword {
+            background-color: #fff3cd !important;
+        }
+        
+        .hs-match-default {
+            background-color: #f8d7da !important;
+        }
+        
         .btn-generate {
             padding: 0.6rem 1.2rem;
             background-color: #10b981;
@@ -469,6 +482,21 @@
         }
         
         .btn-save:hover { background-color: #2a3d5f; }
+        
+        .debug-summary {
+            background: #1e293b;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+        }
+        
+        .debug-summary h4 {
+            color: #60a5fa;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body>
@@ -515,6 +543,8 @@
                 </div>
             </div>
         </div>
+        
+        <div id="debugSummary" class="debug-summary" style="display: none;"></div>
         
         <div id="dataSection" class="data-section">
             <div class="data-section-header">
@@ -585,6 +615,7 @@
             "スカート": 0.4,
             "ワンピース": 0.5,
             "パンツ": 0.5,
+            "カットソー": 0.3,
             "ニット": 0.4,
             "グッズ": 0.2
         };
@@ -596,8 +627,85 @@
             "スカート": "Skirt",
             "ワンピース": "Dress",
             "パンツ": "Pants",
-            "ニット": "Knit",
+            "カットソー": "Knit Top",
+            "ニット": "Knit Top",
             "グッズ": "Goods"
+        };
+        
+        // 素材マッピング
+        const MATERIAL_BUCKETS = {
+            'ウール': 'Wool', '毛': 'Wool', 'アルパカ': 'Wool', 'WOOL': 'Wool',
+            'カシミヤ': 'Cashmere', 'カシミア': 'Cashmere', 'CASHMERE': 'Cashmere',
+            'コットン': 'Cotton', '綿': 'Cotton', 'COTTON': 'Cotton',
+            'ポリエステル': 'Synthetic', 'ナイロン': 'Synthetic', 'アクリル': 'Synthetic', 'POLYESTER': 'Synthetic', 'NYLON': 'Synthetic',
+            'レーヨン': 'Artificial', 'RAYON': 'Artificial', 'VISCOSE': 'Artificial',
+            'シルク': 'Silk', '絹': 'Silk', 'SILK': 'Silk',
+            'デニム': 'Denim', 'DENIM': 'Denim',
+            'レザー': 'Leather', 'LEATHER': 'Leather'
+        };
+        
+        // HSコードルール（簡略版）
+        const HS_CODE_RULES = {
+            // Jacket
+            "Jacket-Knit-M-Wool": "61033100",
+            "Jacket-Knit-M-Cotton": "61033200",
+            "Jacket-Knit-M-Synthetic": "61033300",
+            "Jacket-Knit-W-Wool": "61043100",
+            "Jacket-Knit-W-Cotton": "61043200",
+            "Jacket-Knit-W-Synthetic": "61043300",
+            "Jacket-Woven-M-Wool": "62033100",
+            "Jacket-Woven-M-Cotton": "62033290",
+            "Jacket-Woven-M-Synthetic": "62033300",
+            "Jacket-Woven-W-Wool": "62043100",
+            "Jacket-Woven-W-Cotton": "62043290",
+            "Jacket-Woven-W-Synthetic": "62043300",
+            
+            // Coat
+            "Coat-Knit-M-Wool": "61019010",
+            "Coat-Knit-M-Cotton": "61012000",
+            "Coat-Knit-W-Wool": "61021000",
+            "Coat-Knit-W-Cotton": "61022000",
+            "Coat-Woven-M-Wool": "62012000",
+            "Coat-Woven-M-Cotton": "62013090",
+            "Coat-Woven-W-Wool": "62022000",
+            "Coat-Woven-W-Cotton": "62023090",
+            
+            // Shirt
+            "Shirt-Woven-M-Cotton": "62052020",
+            "Shirt-Woven-M-Synthetic": "62053010",
+            "Shirt-Woven-W-Cotton": "62063010",
+            "Shirt-Woven-W-Synthetic": "62064010",
+            
+            // Knit Top (カットソー・ニット)
+            "Knit Top-Knit-M-Cotton": "61091010",
+            "Knit Top-Knit-M-Synthetic": "61099010",
+            "Knit Top-Knit-W-Cotton": "61091010",
+            "Knit Top-Knit-W-Synthetic": "61099010",
+            
+            // Skirt
+            "Skirt-Knit-W-Cotton": "61045200",
+            "Skirt-Knit-W-Synthetic": "61045300",
+            "Skirt-Woven-W-Cotton": "62045290",
+            "Skirt-Woven-W-Synthetic": "62045300",
+            
+            // Dress
+            "Dress-Knit-W-Cotton": "61044200",
+            "Dress-Knit-W-Synthetic": "61044300",
+            "Dress-Woven-W-Cotton": "62044290",
+            "Dress-Woven-W-Synthetic": "62044300",
+            
+            // Pants
+            "Pants-Knit-M-Cotton": "61034210",
+            "Pants-Knit-M-Synthetic": "61034310",
+            "Pants-Knit-W-Cotton": "61046210",
+            "Pants-Knit-W-Synthetic": "61046310",
+            "Pants-Woven-M-Cotton": "62034240",
+            "Pants-Woven-M-Synthetic": "62034319",
+            "Pants-Woven-W-Cotton": "62046280",
+            "Pants-Woven-W-Synthetic": "62046310",
+            
+            // Goods (デフォルト)
+            "Goods": "42029260"
         };
         
         const GOODS_KEYWORDS = {
@@ -674,13 +782,13 @@
             return ITEM_CATEGORY_TRANSLATION[category] || category;
         }
         
-        // 修正版: 半角カタカナを全角に変換
+        // 半角カタカナを全角に変換（修正版）
         function toFullWidth(str) {
             if (!str) return '';
             
             let result = str;
             
-            // Step 1: 濁点・半濁点付き文字を先に変換（2文字→1文字）
+            // 濁点・半濁点付き文字を先に変換（2文字→1文字）
             const dakuten = {
                 'ｶﾞ': 'ガ', 'ｷﾞ': 'ギ', 'ｸﾞ': 'グ', 'ｹﾞ': 'ゲ', 'ｺﾞ': 'ゴ',
                 'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
@@ -694,7 +802,7 @@
                 result = result.split(half).join(full);
             }
             
-            // Step 2: 通常の半角カナを全角に変換
+            // 通常の半角カナを全角に変換
             const kanaMap = {
                 'ｧ': 'ァ', 'ｱ': 'ア', 'ｨ': 'ィ', 'ｲ': 'イ', 'ｩ': 'ゥ', 'ｳ': 'ウ', 'ｪ': 'ェ', 'ｴ': 'エ', 'ｫ': 'ォ', 'ｵ': 'オ',
                 'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ',
@@ -716,22 +824,144 @@
             return result;
         }
         
-        function getGoodsDetail(itemName) {
-            const normalized = toFullWidth(itemName || '');
+        // 素材判定
+        function normalizeMaterial(materialText) {
+            if (!materialText) return "Other";
+            const material = materialText.toString().toUpperCase().trim();
             
-            console.log('=== Goods Detail Matching ===');
-            console.log('Original itemName:', itemName);
-            console.log('Normalized:', normalized);
+            for (const [keyword, bucket] of Object.entries(MATERIAL_BUCKETS)) {
+                if (material.includes(keyword.toUpperCase())) {
+                    return bucket;
+                }
+            }
+            return "Other";
+        }
+        
+        // Knit/Woven判定（3段階 + match_type返却）
+        function determineKnitWoven(item, productName) {
+            const itemLower = (item || '').toLowerCase();
+            const nameLower = toFullWidth(productName || '').toLowerCase();
+            const combined = itemLower + ' ' + nameLower;
             
-            for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
-                if (normalized.includes(keyword)) {
-                    console.log('✓ Matched keyword:', keyword, '→', translation);
-                    return { description: translation, matched: true };
+            console.log(`[Knit/Woven] Item: ${item}, Name: ${productName}`);
+            
+            // Stage 1: アイテムで確定判定
+            if (itemLower.includes('シャツ'.toLowerCase())) {
+                console.log('  → item_rule: Woven (シャツ)');
+                return { result: 'Woven', matchType: 'item_rule' };
+            }
+            if (itemLower.includes('カットソー'.toLowerCase()) || itemLower.includes('ニット'.toLowerCase())) {
+                console.log('  → item_rule: Knit (カットソー/ニット)');
+                return { result: 'Knit', matchType: 'item_rule' };
+            }
+            if (itemLower.includes('グッズ'.toLowerCase())) {
+                console.log('  → item_rule: N/A (グッズ)');
+                return { result: null, matchType: 'item_rule' };
+            }
+            
+            // Stage 2: 品名キーワード判定
+            const knitKeywords = ['ニット', 'にっと', 'ﾆｯﾄ', 'sweater', 'スウェット', 'ｽｳｪｯﾄ', 
+                                  'cardigan', 'カーディガン', 'ｶｰﾃﾞｨｶﾞﾝ', 'jersey', 'ジャージ', 
+                                  'ｼﾞｬｰｼﾞ', 'カットソー', 'ｶｯﾄｿｰ', '編み'];
+            const wovenKeywords = ['denim', 'デニム', 'ﾃﾞﾆﾑ', 'シャツ', 'ｼｬﾂ', 'shirt', 
+                                   'twill', 'ツイル', 'ﾂｲﾙ', 'gabardine', 'ギャバジン', 
+                                   'ｷﾞｬﾊﾞｼﾞﾝ', 'taffeta', 'タフタ', 'ﾀﾌﾀ'];
+            
+            for (const keyword of knitKeywords) {
+                if (combined.includes(keyword.toLowerCase())) {
+                    console.log(`  → keyword: Knit (matched: ${keyword})`);
+                    return { result: 'Knit', matchType: 'keyword' };
                 }
             }
             
-            console.log('✗ No match found → Goods');
-            return { description: "Goods", matched: false };
+            for (const keyword of wovenKeywords) {
+                if (combined.includes(keyword.toLowerCase())) {
+                    console.log(`  → keyword: Woven (matched: ${keyword})`);
+                    return { result: 'Woven', matchType: 'keyword' };
+                }
+            }
+            
+            // Stage 3: デフォルトルール
+            const defaults = {
+                'ブルゾン・ジャケット': 'Woven',
+                'コート': 'Woven',
+                'スカート': 'Woven',
+                'ワンピース': 'Woven',
+                'パンツ': 'Woven'
+            };
+            
+            const defaultValue = defaults[item] || 'Woven';
+            console.log(`  → default: ${defaultValue}`);
+            return { result: defaultValue, matchType: 'default' };
+        }
+        
+        // HSコード判定
+        function determineHSCode(row) {
+            const item = row['アイテム'] || '';
+            const productName = row['品名'] || '';
+            const gender = (row['性別'] || '') === 'メンズ' ? 'M' : 'W';
+            const material = normalizeMaterial(row['素材1']);
+            
+            console.log(`\n=== HSコード判定 ===`);
+            console.log(`品番: ${row['品番']}, アイテム: ${item}`);
+            
+            // Description of Goods
+            const categoryEN = translateCategory(item);
+            let description = categoryEN;
+            let descMatched = true;
+            
+            if (item === 'グッズ') {
+                const normalized = toFullWidth(productName);
+                console.log(`グッズ判定: ${productName} → ${normalized}`);
+                
+                for (const [keyword, translation] of Object.entries(GOODS_KEYWORDS)) {
+                    if (normalized.includes(keyword)) {
+                        description = translation;
+                        console.log(`  ✓ Matched: ${keyword} → ${translation}`);
+                        break;
+                    }
+                }
+                if (description === 'Goods') {
+                    descMatched = false;
+                    console.log(`  ✗ No match → Goods`);
+                }
+            }
+            
+            // Knit/Woven判定
+            const knitWovenResult = determineKnitWoven(item, productName);
+            const knitWoven = knitWovenResult.result;
+            const matchType = knitWovenResult.matchType;
+            
+            // HSコード検索
+            let hsCode = 'N/A';
+            
+            if (item === 'グッズ') {
+                hsCode = HS_CODE_RULES['Goods'] || '42029260';
+            } else if (knitWoven) {
+                const key = `${categoryEN}-${knitWoven}-${gender}-${material}`;
+                hsCode = HS_CODE_RULES[key];
+                
+                if (!hsCode) {
+                    // 素材なしで再検索
+                    const keyNoMaterial = `${categoryEN}-${knitWoven}-${gender}`;
+                    for (const ruleKey of Object.keys(HS_CODE_RULES)) {
+                        if (ruleKey.startsWith(keyNoMaterial)) {
+                            hsCode = HS_CODE_RULES[ruleKey];
+                            break;
+                        }
+                    }
+                }
+                
+                console.log(`HSコード検索: ${key} → ${hsCode || 'N/A'}`);
+            }
+            
+            return {
+                description: description,
+                descMatched: descMatched,
+                hsCode: hsCode || 'N/A',
+                knitWoven: knitWoven,
+                matchType: matchType
+            };
         }
         
         function getFirst8Digits(styleNo) {
@@ -781,8 +1011,9 @@
             
             console.log('Valid rows:', validRows.length);
             
-            // 修正版: Item Codeでグループ化
+            // Item Codeでグループ化
             const grouped = {};
+            const hsDebug = { item_rule: 0, keyword: 0, default: 0, defaultItems: [] };
             
             validRows.forEach((row, index) => {
                 const styleNo = row['品番'] || '';
@@ -809,31 +1040,34 @@
                     grouped[first8].units += quantity;
                     console.log(`✓ Added to existing group. New total: ${grouped[first8].units}`);
                 } else {
-                    const categoryEN = translateCategory(itemCategory);
-                    let description, matched;
-                    
-                    if (itemCategory === 'グッズ') {
-                        const result = getGoodsDetail(itemName);
-                        description = result.description;
-                        matched = result.matched;
-                    } else {
-                        description = categoryEN;
-                        matched = true;
-                    }
+                    // HSコード判定
+                    const hsResult = determineHSCode(row);
                     
                     grouped[first8] = {
                         itemCode: first8,
                         units: quantity,
                         weightPerUnit: getWeightByCategory(itemCategory),
                         measure: 'PCS',
-                        description: description,
-                        matched: matched,
-                        hsCode: '',
+                        description: hsResult.description,
+                        matched: hsResult.descMatched,
+                        hsCode: hsResult.hsCode,
                         country: country,
                         unitValue: calculatePrice(originalPrice),
                         totalValue: 0,
+                        matchType: hsResult.matchType,
                         rawData: row
                     };
+                    
+                    // デバッグ集計
+                    hsDebug[hsResult.matchType]++;
+                    if (hsResult.matchType === 'default') {
+                        hsDebug.defaultItems.push({
+                            code: first8,
+                            name: itemName,
+                            item: itemCategory
+                        });
+                    }
+                    
                     console.log(`✓ Created new group`);
                 }
             });
@@ -847,10 +1081,32 @@
             productData.forEach(item => {
                 item.totalValue = item.units * item.unitValue;
                 item.weight = item.weightPerUnit * item.units;
-                console.log(`${item.itemCode}: ${item.description} (${item.units}) → ${item.matched ? '✓' : '⚠'}`);
+                console.log(`${item.itemCode}: ${item.description} (${item.units}) → HSコード: ${item.hsCode} [${item.matchType}]`);
             });
             
+            // デバッグサマリー表示
+            displayDebugSummary(hsDebug);
+            
             renderDataTable();
+        }
+        
+        function displayDebugSummary(hsDebug) {
+            const summary = document.getElementById('debugSummary');
+            summary.style.display = 'block';
+            
+            let html = '<h4>🔍 Knit/Woven判定結果</h4>';
+            html += `<div>✓ 確実 (item_rule): ${hsDebug.item_rule}件</div>`;
+            html += `<div>⚠ キーワード (keyword): ${hsDebug.keyword}件</div>`;
+            html += `<div>✗ デフォルト (default): ${hsDebug.default}件</div>`;
+            
+            if (hsDebug.defaultItems.length > 0) {
+                html += '<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid #475569;">デフォルト適用された商品:</div>';
+                hsDebug.defaultItems.forEach(item => {
+                    html += `<div style="padding-left: 1rem;">• ${item.code}: ${item.name} (${item.item})</div>`;
+                });
+            }
+            
+            summary.innerHTML = html;
         }
         
         function renderDataTable() {
@@ -863,6 +1119,12 @@
                 totalUnits += item.units;
                 
                 const row = tbody.insertRow();
+                
+                // matchTypeに応じた背景色クラスを追加
+                if (item.matchType) {
+                    row.classList.add(`hs-match-${item.matchType}`);
+                }
+                
                 row.innerHTML = `
                     <td><input type="text" value="${item.itemCode}" onchange="updateRow(${index}, 'itemCode', this.value)"></td>
                     <td><input type="number" value="${item.units}" onchange="updateRow(${index}, 'units', this.value)" min="0" step="1"></td>
