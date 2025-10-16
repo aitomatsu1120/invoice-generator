@@ -1,6 +1,10 @@
 function processExcelData(jsonData) {
-            // Filter out rows without style number (品番)
-            const validRows = jsonData.filter(row => row['品番']);
+            // Filter out rows without style number (品番) AND rows that only have values in column J (集計行)
+            const validRows = jsonData.filter(row => {
+                const hasStyleNo = row['品番'] && row['品番'].toString().trim() !== '';
+                const hasItemName = row['品名'] && row['品名'].toString().trim() !== '';
+                return hasStyleNo && hasItemName;
+            });
             
             // Group by first 8 digits of style number
             const grouped = {};
@@ -17,12 +21,13 @@ function processExcelData(jsonData) {
                 
                 if (!grouped[first8]) {
                     const categoryEN = translateCategory(itemCategory);
+                    // Description: Only category, unless it's Goods
                     const description = itemCategory === 'グッズ' ? getGoodsDetail(itemName) : categoryEN;
                     
                     grouped[first8] = {
                         itemCode: first8,
                         units: 0,
-                        weight: getWeightByCategory(itemCategory),
+                        weightPerUnit: getWeightByCategory(itemCategory),
                         measure: 'PCS',
                         description: description,
                         hsCode: '',
@@ -39,9 +44,10 @@ function processExcelData(jsonData) {
             // Convert to array
             productData = Object.values(grouped);
             
-            // Calculate total values
+            // Calculate total values and weights
             productData.forEach(item => {
                 item.totalValue = item.units * item.unitValue;
+                item.weight = item.weightPerUnit * item.units;
             });
             
             renderDataTable();
@@ -777,7 +783,8 @@ function processExcelData(jsonData) {
         
         function getFirst8Digits(styleNo) {
             if (!styleNo) return '';
-            return styleNo.toString().substring(0, 8);
+            const cleanStyleNo = styleNo.toString().trim();
+            return cleanStyleNo.substring(0, 8);
         }
         
         // File processing
