@@ -309,7 +309,6 @@
         }
         
         .data-section.hidden { display: none; }
-        .data-section.active { display: block; }
         
         .data-section-header {
             display: flex;
@@ -1108,7 +1107,8 @@
         function clearProductData() {
             if (confirm('商品明細リストのデータをすべて削除しますか？\nClear all product data?')) {
                 productData = [];
-                document.getElementById('dataSection').classList.remove('active');
+                document.getElementById('dataTableBody').innerHTML = '';
+                document.getElementById('totalItemsCount1').textContent = '0';
                 document.getElementById('uploadSection').style.display = 'block';
                 updateGrandTotal();
                 lucide.createIcons();
@@ -1224,7 +1224,6 @@
                     processExcelData(jsonData);
                     hideLoading();
                     document.getElementById('uploadSection').style.display = 'none';
-                    document.getElementById('dataSection').classList.add('active');
                     setInvoiceNumber();
                     updateGrandTotal();
                     lucide.createIcons();
