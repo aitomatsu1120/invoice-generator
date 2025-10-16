@@ -1106,23 +1106,41 @@
         
         function clearProductData() {
             if (confirm('商品明細リストのデータをすべて削除しますか？\nClear all product data?')) {
+                console.log('Before clear - productData length:', productData.length);
+                
                 // データ配列をクリア
                 productData = [];
                 
-                // テーブルボディを完全にクリア
+                console.log('After clear - productData length:', productData.length);
+                
+                // テーブルボディを取得して確認
                 const tbody = document.getElementById('dataTableBody');
-                while (tbody.firstChild) {
-                    tbody.removeChild(tbody.firstChild);
+                console.log('Table body found:', tbody);
+                console.log('Rows before clear:', tbody ? tbody.rows.length : 'tbody not found');
+                
+                // テーブルを完全にクリア
+                if (tbody) {
+                    tbody.innerHTML = '';
+                    console.log('Rows after clear:', tbody.rows.length);
                 }
                 
                 // 合計をリセット
-                document.getElementById('totalItemsCount1').textContent = '0';
+                const totalElement = document.getElementById('totalItemsCount1');
+                if (totalElement) {
+                    totalElement.textContent = '0';
+                    console.log('Total reset to 0');
+                }
                 
                 // アップロードセクションを再表示
-                document.getElementById('uploadSection').style.display = 'block';
+                const uploadSection = document.getElementById('uploadSection');
+                if (uploadSection) {
+                    uploadSection.style.display = 'block';
+                    console.log('Upload section displayed');
+                }
                 
                 // 全体合計を更新
                 updateGrandTotal();
+                console.log('Grand total updated');
                 
                 // アイコンを再生成
                 lucide.createIcons();
