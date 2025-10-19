@@ -1375,6 +1375,13 @@
             "バッグ": "Bag", "トート": "Bag", "ベルト": "Belt",
             "ポーチ": "Pouch"
         };
+
+        const COUNTRY_CODE_MAP = {
+            'Japan': 'JP',
+            'China': 'CN',
+            'Vietnam': 'VN',
+            'India': 'IN'
+        };
         
         const DEFAULT_PRESETS = {
             "Paper Catalog": { hs_code: "49019900", unit_value: 100, weight_per_unit: 0.1 },
@@ -1428,6 +1435,12 @@
                 if (mat.includes(k.toUpperCase())) return b;
             }
             return "Other";
+        }
+
+        function convertCountryCode(country) {
+            if (!country) return 'JP';
+            const trimmed = country.toString().trim();
+            return COUNTRY_CODE_MAP[trimmed] || trimmed;
         }
         
         function determineKnitWoven(item, productName) {
@@ -1538,7 +1551,7 @@
                         weightPerUnit: getWeightByCategory(row['アイテム']),
                         measure: 'PCS', description: hsResult.description,
                         matched: hsResult.descMatched, hsCode: hsResult.hsCode,
-                        country: row['原産国'] || 'Japan', unitValue: calculatePrice(row['上代'] || 0),
+                        country: convertCountryCode(row['原産国']), unitValue: calculatePrice(row['上代'] || 0),
                         totalValue: 0, matchType: hsResult.matchType,
                         packageNos: [row['C/No.'] || 1]
                     };
@@ -1584,7 +1597,7 @@
         function addNoCommercialRow() {
             noCommercialData.push({
                 itemCode: '', units: 0, weight: 0, measure: 'PCS',
-                description: '', hsCode: '', country: 'Japan', unitValue: 0, totalValue: 0
+                description: '', hsCode: '', country: 'JP', unitValue: 0, totalValue: 0
             });
             renderNoCommercialTable();
         }
