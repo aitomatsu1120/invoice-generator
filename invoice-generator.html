@@ -808,7 +808,7 @@
         min-height: 297mm; /* A4 height */
     }
     
-    .invoice-logo-header {
+    . {
         display: flex;
         justify-content: space-between;
         align-items: flex-start;
@@ -2076,7 +2076,7 @@
                 `;
             }
 
-            // HTML生成
+            // Generate HTML
             doc.innerHTML = `
                 <div class="invoice-logo-header">
                     <img src="https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634" 
@@ -2084,6 +2084,7 @@
                     <div class="invoice-company-info">
                         <div class="invoice-company-name">45rpm Studio. co., ltd</div>
                         <div>Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062</div>
+                        <div style="margin-top: 0.5rem; font-weight: 600;">Invoice No.: ${invoiceNo}</div>
                     </div>
                 </div>
                 
@@ -2091,45 +2092,45 @@
                     <h1 class="invoice-title">Commercial Invoice</h1>
                     <div class="invoice-page-number">Page 1 of 1</div>
                 </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.65rem;">
+                    <tr>
+                        <td style="width: 50%; border: 1px solid #1c2940; padding: 0.75rem; vertical-align: top;">
+                            <div style="font-weight: 700; color: #1c2940; margin-bottom: 0.5rem; font-size: 0.65rem;">EXPORTER:</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${exporter.name}</div>
+                            <div style="line-height: 1.4; color: #374151;">${exporter.address}</div>
+                            <div style="margin-top: 0.35rem;"><span style="font-weight: 600;">TEL:</span> ${exporter.tel}</div>
+                            <div><span style="font-weight: 600;">FAX:</span> ${exporter.fax}</div>
+                        </td>
+                        <td style="width: 50%; border: 1px solid #1c2940; border-left: none; padding: 0.75rem; vertical-align: top;">
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Ship Date:</span> ${dateStr}</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Invoice No.:</span> ${invoiceNo}</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Payment Terms:</span> Bill 3rd Party</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Purpose of Shipment:</span> SOLD</div>
+                            <div><span style="font-weight: 600;">Currency Code:</span> JPY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #1c2940; border-top: none; padding: 0.75rem; vertical-align: top;">
+                            <div style="font-weight: 700; color: #1c2940; margin-bottom: 0.5rem; font-size: 0.65rem;">CONSIGNEE:</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${consignee.name}</div>
+                            <div style="line-height: 1.4; color: #374151;">${consignee.address}</div>
+                            <div style="margin-top: 0.35rem;"><span style="font-weight: 600;">Contact:</span> ${consignee.contact}</div>
+                            <div><span style="font-weight: 600;">TEL:</span> ${consignee.tel}</div>
+                            <div><span style="font-weight: 600;">Email:</span> ${consignee.email}</div>
+                        </td>
+                        <td style="border: 1px solid #1c2940; border-top: none; border-left: none; padding: 0.75rem; vertical-align: top;">
+                            <div style="font-weight: 700; color: #1c2940; margin-bottom: 0.5rem; font-size: 0.65rem;">SOLD TO / IMPORTER:</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${importer.name}</div>
+                            <div style="line-height: 1.4; color: #374151;">${importer.address}</div>
+                            <div style="margin-top: 0.35rem;"><span style="font-weight: 600;">TEL:</span> ${importer.tel}</div>
+                            <div><span style="font-weight: 600;">FAX:</span> ${importer.fax}</div>
+                        </td>
+                    </tr>
+                </table>
                 
-                <div class="invoice-info-grid">
-                    <div class="invoice-info-block">
-                        <h4>EXPORTER:</h4>
-                        <p><strong>${exporter.name}</strong></p>
-                        <p>${exporter.address}</p>
-                        <p><span class="invoice-info-label">TEL:</span> ${exporter.tel}</p>
-                        <p><span class="invoice-info-label">FAX:</span> ${exporter.fax}</p>
-                    </div>
-                    
-                    <div class="invoice-info-block">
-                        <p><span class="invoice-info-label">Ship Date:</span> ${dateStr}</p>
-                        <p><span class="invoice-info-label">Invoice No.:</span> ${invoiceNo}</p>
-                        <p><span class="invoice-info-label">Payment Terms:</span> Bill 3rd Party</p>
-                        <p><span class="invoice-info-label">Purpose of Shipment:</span> SOLD</p>
-                        <p><span class="invoice-info-label">Currency Code:</span> JPY</p>
-                    </div>
-                    
-                    <div class="invoice-info-block">
-                        <h4>SOLD TO / IMPORTER:</h4>
-                        <p><strong>${importer.name}</strong></p>
-                        <p>${importer.address}</p>
-                        <p><span class="invoice-info-label">TEL:</span> ${importer.tel}</p>
-                        <p><span class="invoice-info-label">FAX:</span> ${importer.fax}</p>
-                    </div>
-                </div>
-                
-                <div class="invoice-info-grid" style="margin-top: 1rem;">
-                    <div class="invoice-info-block">
-                        <h4>CONSIGNEE:</h4>
-                        <p><strong>${consignee.name}</strong></p>
-                        <p>${consignee.address}</p>
-                        <p><span class="invoice-info-label">Contact:</span> ${consignee.contact}</p>
-                        <p><span class="invoice-info-label">TEL:</span> ${consignee.tel}</p>
-                        <p><span class="invoice-info-label">Email:</span> ${consignee.email}</p>
-                    </div>
-                    <div class="invoice-info-block">
-                        <p><span class="invoice-info-label">Parties to Transaction:</span> Non-Related</p>
-                    </div>
+                <div style="margin-bottom: 1.5rem; font-size: 0.65rem;">
+                    <span style="font-weight: 600;">Parties to Transaction:</span> Non-Related
                 </div>
                 
                 <table class="invoice-table">
