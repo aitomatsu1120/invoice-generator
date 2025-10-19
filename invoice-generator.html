@@ -1959,6 +1959,7 @@
             productData.forEach(item => {
                 productRows += `
                     <tr>
+                        <td>${item.remarksText || ''}</td>
                         <td>1</td>
                         <td>${item.units}</td>
                         <td class="align-right">${item.weight.toFixed(2)}</td>
@@ -1977,6 +1978,7 @@
                 if (item.units > 0) {
                     productRows += `
                         <tr>
+                            <td></td>
                             <td>1</td>
                             <td>${item.units}</td>
                             <td class="align-right">${item.weight.toFixed(2)}</td>
@@ -2067,6 +2069,7 @@
                 <table class="invoice-table">
                     <thead>
                         <tr>
+                            <th style="width: 8%;">C/No.</th>
                             <th style="width: 5%;">No. of Pkgs</th>
                             <th style="width: 7%;">No. of Units</th>
                             <th style="width: 8%;">Net Weight (KG)</th>
@@ -2083,6 +2086,7 @@
                     </tbody>
                     <tfoot>
                         <tr style="font-weight: 600; background-color: #f3f4f6;">
+                            <td></td>
                             <td></td>
                             <td>${totalUnits}</td>
                             <td class="align-right">${totalWeight.toFixed(2)} KG</td>
