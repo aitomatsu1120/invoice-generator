@@ -1920,26 +1920,28 @@
                     scale: 2,
                     useCORS: true,
                     logging: false,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    windowWidth: doc.scrollWidth,
+                    windowHeight: doc.scrollHeight
                 });
                 
                 const imgData = canvas.toDataURL('image/png');
                 const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                const pageWidth = 210; // A4 width
-                const pageHeight = 297; // A4 height
-                const imgWidth = pageWidth;
+                const imgWidth = 210; // A4 width in mm
+                const pageHeight = 297; // A4 height in mm
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                const pdf = new jsPDF('p', 'mm', 'a4');
                 
                 let heightLeft = imgHeight;
                 let position = 0;
                 
-                // First page
+                // Add first page
                 pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
                 heightLeft -= pageHeight;
                 
-                // Add additional pages if needed
+                // Add additional pages if content overflows
                 while (heightLeft > 0) {
                     position = heightLeft - imgHeight;
                     pdf.addPage();
@@ -1947,21 +1949,27 @@
                     heightLeft -= pageHeight;
                 }
                 
-                // Set filename
-                const invoiceNo = document.getElementById('invoiceYYMM').value + '-' + document.getElementById('invoiceSerial').value;
-                const fileName = `RPM-EC-${invoiceNo}.pdf`;
+                // Generate filename
+                const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+                const serialValue = document.getElementById('invoiceSerial').value || '000';
+                const fileName = `RPM-EC-${yymmValue}-${serialValue}.pdf`;
                 
+                // Create blob and open in new tab
                 const pdfBlob = pdf.output('blob');
                 const pdfUrl = URL.createObjectURL(pdfBlob);
-                const newTab = window.open(pdfUrl, '_blank');
                 
-                if (newTab) {
-                    newTab.document.title = fileName;
-                }
+                // Create temporary link to trigger download with correct filename
+                const link = document.createElement('a');
+                link.href = pdfUrl;
+                link.download = fileName;
+                link.target = '_blank';
+                
+                // Open in new tab
+                window.open(pdfUrl, '_blank');
                 
             } catch (error) {
                 console.error('PDF generation failed:', error);
-                alert('PDF生成に失敗しました');
+                alert('PDF生成に失敗しました / PDF generation failed');
             }
         }
         
