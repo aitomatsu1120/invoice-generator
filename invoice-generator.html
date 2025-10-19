@@ -2139,7 +2139,7 @@
             yPos += 2;
             pdf.setLineWidth(0.5);
             pdf.line(150, yPos, 195, yPos);
-            yPos += 3;
+            yPos += 1;
             pdf.line(150, yPos, 195, yPos);
             
             // Remarks for non-commercial items
@@ -2414,7 +2414,7 @@
             
             yPos = pdf.lastAutoTable.finalY + 5;
             
-            // Invoice Total
+           // Invoice Total
             pdf.setFontSize(9);
             pdf.setFont('helvetica', 'bold');
             pdf.text('Invoice Total:', 150, yPos, { align: 'right' });
@@ -2423,7 +2423,7 @@
             yPos += 2;
             pdf.setLineWidth(0.5);
             pdf.line(150, yPos, 195, yPos);
-            yPos += 3;
+            yPos += 1;
             pdf.line(150, yPos, 195, yPos);
             
             // Remarks
