@@ -1911,6 +1911,36 @@
         function printInvoice() {
             window.print();
         }
+
+        async function generateAndViewPDF() {
+            const doc = document.getElementById('invoiceDocument');
+            
+            try {
+                const canvas = await html2canvas(doc, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: false,
+                    backgroundColor: '#ffffff'
+                });
+                
+                const imgData = canvas.toDataURL('image/png');
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                
+                const imgWidth = 210;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                
+                const pdfBlob = pdf.output('blob');
+                const pdfUrl = URL.createObjectURL(pdfBlob);
+                window.open(pdfUrl, '_blank');
+                
+            } catch (error) {
+                console.error('PDF generation failed:', error);
+                alert('PDF生成に失敗しました');
+            }
+        }
         
         function generateInvoiceHTML(invoiceNo) {
             const doc = document.getElementById('invoiceDocument');
@@ -2156,7 +2186,7 @@
                     <i data-lucide="arrow-left" size="18"></i>
                     戻る / Back
                 </button>
-                <button class="btn btn-print" onclick="printInvoice()">
+                <button class="btn btn-print" onclick="generateAndViewPDF()">
                     <i data-lucide="printer" size="18"></i>
                     印刷 / Print
                 </button>
