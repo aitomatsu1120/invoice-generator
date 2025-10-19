@@ -2122,17 +2122,20 @@
                         I declare that all the information contained in this invoice to be true and correct.
                     </div>
                     
-                    <div class="invoice-signature">
-                        <div class="invoice-signature-line">
+                    <div class="invoice-signature" style="display: flex; justify-content: space-between; margin-top: 3rem;">
+                        <div style="width: 45%; text-align: center;">
                             <img src="[署名画像URL]" alt="Signature" style="max-width: 200px; height: auto; margin-bottom: 0.5rem;"><br>
-                            Date: ${dateStr}
+                            <div style="border-top: 1px solid #1c2940; padding-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                Date: ${dateStr}
+                            </div>
                         </div>
-                        <div class="invoice-signature-line">
-                            ${exporter.name}<br>
-                            Company Name
+                        <div style="width: 45%; text-align: center;">
+                            <div style="font-weight: 600; margin-bottom: 0.5rem;">${exporter.name}</div>
+                            <div style="border-top: 1px solid #1c2940; padding-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                Company Name
+                            </div>
                         </div>
                     </div>
-                </div>
             `;
         }
         
