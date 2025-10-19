@@ -1961,6 +1961,7 @@
                     <tr>
                         <td>${item.remarksText || ''}</td>
                         <td>${item.packageCount || 1}</td>
+                        <td>${item.itemCode}</td>
                         <td>${item.units}</td>
                         <td class="align-right">${item.weight.toFixed(2)}</td>
                         <td>${item.measure}</td>
@@ -1980,6 +1981,7 @@
                         <tr>
                             <td></td>
                             <td>1</td>
+                            <td>${item.itemCode}</td>
                             <td>${item.units}</td>
                             <td class="align-right">${item.weight.toFixed(2)}</td>
                             <td>${item.measure}</td>
@@ -2071,6 +2073,7 @@
                         <tr>
                             <th style="width: 8%;">C/No.</th>
                             <th style="width: 5%;">No. of Pkgs</th>
+                            <th style="width: 10%;">Item Code</th>
                             <th style="width: 7%;">No. of Units</th>
                             <th style="width: 8%;">Net Weight (KG)</th>
                             <th style="width: 8%;">Unit of Measure</th>
@@ -2086,6 +2089,7 @@
                     </tbody>
                     <tfoot>
                         <tr style="font-weight: 600; background-color: #f3f4f6;">
+                            <td></td>
                             <td></td>
                             <td></td>
                             <td>${totalUnits}</td>
