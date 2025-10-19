@@ -2101,7 +2101,27 @@
                     8: { cellWidth: 16 },
                     9: { cellWidth: 20, halign: 'right' },
                     10: { cellWidth: 26, halign: 'right' }
-                }
+                },
+                didDrawPage: function(data) {
+                    // Header（after page 2）
+                    if (data.pageNumber > 1) {
+                        pdf.setFontSize(9);
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('45rpm Studio. co., ltd', 15, 10);
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                        
+                        pdf.setDrawColor(28, 41, 64);
+                        pdf.setLineWidth(0.3);
+                        pdf.line(15, 12, 195, 12);
+                    }
+                    
+                    // page info
+                    pdf.setFontSize(7);
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(`Page ${data.pageNumber} of ${pdf.internal.getNumberOfPages()}`, 105, 287, { align: 'center' });
+                }   
             });
             
             yPos = pdf.lastAutoTable.finalY + 5;
