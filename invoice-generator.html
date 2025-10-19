@@ -2130,23 +2130,17 @@
             
             yPos = pdf.lastAutoTable.finalY + 5;
             
-            // Totals
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Subtotal:', 150, yPos, { align: 'right' });
-            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
-            
-            yPos += 5;
-            pdf.setLineWidth(0.5);
-            pdf.line(150, yPos, 195, yPos);
-            
-            yPos += 5;
+            // Invoice Total
             pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
             pdf.text('Invoice Total:', 150, yPos, { align: 'right' });
             pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
             
+            yPos += 2;
             pdf.setLineWidth(0.5);
-            pdf.line(150, yPos + 2, 195, yPos + 2);
+            pdf.line(150, yPos, 195, yPos);
+            yPos += 3;
+            pdf.line(150, yPos, 195, yPos);
             
             // Remarks for non-commercial items
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
@@ -2420,23 +2414,17 @@
             
             yPos = pdf.lastAutoTable.finalY + 5;
             
-            // Totals
-            pdf.setFontSize(8);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text('Subtotal:', 150, yPos, { align: 'right' });
-            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
-            
-            yPos += 5;
-            pdf.setLineWidth(0.5);
-            pdf.line(150, yPos, 195, yPos);
-            
-            yPos += 5;
+            // Invoice Total
             pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
             pdf.text('Invoice Total:', 150, yPos, { align: 'right' });
             pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
             
+            yPos += 2;
             pdf.setLineWidth(0.5);
-            pdf.line(150, yPos + 2, 195, yPos + 2);
+            pdf.line(150, yPos, 195, yPos);
+            yPos += 3;
+            pdf.line(150, yPos, 195, yPos);
             
             // Remarks
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
