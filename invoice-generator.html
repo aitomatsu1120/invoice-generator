@@ -1688,8 +1688,8 @@
             nonCommercialData.forEach((item, idx) => {
                 const row = tbody.insertRow();
                 row.innerHTML = `
-                    <td><input type="text" value="${item.description}" placeholder="Enter description"></td>
-                    <td><input type="number" value="${item.quantity}" min="0"></td>
+                    <td><input type="text" value="${item.description}" placeholder="Enter description" onchange="nonCommercialData[${idx}].description = this.value"></td>
+                    <td><input type="number" value="${item.quantity}" min="0" onchange="nonCommercialData[${idx}].quantity = parseInt(this.value) || 0"></td>
                     <td><button class="btn-delete" onclick="deleteNonCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
                 `;
             });
