@@ -2486,6 +2486,146 @@
             // Download PDF
             pdf.save(fileName);
         }
+
+        function downloadExcel() {
+            // Get invoice info
+            const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const serialValue = document.getElementById('invoiceSerial').value || '000';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}`;
+            const fileName = `${invoiceNo}.xlsx`;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const exporter = generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.';
+            const consignee = generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED';
+            const importer = generalInfo.importerName || 'Heritage R LTD.';
+            
+            // Prepare data
+            const excelData = [];
+            
+            // Header rows
+            excelData.push(['Commercial Invoice']);
+            excelData.push([]);
+            excelData.push(['Invoice No.:', invoiceNo]);
+            excelData.push(['Ship Date:', dateStr]);
+            excelData.push(['Exporter:', exporter]);
+            excelData.push(['Consignee:', consignee]);
+            excelData.push(['Importer:', importer]);
+            excelData.push([]);
+            
+            // Table headers
+            excelData.push([
+                'C/No.',
+                'No. of Pkgs',
+                'Item Code',
+                'No. of Units',
+                'Net Weight (KG)',
+                'Unit of Measure',
+                'Description of Goods',
+                'Harmonized Tariff Number',
+                'Country/Terr. of MFR',
+                'Unit Value (JPY)',
+                'Total Value (JPY)'
+            ]);
+            
+            // Product data
+            productData.forEach(item => {
+                excelData.push([
+                    item.remarksText || '',
+                    item.packageCount || 1,
+                    item.itemCode,
+                    item.units,
+                    item.weight.toFixed(2),
+                    item.measure,
+                    item.description,
+                    item.hsCode,
+                    item.country,
+                    item.unitValue,
+                    item.totalValue
+                ]);
+            });
+            
+            // No commercial data
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    excelData.push([
+                        '',
+                        1,
+                        item.itemCode,
+                        item.units,
+                        item.weight.toFixed(2),
+                        item.measure,
+                        item.description,
+                        item.hsCode,
+                        item.country,
+                        item.unitValue,
+                        item.totalValue
+                    ]);
+                }
+            });
+            
+            // Totals
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            excelData.push([
+                '',
+                '',
+                '',
+                totalUnits,
+                totalWeight.toFixed(2) + ' KG',
+                '',
+                '',
+                '',
+                '',
+                '',
+                subtotal
+            ]);
+            
+            excelData.push([]);
+            excelData.push(['Subtotal:', '', '', '', '', '', '', '', '', '', subtotal]);
+            excelData.push(['Invoice Total:', '', '', '', '', '', '', '', '', '', subtotal]);
+            
+            // Non-commercial items
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                excelData.push([]);
+                excelData.push(['REMARKS:']);
+                excelData.push(['This shipment also contains the following non-commercial items (no commercial value):']);
+                nonCommItems.forEach(item => {
+                    excelData.push([`${item.description}: ${item.quantity} pcs`]);
+                });
+            }
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 10 },  // C/No.
+                { wch: 12 },  // No. of Pkgs
+                { wch: 15 },  // Item Code
+                { wch: 12 },  // No. of Units
+                { wch: 15 },  // Net Weight
+                { wch: 15 },  // Unit of Measure
+                { wch: 25 },  // Description
+                { wch: 20 },  // HS Code
+                { wch: 15 },  // Country
+                { wch: 15 },  // Unit Value
+                { wch: 15 }   // Total Value
+            ];
+            
+            XLSX.utils.book_append_sheet(wb, ws, 'Invoice');
+            XLSX.writeFile(wb, fileName);
+        }
         
         function generateInvoiceHTML(invoiceNo) {
             const doc = document.getElementById('invoiceDocument');
@@ -2736,11 +2876,11 @@
                     <i data-lucide="printer" size="18"></i>
                     印刷 / Print
                 </button>
-                <button class="btn btn-primary btn-disabled" disabled>
+                <button class="btn btn-primary" onclick="downloadPDF()">
                     <i data-lucide="file-down" size="18"></i>
                     PDF
                 </button>
-                <button class="btn btn-primary btn-disabled" disabled>
+                <button class="btn btn-primary" onclick="downloadExcel()">
                     <i data-lucide="file-spreadsheet" size="18"></i>
                     Excel
                 </button>
