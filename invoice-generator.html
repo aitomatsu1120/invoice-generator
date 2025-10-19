@@ -1927,14 +1927,37 @@
                 const { jsPDF } = window.jspdf;
                 const pdf = new jsPDF('p', 'mm', 'a4');
                 
-                const imgWidth = 210;
+                const pageWidth = 210; // A4 width
+                const pageHeight = 297; // A4 height
+                const imgWidth = pageWidth;
                 const imgHeight = (canvas.height * imgWidth) / canvas.width;
                 
-                pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgHeight);
+                let heightLeft = imgHeight;
+                let position = 0;
+                
+                // First page
+                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+                
+                // Add additional pages if needed
+                while (heightLeft > 0) {
+                    position = heightLeft - imgHeight;
+                    pdf.addPage();
+                    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+                    heightLeft -= pageHeight;
+                }
+                
+                // Set filename
+                const invoiceNo = document.getElementById('invoiceYYMM').value + '-' + document.getElementById('invoiceSerial').value;
+                const fileName = `RPM-EC-${invoiceNo}.pdf`;
                 
                 const pdfBlob = pdf.output('blob');
                 const pdfUrl = URL.createObjectURL(pdfBlob);
-                window.open(pdfUrl, '_blank');
+                const newTab = window.open(pdfUrl, '_blank');
+                
+                if (newTab) {
+                    newTab.document.title = fileName;
+                }
                 
             } catch (error) {
                 console.error('PDF generation failed:', error);
