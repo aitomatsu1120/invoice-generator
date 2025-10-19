@@ -2201,6 +2201,291 @@
             const pdfUrl = URL.createObjectURL(pdfBlob);
             window.open(pdfUrl, '_blank');
         }
+
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            // Get data
+            const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const serialValue = document.getElementById('invoiceSerial').value || '000';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}`;
+            const fileName = `RPM-EC-${yymmValue}-${serialValue}.pdf`;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const exporter = {
+                name: generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.',
+                address: generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN',
+                tel: generalInfo.exporterTel || '81-3-3498-1345',
+                fax: generalInfo.exporterFax || '81-3-3486-7145'
+            };
+            
+            const consignee = {
+                name: generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED',
+                address: generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong',
+                contact: generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)',
+                tel: generalInfo.consigneeTel || '2127-4660',
+                email: generalInfo.consigneeEmail || 'fls.wh@fls.com.hk'
+            };
+            
+            const importer = {
+                name: generalInfo.importerName || 'Heritage R LTD.',
+                address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
+                tel: generalInfo.importerTel || '852-2956-3266',
+                fax: generalInfo.importerFax || '852-2956-1230'
+            };
+            
+            let yPos = 15;
+            
+            // Logo and header
+            const logoUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634';
+            try {
+                pdf.addImage(logoUrl, 'PNG', 15, yPos, 30, 10);
+            } catch(e) {
+                console.log('Logo load failed');
+            }
+            
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('45rpm Studio. co., ltd', 195, yPos + 3, { align: 'right' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7);
+            pdf.text('Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062', 195, yPos + 7, { align: 'right' });
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Invoice No.: ${invoiceNo}`, 195, yPos + 11, { align: 'right' });
+            
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(15, yPos + 15, 195, yPos + 15);
+            
+            yPos += 25;
+            
+            // Title
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Commercial Invoice', 105, yPos, { align: 'center' });
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Page 1 of 1', 105, yPos + 5, { align: 'center' });
+            
+            yPos += 12;
+            
+            // Information table
+            pdf.autoTable({
+                startY: yPos,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 2, lineColor: [28, 41, 64], lineWidth: 0.1 },
+                headStyles: { fillColor: false, textColor: [0, 0, 0], fontStyle: 'bold' },
+                body: [
+                    [
+                        { content: `EXPORTER:\n${exporter.name}\n${exporter.address}\nTEL: ${exporter.tel}\nFAX: ${exporter.fax}`, styles: { fontStyle: 'normal' } },
+                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: Bill 3rd Party\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
+                    ],
+                    [
+                        { content: `CONSIGNEE:\n${consignee.name}\n${consignee.address}\nContact: ${consignee.contact}\nTEL: ${consignee.tel}\nEmail: ${consignee.email}` },
+                        { content: `SOLD TO / IMPORTER:\n${importer.name}\n${importer.address}\nTEL: ${importer.tel}\nFAX: ${importer.fax}` }
+                    ]
+                ],
+                columnStyles: {
+                    0: { cellWidth: 95 },
+                    1: { cellWidth: 95 }
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 3;
+            pdf.setFontSize(7);
+            pdf.text('Parties to Transaction: Non-Related', 15, yPos);
+            
+            yPos += 5;
+            
+            // Product table
+            const tableData = [];
+            
+            productData.forEach(item => {
+                tableData.push([
+                    item.remarksText || '',
+                    item.packageCount || 1,
+                    item.itemCode,
+                    item.units,
+                    item.weight.toFixed(2),
+                    item.measure,
+                    item.description,
+                    item.hsCode,
+                    item.country,
+                    item.unitValue.toLocaleString(),
+                    item.totalValue.toLocaleString()
+                ]);
+            });
+            
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    tableData.push([
+                        '',
+                        1,
+                        item.itemCode,
+                        item.units,
+                        item.weight.toFixed(2),
+                        item.measure,
+                        item.description,
+                        item.hsCode,
+                        item.country,
+                        item.unitValue.toLocaleString(),
+                        item.totalValue.toLocaleString()
+                    ]);
+                }
+            });
+            
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            pdf.autoTable({
+                startY: yPos,
+                head: [[
+                    'C/No.', 'No. of Pkgs', 'Item Code', 'No. of Units', 
+                    'Net Weight (KG)', 'Unit of Measure', 'Description of Goods',
+                    'Harmonized Tariff Number', 'Country/Terr. of MFR',
+                    'Unit Value (JPY)', 'Total Value (JPY)'
+                ]],
+                body: tableData,
+                foot: [[
+                    '', '', '', totalUnits, `${totalWeight.toFixed(2)} KG`, '', '', '', '', '', `JPY ${subtotal.toLocaleString()}`
+                ]],
+                showFoot: 'lastPage',
+                theme: 'grid',
+                styles: { 
+                    fontSize: 6, 
+                    cellPadding: 1.5,
+                    lineColor: [209, 213, 219],
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    fillColor: [28, 41, 64],
+                    textColor: [255, 255, 255],
+                    fontSize: 5.5,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                footStyles: {
+                    fillColor: [243, 244, 246],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    fontSize: 6
+                },
+                columnStyles: {
+                    0: { cellWidth: 12 },
+                    1: { cellWidth: 10 },
+                    2: { cellWidth: 16 },
+                    3: { cellWidth: 12 },
+                    4: { cellWidth: 14, halign: 'right' },
+                    5: { cellWidth: 14 },
+                    6: { cellWidth: 24 },
+                    7: { cellWidth: 22 },
+                    8: { cellWidth: 16 },
+                    9: { cellWidth: 20, halign: 'right' },
+                    10: { cellWidth: 26, halign: 'right' }
+                },
+                didDrawPage: function(data) {
+                    if (data.pageNumber > 1) {
+                        pdf.setFontSize(9);
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('45rpm Studio. co., ltd', 15, 10);
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                        
+                        pdf.setDrawColor(28, 41, 64);
+                        pdf.setLineWidth(0.3);
+                        pdf.line(15, 12, 195, 12);
+                    }
+                    
+                    pdf.setFontSize(7);
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(`Page ${data.pageNumber} of ${pdf.internal.getNumberOfPages()}`, 105, 287, { align: 'center' });
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 5;
+            
+            // Totals
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Subtotal:', 150, yPos, { align: 'right' });
+            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
+            
+            yPos += 5;
+            pdf.setLineWidth(0.5);
+            pdf.line(150, yPos, 195, yPos);
+            
+            yPos += 5;
+            pdf.setFontSize(9);
+            pdf.text('Invoice Total:', 150, yPos, { align: 'right' });
+            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
+            
+            pdf.setLineWidth(0.5);
+            pdf.line(150, yPos + 2, 195, yPos + 2);
+            
+            // Remarks
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                yPos += 10;
+                pdf.setFillColor(249, 250, 251);
+                pdf.rect(15, yPos - 3, 180, 15 + (nonCommItems.length * 4), 'F');
+                pdf.setDrawColor(28, 41, 64);
+                pdf.setLineWidth(1);
+                pdf.line(15, yPos - 3, 15, yPos + 12 + (nonCommItems.length * 4));
+                
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('REMARKS:', 18, yPos);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7);
+                yPos += 4;
+                pdf.text('This shipment also contains the following non-commercial items (no commercial value):', 18, yPos);
+                yPos += 4;
+                nonCommItems.forEach(item => {
+                    pdf.text(`• ${item.description}: ${item.quantity} pcs`, 18, yPos);
+                    yPos += 4;
+                });
+            }
+            
+            yPos += 10;
+            
+            // Declaration
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Declaration Statement:', 15, yPos);
+            pdf.setFont('helvetica', 'normal');
+            yPos += 4;
+            pdf.text('I declare that all the information contained in this invoice is true and correct.', 15, yPos);
+            
+            yPos += 15;
+            
+            // Signature
+            pdf.setLineWidth(0.3);
+            pdf.line(15, yPos, 90, yPos);
+            pdf.line(110, yPos, 195, yPos);
+            
+            pdf.setFontSize(7);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text(`Date: ${dateStr}`, 15, yPos + 4);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(exporter.name, 152.5, yPos - 4, { align: 'center' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Company Name', 152.5, yPos + 4, { align: 'center' });
+            
+            // Download PDF
+            pdf.save(fileName);
+        }
         
         function generateInvoiceHTML(invoiceNo) {
             const doc = document.getElementById('invoiceDocument');
