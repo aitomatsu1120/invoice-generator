@@ -1044,6 +1044,10 @@
                 <i data-lucide="settings" size="18"></i>
                 Manage Presets
             </button>
+            <button class="btn btn-primary" onclick="resetAllData()" style="background-color: #ef4444;">
+                <i data-lucide="refresh-cw" size="18"></i>
+                Reset Data
+            </button>
         </div>
     </header>
     
@@ -2916,6 +2920,16 @@
             
             XLSX.utils.book_append_sheet(wb, ws, 'Invoice');
             XLSX.writeFile(wb, fileName);
+        }
+
+        function resetAllData() {
+            if (confirm('すべての保存データ（プリセット・会社情報・価格設定）を削除しますか？\n\nこの操作は取り消せません。')) {
+                localStorage.removeItem('invoicePresets');
+                localStorage.removeItem('generalInfo');
+                localStorage.removeItem('pricePercentage');
+                alert('保存データをリセットしました。\nページを再読み込みします。');
+                location.reload();
+            }
         }
         
         function generateInvoiceHTML(invoiceNo) {
