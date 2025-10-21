@@ -2903,8 +2903,8 @@
                 '',
                 '',
                 '',
-                totalUnits,
-                totalWeight.toFixed(2) + ' KG',
+                '',
+                '',
                 '',
                 '',
                 '',
@@ -2914,7 +2914,7 @@
             ]);
             
             excelData.push([]);
-            excelData.push(['Invoice Total:', '', '', '', '', '', '', '', '', '', parseFloat(subtotal)]);
+            excelData.push(['Invoice Total:', '', '', totalUnits, '', '', '', '', '', '', parseFloat(subtotal)]);
             
             // Non-commercial items
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
