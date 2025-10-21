@@ -2433,19 +2433,26 @@
                 }
             });
             
-            yPos = pdf.lastAutoTable.finalY + 5;
+            yPos = pdf.lastAutoTable.finalY + 10;
+
+            // Invoice Total (上の線)
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
             
-            // Invoice Total
-            pdf.setFontSize(9);
+            yPos += 6;
+            
+            // Invoice Total テキスト
+            pdf.setFontSize(11);
             pdf.setFont('helvetica', 'bold');
-            pdf.text('Invoice Total:', 150, yPos, { align: 'right' });
+            pdf.text('Invoice Total:', 145, yPos, { align: 'right' });
             pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
             
             yPos += 2;
-            pdf.setLineWidth(0.8);
-            pdf.line(150, yPos, 195, yPos);
-            yPos += 1.5;
-            pdf.line(150, yPos, 195, yPos);
+            
+            // Invoice Total (下の線)
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
             
             // Remarks
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
@@ -2729,19 +2736,26 @@
                 }
             });
             
-            yPos = pdf.lastAutoTable.finalY + 5;
+            yPos = pdf.lastAutoTable.finalY + 10;
+
+            // Invoice Total (上の線)
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
             
-           // Invoice Total
-            pdf.setFontSize(9);
+            yPos += 6;
+            
+            // Invoice Total テキスト
+            pdf.setFontSize(11);
             pdf.setFont('helvetica', 'bold');
-            pdf.text('Invoice Total:', 150, yPos, { align: 'right' });
+            pdf.text('Invoice Total:', 145, yPos, { align: 'right' });
             pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
             
             yPos += 2;
+            
+            // Invoice Total (下の線)
             pdf.setLineWidth(0.5);
-            pdf.line(150, yPos, 195, yPos);
-            yPos += 1;
-            pdf.line(150, yPos, 195, yPos);
+            pdf.line(120, yPos, 195, yPos);
             
             // Remarks
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
