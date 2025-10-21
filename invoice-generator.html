@@ -2911,9 +2911,10 @@
             
             excelData.push([]);
             excelData.push(['Invoice Total:', totalUnits, '', '', '', '', '', 
-                { f: `SUM(H9:H${currentRow-1})`, z: '#,##0' },
+                { f: `SUM(H10:H${currentRow-1})`, z: '#,##0' },
                 '',
-                { f: `SUM(K9:K${currentRow-1})`, z: '#,##0.00' }
+                { f: `SUM(J10:J${currentRow-1})`, z: '#,##0.00' },
+                { f: `SUM(K10:K${currentRow-1})`, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
