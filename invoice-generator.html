@@ -2906,7 +2906,7 @@
             }, 0);
             
             excelData.push([]);
-            excelData.push(['Invoice Total:', totalUnits, '', '', '', '', parseFloat(subtotalJPY), '', parseFloat(Math.round(subtotalHKD * 100) / 100)]);
+            excelData.push(['Invoice Total:', totalUnits, '', '', '', '', '', parseFloat(subtotalJPY), '', parseFloat(Math.round(subtotalHKD * 100) / 100)]);
             
             // Non-commercial items
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
@@ -2936,6 +2936,29 @@
             { wch: 15 },  // Unit Value (HKD)
             { wch: 15 }   // Total Value (HKD)
         ];
+
+            // フォーマット設定
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            
+            // 各セルにフォーマットを適用
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (!ws[cell_address]) continue;
+                    
+                    const cell = ws[cell_address];
+                    
+                    // Unit Value (JPY) と Total Value (JPY) の列（7列目と8列目、インデックス6と7）
+                    if ((C === 6 || C === 7) && R >= 9 && typeof cell.v === 'number') {
+                        cell.z = '#,##0';
+                    }
+                    
+                    // Unit Value (HKD) と Total Value (HKD) の列（9列目と10列目、インデックス8と9）
+                    if ((C === 8 || C === 9) && R >= 9 && typeof cell.v === 'number') {
+                        cell.z = '#,##0.00';
+                    }
+                }
+            }
             
             XLSX.utils.book_append_sheet(wb, ws, 'Invoice');
             XLSX.writeFile(wb, fileName);
