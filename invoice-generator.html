@@ -1290,6 +1290,10 @@
                             <label>FAX</label>
                             <input type="text" id="importerFax" value="852-2956-1230">
                         </div>
+                        <div class="form-group full-width">
+                            <label>Email</label>
+                            <input type="email" id="importerEmail" value="info@45rglobal.com">
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1804,6 +1808,7 @@
             document.getElementById('importerAddress').value = generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG';
             document.getElementById('importerTel').value = generalInfo.importerTel || '852-2956-3266';
             document.getElementById('importerFax').value = generalInfo.importerFax || '852-2956-1230';
+            document.getElementById('importerEmail').value = generalInfo.importerEmail || 'info@45rglobal.com'; 
         }
 
         function saveGeneralInfo() {
@@ -1951,6 +1956,7 @@
                 address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
                 tel: generalInfo.importerTel || '852-2956-3266',
                 fax: generalInfo.importerFax || '852-2956-1230'
+                importerEmail: document.getElementById('importerEmail').value,
             };
             
             let yPos = 15;
