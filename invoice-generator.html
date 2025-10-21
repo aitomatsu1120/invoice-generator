@@ -2024,39 +2024,38 @@
             
             yPos += 5;
             
-            // Product table
-            const tableData = [];
-            
+            // Product data
             productData.forEach(item => {
-                tableData.push([
+                excelData.push([
                     item.remarksText || '',
                     item.packageCount || 1,
                     item.itemCode,
                     item.units,
-                    item.weight.toFixed(2),
+                    parseFloat(item.weight.toFixed(2)),
                     item.measure,
                     item.description,
                     item.hsCode,
                     item.country,
-                    item.unitValue.toLocaleString(),
-                    item.totalValue.toLocaleString()
+                    parseFloat(item.unitValue),
+                    parseFloat(item.totalValue)
                 ]);
             });
             
+            // No commercial data
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
-                    tableData.push([
+                    excelData.push([
                         '',
                         1,
                         item.itemCode,
                         item.units,
-                        item.weight.toFixed(2),
+                        parseFloat(item.weight.toFixed(2)),
                         item.measure,
                         item.description,
                         item.hsCode,
                         item.country,
-                        item.unitValue.toLocaleString(),
-                        item.totalValue.toLocaleString()
+                        parseFloat(item.unitValue),
+                        parseFloat(item.totalValue)
                     ]);
                 }
             });
@@ -2911,12 +2910,11 @@
                 '',
                 '',
                 '',
-                subtotal
+                parseFloat(subtotal)
             ]);
             
             excelData.push([]);
-            excelData.push(['Subtotal:', '', '', '', '', '', '', '', '', '', subtotal]);
-            excelData.push(['Invoice Total:', '', '', '', '', '', '', '', '', '', subtotal]);
+            excelData.push(['Invoice Total:', '', '', '', '', '', '', '', '', '', parseFloat(subtotal)]);
             
             // Non-commercial items
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
