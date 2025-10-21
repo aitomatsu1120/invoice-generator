@@ -2866,7 +2866,7 @@
                     { t: 'n', v: item.originalRRP || 0, z: '#,##0' },
                     { f: `E${currentRow}*0.42`, z: '#,##0' },
                     { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
-                    { f: `F${currentRow}*0.054`, z: '#,##0.00' },
+                    { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
                     { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                 ]);
                 currentRow++;
@@ -2883,7 +2883,7 @@
                         { t: 'n', v: 0, z: '#,##0' },
                         item.unitValue,
                         { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
-                        { f: `F${currentRow}*0.054`, z: '#,##0.00' },
+                        { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
                         { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                     ]);
                     currentRow++;
