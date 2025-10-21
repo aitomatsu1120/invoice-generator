@@ -2846,9 +2846,7 @@
             excelData.push([
                 'Item Code',
                 'No. of Units',
-                'Unit of Measure',
                 'Description of Goods',
-                'Harmonized Tariff Number',
                 'Country/Terr. of MFR',
                 'JP Original RRP (JPY)',
                 'Unit Value (JPY)',
@@ -2863,15 +2861,13 @@
                 excelData.push([
                     item.itemCode,
                     item.units,
-                    item.measure,
                     item.description,
-                    item.hsCode,
                     item.country,
                     item.originalRRP || 0,
-                    { f: `G${currentRow}*0.42`, z: '#,##0' },
-                    { f: `H${currentRow}*B${currentRow}`, z: '#,##0' },
-                    { f: `H${currentRow}*0.054`, z: '#,##0.00' },
-                    { f: `J${currentRow}*B${currentRow}`, z: '#,##0.00' }
+                    { f: `E${currentRow}*0.42`, z: '#,##0' },
+                    { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
+                    { f: `F${currentRow}*0.054`, z: '#,##0.00' },
+                    { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                 ]);
                 currentRow++;
             });
@@ -2882,15 +2878,13 @@
                     excelData.push([
                         item.itemCode,
                         item.units,
-                        item.measure,
                         item.description,
-                        item.hsCode,
                         item.country,
                         0,
                         item.unitValue,
-                        { f: `H${currentRow}*B${currentRow}`, z: '#,##0' },
-                        { f: `H${currentRow}*0.054`, z: '#,##0.00' },
-                        { f: `J${currentRow}*B${currentRow}`, z: '#,##0.00' }
+                        { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
+                        { f: `F${currentRow}*0.054`, z: '#,##0.00' },
+                        { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                     ]);
                     currentRow++;
                 }
@@ -2909,12 +2903,11 @@
                 return sum + (unitValueHKD * item.units);
             }, 0);
             
-            excelData.push([]);
-            excelData.push(['Invoice Total:', totalUnits, '', '', '', '', '', 
-                { f: `SUM(H10:H${currentRow-1})`, z: '#,##0' },
+            excelData.push(['Invoice Total:', totalUnits, '', '', '', 
+                { f: `SUM(F10:F${currentRow-1})`, z: '#,##0' },
                 '',
-                { f: `SUM(J10:J${currentRow-1})`, z: '#,##0.00' },
-                { f: `SUM(K10:K${currentRow-1})`, z: '#,##0.00' }
+                { f: `SUM(H10:H${currentRow-1})`, z: '#,##0.00' },
+                { f: `SUM(I10:I${currentRow-1})`, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
@@ -2934,17 +2927,16 @@
             
             // Set column widths
             ws['!cols'] = [
-            { wch: 15 },  // Item Code
-            { wch: 12 },  // No. of Units
-            { wch: 15 },  // Unit of Measure
-            { wch: 25 },  // Description
-            { wch: 20 },  // HS Code
-            { wch: 15 },  // Country
-            { wch: 15 },  // Unit Value (JPY)
-            { wch: 15 },  // Total Value (JPY)
-            { wch: 15 },  // Unit Value (HKD)
-            { wch: 15 }   // Total Value (HKD)
-        ];
+                { wch: 15 },  // Item Code
+                { wch: 12 },  // No. of Units
+                { wch: 30 },  // Description
+                { wch: 15 },  // Country
+                { wch: 18 },  // JP Original RRP (JPY)
+                { wch: 15 },  // Unit Value (JPY)
+                { wch: 15 },  // Total Value (JPY)
+                { wch: 15 },  // Unit Value (HKD)
+                { wch: 15 }   // Total Value (HKD)
+            ];
 
             // フォーマット設定
             const range = XLSX.utils.decode_range(ws['!ref']);
