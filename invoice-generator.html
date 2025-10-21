@@ -1563,7 +1563,9 @@
                         weightPerUnit: getWeightByCategory(row['アイテム']),
                         measure: 'PCS', description: hsResult.description,
                         matched: hsResult.descMatched, hsCode: hsResult.hsCode,
-                        country: convertCountryCode(row['原産国']), unitValue: calculatePrice(row['上代'] || 0),
+                        country: convertCountryCode(row['原産国']), 
+                        originalRRP: row['上代'] || 0,
+                        unitValue: calculatePrice(row['上代'] || 0),
                         totalValue: 0, matchType: hsResult.matchType,
                         packageNos: [row['C/No.'] || 1]
                     };
@@ -2848,6 +2850,7 @@
                 'Description of Goods',
                 'Harmonized Tariff Number',
                 'Country/Terr. of MFR',
+                'JP Original RRP (JPY)',
                 'Unit Value (JPY)',
                 'Total Value (JPY)',
                 'Unit Value (HKD)',
@@ -2855,9 +2858,8 @@
             ]);
             
             // Product data
+            let currentRow = 9; // ヘッダー行の次の行から開始
             productData.forEach(item => {
-                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                const totalValueHKD = Math.round(unitValueHKD * item.units * 100) / 100;
                 excelData.push([
                     item.itemCode,
                     item.units,
@@ -2865,18 +2867,18 @@
                     item.description,
                     item.hsCode,
                     item.country,
-                    parseFloat(item.unitValue),
-                    parseFloat(item.totalValue),
-                    parseFloat(unitValueHKD),
-                    parseFloat(totalValueHKD)
+                    item.originalRRP || 0,
+                    { f: `G${currentRow}*0.42`, z: '#,##0' },
+                    { f: `H${currentRow}*B${currentRow}`, z: '#,##0' },
+                    { f: `H${currentRow}*0.054`, z: '#,##0.00' },
+                    { f: `J${currentRow}*B${currentRow}`, z: '#,##0.00' }
                 ]);
+                currentRow++;
             });
             
             // No commercial data
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
-                    const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                    const totalValueHKD = Math.round(unitValueHKD * item.units * 100) / 100;
                     excelData.push([
                         item.itemCode,
                         item.units,
@@ -2884,11 +2886,13 @@
                         item.description,
                         item.hsCode,
                         item.country,
-                        parseFloat(item.unitValue),
-                        parseFloat(item.totalValue),
-                        parseFloat(unitValueHKD),
-                        parseFloat(totalValueHKD)
+                        0,
+                        item.unitValue,
+                        { f: `H${currentRow}*B${currentRow}`, z: '#,##0' },
+                        { f: `H${currentRow}*0.054`, z: '#,##0.00' },
+                        { f: `J${currentRow}*B${currentRow}`, z: '#,##0.00' }
                     ]);
+                    currentRow++;
                 }
             });
             
@@ -2906,7 +2910,11 @@
             }, 0);
             
             excelData.push([]);
-            excelData.push(['Invoice Total:', totalUnits, '', '', '', '', '', parseFloat(subtotalJPY), '', parseFloat(Math.round(subtotalHKD * 100) / 100)]);
+            excelData.push(['Invoice Total:', totalUnits, '', '', '', '', '', 
+                { f: `SUM(H9:H${currentRow-1})`, z: '#,##0' },
+                '',
+                { f: `SUM(K9:K${currentRow-1})`, z: '#,##0.00' }
+            ]);
             
             // Non-commercial items
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
