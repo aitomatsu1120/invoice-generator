@@ -2842,51 +2842,52 @@
             
             // Table headers
             excelData.push([
-                'C/No.',
-                'No. of Pkgs',
                 'Item Code',
                 'No. of Units',
-                'Net Weight (KG)',
                 'Unit of Measure',
                 'Description of Goods',
                 'Harmonized Tariff Number',
                 'Country/Terr. of MFR',
                 'Unit Value (JPY)',
-                'Total Value (JPY)'
+                'Total Value (JPY)',
+                'Unit Value (HKD)',
+                'Total Value (HKD)'
             ]);
             
             // Product data
             productData.forEach(item => {
+                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                const totalValueHKD = Math.round(unitValueHKD * item.units * 100) / 100;
                 excelData.push([
-                    item.remarksText || '',
-                    item.packageCount || 1,
                     item.itemCode,
                     item.units,
-                    item.weight.toFixed(2),
                     item.measure,
                     item.description,
                     item.hsCode,
                     item.country,
-                    item.unitValue,
-                    item.totalValue
+                    parseFloat(item.unitValue),
+                    parseFloat(item.totalValue),
+                    parseFloat(unitValueHKD),
+                    parseFloat(totalValueHKD)
                 ]);
             });
             
             // No commercial data
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
+                    const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                    const totalValueHKD = Math.round(unitValueHKD * item.units * 100) / 100;
                     excelData.push([
-                        '',
-                        1,
                         item.itemCode,
                         item.units,
-                        item.weight.toFixed(2),
                         item.measure,
                         item.description,
                         item.hsCode,
                         item.country,
-                        item.unitValue,
-                        item.totalValue
+                        parseFloat(item.unitValue),
+                        parseFloat(item.totalValue),
+                        parseFloat(unitValueHKD),
+                        parseFloat(totalValueHKD)
                     ]);
                 }
             });
@@ -2894,13 +2895,18 @@
             // Totals
             const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
-                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
-                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            const subtotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            const subtotalHKD = productData.reduce((sum, item) => {
+                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                return sum + (unitValueHKD * item.units);
+            }, 0) + noCommercialData.reduce((sum, item) => {
+                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                return sum + (unitValueHKD * item.units);
+            }, 0);
             
-            
-            excelData.push(['Invoice Total:', '', '', totalUnits, '', '', '', '', '', '', parseFloat(subtotal)]);
+            excelData.push([]);
+            excelData.push(['Invoice Total:', totalUnits, '', '', '', '', parseFloat(subtotalJPY), '', parseFloat(Math.round(subtotalHKD * 100) / 100)]);
             
             // Non-commercial items
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
@@ -2919,18 +2925,17 @@
             
             // Set column widths
             ws['!cols'] = [
-                { wch: 10 },  // C/No.
-                { wch: 12 },  // No. of Pkgs
-                { wch: 15 },  // Item Code
-                { wch: 12 },  // No. of Units
-                { wch: 15 },  // Net Weight
-                { wch: 15 },  // Unit of Measure
-                { wch: 25 },  // Description
-                { wch: 20 },  // HS Code
-                { wch: 15 },  // Country
-                { wch: 15 },  // Unit Value
-                { wch: 15 }   // Total Value
-            ];
+            { wch: 15 },  // Item Code
+            { wch: 12 },  // No. of Units
+            { wch: 15 },  // Unit of Measure
+            { wch: 25 },  // Description
+            { wch: 20 },  // HS Code
+            { wch: 15 },  // Country
+            { wch: 15 },  // Unit Value (JPY)
+            { wch: 15 },  // Total Value (JPY)
+            { wch: 15 },  // Unit Value (HKD)
+            { wch: 15 }   // Total Value (HKD)
+        ];
             
             XLSX.utils.book_append_sheet(wb, ws, 'Invoice');
             XLSX.writeFile(wb, fileName);
