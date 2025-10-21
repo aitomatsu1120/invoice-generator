@@ -2899,21 +2899,7 @@
             const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
                              noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
-            excelData.push([
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                '',
-                parseFloat(subtotal)
-            ]);
             
-            excelData.push([]);
             excelData.push(['Invoice Total:', '', '', totalUnits, '', '', '', '', '', '', parseFloat(subtotal)]);
             
             // Non-commercial items
