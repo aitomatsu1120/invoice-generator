@@ -2468,6 +2468,12 @@
             // Invoice Total (下の線)
             pdf.setLineWidth(0.5);
             pdf.line(120, yPos, 195, yPos);
+
+            // ページが残り少ない場合は新しいページを追加
+            if (yPos > 220) {
+                pdf.addPage();
+                yPos = 20;
+            }
             
             // Remarks
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
@@ -2775,6 +2781,12 @@
             // Invoice Total (下の線)
             pdf.setLineWidth(0.5);
             pdf.line(120, yPos, 195, yPos);
+
+            // ページが残り少ない場合は新しいページを追加
+            if (yPos > 220) {
+                pdf.addPage();
+                yPos = 20;
+            }
             
             // Remarks
             const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
