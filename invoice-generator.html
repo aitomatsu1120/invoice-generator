@@ -1362,39 +1362,348 @@
         };
         
         const MATERIAL_BUCKETS = {
-            'ウール': 'Wool', '毛': 'Wool', 'アルパカ': 'Wool', 'WOOL': 'Wool',
-            'カシミヤ': 'Cashmere', 'カシミア': 'Cashmere', 'CASHMERE': 'Cashmere',
-            'コットン': 'Cotton', '綿': 'Cotton', 'COTTON': 'Cotton',
-            'ポリエステル': 'Synthetic', 'ナイロン': 'Synthetic', 'アクリル': 'Synthetic',
-            'レーヨン': 'Artificial', 'RAYON': 'Artificial', 'VISCOSE': 'Artificial',
-            'シルク': 'Silk', '絹': 'Silk', 'SILK': 'Silk'
+            // Wool/Animal Hair
+            'ウール': 'Wool', 'ｳｰﾙ': 'Wool', '毛': 'Wool', 'アルパカ': 'Wool', 'WOOL': 'Wool', 'Wool': 'Wool',
+            
+            // Cashmere
+            'カシミヤ': 'Cashmere', 'カシミア': 'Cashmere', 'ｶｼﾐﾔ': 'Cashmere', 'ｶｼﾐｱ': 'Cashmere', 'CASHMERE': 'Cashmere', 'Cashmere': 'Cashmere',
+            
+            // Cotton
+            'コットン': 'Cotton', 'ｺｯﾄﾝ': 'Cotton', '綿': 'Cotton', 'COTTON': 'Cotton', 'Cotton': 'Cotton',
+            
+            // Linen (麻系)
+            'リネン': 'Cotton', 'ﾘﾈﾝ': 'Cotton', '麻': 'Cotton', 'LINEN': 'Cotton', 'Linen': 'Cotton',
+            'ラミー': 'Cotton', 'ﾗﾐｰ': 'Cotton', 'RAMIE': 'Cotton', 'Ramie': 'Cotton',
+            
+            // Synthetic Fibers
+            'ポリエステル': 'Synthetic', 'ﾎﾟﾘｴｽﾃﾙ': 'Synthetic', 'ナイロン': 'Synthetic', 'ﾅｲﾛﾝ': 'Synthetic', 
+            'アクリル': 'Synthetic', 'ｱｸﾘﾙ': 'Synthetic', 'NYLON': 'Synthetic', 'Nylon': 'Synthetic',
+            'POLYESTER': 'Synthetic', 'Polyester': 'Synthetic',
+            
+            // Artificial Fibres
+            'レーヨン': 'Artificial', 'ﾚｰﾖﾝ': 'Artificial', 'RAYON': 'Artificial', 'Rayon': 'Artificial',
+            'キュプロ': 'Artificial', 'キュプラ': 'Artificial', 'ｷｭﾌﾟﾛ': 'Artificial', 'ｷｭﾌﾟﾗ': 'Artificial',
+            'CUPRO': 'Artificial', 'Cupro': 'Artificial', 'VISCOSE': 'Artificial',
+            
+            // Silk
+            'シルク': 'Silk', 'ｼﾙｸ': 'Silk', '絹': 'Silk', 'SILK': 'Silk', 'Silk': 'Silk',
+            
+            // Denim (special case)
+            'デニム': 'Denim', 'ﾃﾞﾆﾑ': 'Denim', 'DENIM': 'Denim', 'Denim': 'Denim'
         };
         
         const HS_CODE_RULES = {
-            "Jacket-Knit-M-Wool": "61033100", "Jacket-Knit-M-Cotton": "61033200",
-            "Jacket-Knit-W-Wool": "61043100", "Jacket-Knit-W-Cotton": "61043200",
-            "Jacket-Woven-M-Wool": "62033100", "Jacket-Woven-M-Cotton": "62033290",
-            "Jacket-Woven-W-Wool": "62043100", "Jacket-Woven-W-Cotton": "62043290",
-            "Coat-Knit-M-Wool": "61019010", "Coat-Knit-M-Cotton": "61012000",
-            "Coat-Knit-W-Wool": "61021000", "Coat-Knit-W-Cotton": "61022000",
-            "Coat-Woven-M-Wool": "62012000", "Coat-Woven-M-Cotton": "62013090",
-            "Coat-Woven-W-Wool": "62022000", "Coat-Woven-W-Cotton": "62023090",
-            "Shirt-Woven-M-Cotton": "62052020", "Shirt-Woven-W-Cotton": "62063010",
-            "Knit Top-Knit-M-Cotton": "61091010", "Knit Top-Knit-W-Cotton": "61091010",
-            "Skirt-Knit-W-Cotton": "61045200", "Skirt-Woven-W-Cotton": "62045290",
-            "Dress-Knit-W-Cotton": "61044200", "Dress-Woven-W-Cotton": "62044290",
-            "Pants-Knit-M-Cotton": "61034210", "Pants-Knit-W-Cotton": "61046210",
-            "Pants-Woven-M-Cotton": "62034240", "Pants-Woven-W-Cotton": "62046280",
-            "Goods": "42029260"
+            // ===== JACKET (ブルゾン・ジャケット) =====
+            // Knit - Men's
+            "Jacket-Knit-M-Wool": "61033100",
+            "Jacket-Knit-M-Cotton": "61033200",
+            "Jacket-Knit-M-Synthetic": "61033300",
+            "Jacket-Knit-M-Artificial": "61033910",
+            "Jacket-Knit-M-Other": "61033990",
+            // Knit - Women's
+            "Jacket-Knit-W-Wool": "61043100",
+            "Jacket-Knit-W-Cotton": "61043200",
+            "Jacket-Knit-W-Synthetic": "61043300",
+            "Jacket-Knit-W-Artificial": "61043910",
+            "Jacket-Knit-W-Other": "61043990",
+            // Woven - Men's
+            "Jacket-Woven-M-Wool": "62033100",
+            "Jacket-Woven-M-Denim": "62033210",
+            "Jacket-Woven-M-Cotton": "62033290",
+            "Jacket-Woven-M-Synthetic": "62033300",
+            "Jacket-Woven-M-Artificial": "62033910",
+            "Jacket-Woven-M-Silk": "62033920",
+            "Jacket-Woven-M-Other": "62033990",
+            // Woven - Women's
+            "Jacket-Woven-W-Wool": "62043100",
+            "Jacket-Woven-W-Denim": "62043210",
+            "Jacket-Woven-W-Cotton": "62043290",
+            "Jacket-Woven-W-Synthetic": "62043300",
+            "Jacket-Woven-W-Artificial": "62043910",
+            "Jacket-Woven-W-Silk": "62043920",
+            "Jacket-Woven-W-Other": "62043990",
+            
+            // ===== VEST (ベスト) =====
+            // Knit - Men's
+            "Vest-Knit-M-Wool": "61101110",
+            "Vest-Knit-M-Cashmere": "61101210",
+            "Vest-Knit-M-Cotton": "61102010",
+            "Vest-Knit-M-Synthetic": "61103010",
+            "Vest-Knit-M-Silk": "61109010",
+            "Vest-Knit-M-Other": "61109080",
+            // Knit - Women's
+            "Vest-Knit-W-Wool": "61101120",
+            "Vest-Knit-W-Cashmere": "61101220",
+            "Vest-Knit-W-Cotton": "61102020",
+            "Vest-Knit-W-Synthetic": "61103020",
+            "Vest-Knit-W-Silk": "61109020",
+            "Vest-Knit-W-Other": "61109090",
+            
+            // ===== COAT (コート) =====
+            // Knit - Men's
+            "Coat-Knit-M-Wool": "61019010",
+            "Coat-Knit-M-Cotton": "61012000",
+            "Coat-Knit-M-Synthetic": "61013010",
+            "Coat-Knit-M-Other": "61019090",
+            // Knit - Women's
+            "Coat-Knit-W-Wool": "61021000",
+            "Coat-Knit-W-Cotton": "61022000",
+            "Coat-Knit-W-Synthetic": "61023010",
+            "Coat-Knit-W-Other": "61029090",
+            // Woven - Men's
+            "Coat-Woven-M-Wool": "62012000",
+            "Coat-Woven-M-Cotton": "62013090",
+            "Coat-Woven-M-Synthetic": "62014010",
+            "Coat-Woven-M-Other": "62019090",
+            // Woven - Women's
+            "Coat-Woven-W-Wool": "62022000",
+            "Coat-Woven-W-Cotton": "62023090",
+            "Coat-Woven-W-Synthetic": "62024010",
+            "Coat-Woven-W-Other": "62029090",
+            
+            // ===== SHIRT (シャツ) =====
+            // Woven - Men's
+            "Shirt-Woven-M-Wool": "62059030",
+            "Shirt-Woven-M-Denim": "62052010",
+            "Shirt-Woven-M-Cotton": "62052020",
+            "Shirt-Woven-M-Synthetic": "62053010",
+            "Shirt-Woven-M-Silk": "62059010",
+            "Shirt-Woven-M-Other": "62059080",
+            // Woven - Women's
+            "Shirt-Woven-W-Wool": "62062010",
+            "Shirt-Woven-W-Cotton": "62063010",
+            "Shirt-Woven-W-Synthetic": "62064010",
+            "Shirt-Woven-W-Silk": "62061010",
+            "Shirt-Woven-W-Other": "62069010",
+            
+            // ===== SKIRT (スカート) =====
+            // Knit - Women's
+            "Skirt-Knit-W-Wool": "61045100",
+            "Skirt-Knit-W-Cotton": "61045200",
+            "Skirt-Knit-W-Synthetic": "61045300",
+            "Skirt-Knit-W-Artificial": "61045910",
+            "Skirt-Knit-W-Other": "61045990",
+            // Woven - Women's
+            "Skirt-Woven-W-Wool": "62045100",
+            "Skirt-Woven-W-Denim": "62045210",
+            "Skirt-Woven-W-Cotton": "62045290",
+            "Skirt-Woven-W-Synthetic": "62045300",
+            "Skirt-Woven-W-Artificial": "62045910",
+            "Skirt-Woven-W-Silk": "62045920",
+            "Skirt-Woven-W-Other": "62045990",
+            
+            // ===== DRESS (ワンピース) =====
+            // Knit - Women's
+            "Dress-Knit-W-Wool": "61044100",
+            "Dress-Knit-W-Cotton": "61044200",
+            "Dress-Knit-W-Synthetic": "61044300",
+            "Dress-Knit-W-Artificial": "61044400",
+            "Dress-Knit-W-Silk": "61044910",
+            "Dress-Knit-W-Other": "61044990",
+            // Woven - Women's
+            "Dress-Woven-W-Wool": "62044100",
+            "Dress-Woven-W-Denim": "62044210",
+            "Dress-Woven-W-Cotton": "62044290",
+            "Dress-Woven-W-Synthetic": "62044300",
+            "Dress-Woven-W-Artificial": "62044400",
+            "Dress-Woven-W-Silk": "62044910",
+            "Dress-Woven-W-Other": "62044990",
+            
+            // ===== PANTS (パンツ) =====
+            // Knit - Men's
+            "Pants-Knit-M-Wool": "61034100",
+            "Pants-Knit-M-Cotton": "61034210",
+            "Pants-Knit-M-Synthetic": "61034300",
+            "Pants-Knit-M-Other": "61034990",
+            // Knit - Women's
+            "Pants-Knit-W-Wool": "61046100",
+            "Pants-Knit-W-Cotton": "61046210",
+            "Pants-Knit-W-Synthetic": "61046300",
+            "Pants-Knit-W-Other": "61046990",
+            // Woven - Men's
+            "Pants-Woven-M-Wool": "62034100",
+            "Pants-Woven-M-Denim": "62034210",
+            "Pants-Woven-M-Cotton": "62034240",
+            "Pants-Woven-M-Synthetic": "62034300",
+            "Pants-Woven-M-Other": "62034990",
+            // Woven - Women's
+            "Pants-Woven-W-Wool": "62046100",
+            "Pants-Woven-W-Denim": "62046210",
+            "Pants-Woven-W-Cotton": "62046280",
+            "Pants-Woven-W-Synthetic": "62046300",
+            "Pants-Woven-W-Other": "62046990",
+            
+            // ===== KNIT TOP / CUT & SWEN (カットソー/ニット) =====
+            // Pullover/Jacket - Knit - Men's
+            "Knit Top-Knit-M-Wool": "61101110",
+            "Knit Top-Knit-M-Cashmere": "61101210",
+            "Knit Top-Knit-M-Cotton": "61102010",
+            "Knit Top-Knit-M-Synthetic": "61103010",
+            "Knit Top-Knit-M-Silk": "61109010",
+            "Knit Top-Knit-M-Other": "61109080",
+            // Pullover/Jacket - Knit - Women's
+            "Knit Top-Knit-W-Wool": "61101120",
+            "Knit Top-Knit-W-Cashmere": "61101220",
+            "Knit Top-Knit-W-Cotton": "61102020",
+            "Knit Top-Knit-W-Synthetic": "61103020",
+            "Knit Top-Knit-W-Silk": "61109020",
+            "Knit Top-Knit-W-Other": "61109090",
+            
+            // T-shirt - Knit (All genders)
+            "T-shirt-Knit-A-Cotton": "61091010",
+            "T-shirt-Knit-A-Synthetic": "61099010",
+            "T-shirt-Knit-A-Silk": "61099040",
+            "T-shirt-Knit-A-Other": "61099051",
+            
+            // ===== GOODS (グッズ) =====
+            // Scarf - Knit
+            "Scarf-Knit-A-Wool": "61171020",
+            "Scarf-Knit-A-Cashmere": "61171019",
+            "Scarf-Knit-A-Other": "61171090",
+            // Scarf - Woven
+            "Scarf-Woven-A-Wool": "62142010",
+            "Scarf-Woven-A-Cashmere": "62142020",
+            "Scarf-Woven-A-Synthetic": "62143000",
+            "Scarf-Woven-A-Artificial": "62144000",
+            "Scarf-Woven-A-Silk": "62141000",
+            "Scarf-Woven-A-Other": "62149000",
+            
+            // Poncho - Knit - Men's
+            "Poncho-Knit-M-Wool": "61033100",
+            "Poncho-Knit-M-Cotton": "61033200",
+            "Poncho-Knit-M-Synthetic": "61033300",
+            "Poncho-Knit-M-Artificial": "61033910",
+            "Poncho-Knit-M-Other": "61033990",
+            // Poncho - Knit - Women's
+            "Poncho-Knit-W-Wool": "61043100",
+            "Poncho-Knit-W-Cotton": "61043200",
+            "Poncho-Knit-W-Synthetic": "61043300",
+            "Poncho-Knit-W-Artificial": "61033910",
+            "Poncho-Knit-W-Other": "61033990",
+            // Poncho - Woven - Men's
+            "Poncho-Woven-M-Wool": "62033100",
+            "Poncho-Woven-M-Denim": "62033210",
+            "Poncho-Woven-M-Cotton": "62033290",
+            "Poncho-Woven-M-Synthetic": "62033300",
+            "Poncho-Woven-M-Artificial": "62033910",
+            "Poncho-Woven-M-Silk": "62033920",
+            "Poncho-Woven-M-Other": "62033990",
+            // Poncho - Woven - Women's
+            "Poncho-Woven-W-Wool": "62043100",
+            "Poncho-Woven-W-Denim": "62043210",
+            "Poncho-Woven-W-Cotton": "62043290",
+            "Poncho-Woven-W-Synthetic": "62043300",
+            "Poncho-Woven-W-Artificial": "62043910",
+            "Poncho-Woven-W-Silk": "62043920",
+            "Poncho-Woven-W-Other": "62043990",
+            
+            // Belt - Knit
+            "Belt-Knit-A-Other": "61178010",
+            // Belt - Woven
+            "Belt-Woven-A-Other": "62171050",
+            
+            // Socks - Knit - Men's
+            "Socks-Knit-M-Wool": "61159410",
+            "Socks-Knit-M-Cotton": "61159510",
+            "Socks-Knit-M-Synthetic": "61159610",
+            "Socks-Knit-M-Artificial": "61159910",
+            "Socks-Knit-M-Other": "61159980",
+            // Socks - Knit - Women's
+            "Socks-Knit-W-Wool": "61159420",
+            "Socks-Knit-W-Cotton": "61159520",
+            "Socks-Knit-W-Synthetic": "61159620",
+            "Socks-Knit-W-Artificial": "61159920",
+            "Socks-Knit-W-Other": "61159990",
+            // Socks - Woven (All genders)
+            "Socks-Woven-A-Cotton": "62171010",
+            "Socks-Woven-A-Other": "62171020",
+            
+            // Hat/Cap (All genders, no Knit/Woven distinction)
+            "Hat-A-A-Cotton": "65050020",
+            "Hat-A-A-Wool": "65050030",
+            "Hat-A-A-Other": "65050090",
+            
+            // Tie - Knit
+            "Tie-Knit-A-Other": "61178020",
+            // Tie - Woven
+            "Tie-Woven-A-Synthetic": "62152000",
+            "Tie-Woven-A-Silk": "62151000",
+            "Tie-Woven-A-Other": "62159000",
+            
+            // Ribbon (All genders, no Knit/Woven distinction)
+            "Ribbon-A-A-Other": "50079000",
+            
+            // Bandana - Knit
+            "Bandana-Knit-A-Other": "61178090",
+            // Bandana - Woven
+            "Bandana-Woven-A-Cotton": "62132010",
+            "Bandana-Woven-A-Other": "62139010",
+            
+            // Key holder (All genders, no Knit/Woven distinction)
+            "Key holder-A-A-Other": "71171900",
+            
+            // Bag (All genders, no Knit/Woven distinction)
+            "Bag-A-A-Other": "42029260",
+            
+            // Shoe (All genders, no Knit/Woven distinction)
+            "Shoe-A-A-Other": "64041900"
         };
         
         const GOODS_KEYWORDS = {
-            "マフラー": "Scarf", "ポンチョ": "Scarf", "ストール": "Scarf",
-            "帽子": "Hat", "キャップ": "Hat", "ハット": "Hat",
-            "靴下": "Socks", "ソックス": "Socks",
-            "バッグ": "Bag", "トート": "Bag", "ベルト": "Belt",
-            "ポーチ": "Pouch"
+            // Scarf
+            "マフラー": "Scarf", "ﾏﾌﾗｰ": "Scarf", "ストール": "Scarf", "ｽﾄｰﾙ": "Scarf",
+            "風呂敷": "Scarf", "フロシキ": "Scarf", "ﾌﾛｼｷ": "Scarf",
+            "Furoshiki": "Scarf", "furoshiki": "Scarf", "FUROSHIKI": "Scarf",
+            
+            // Poncho (Scarfとは別)
+            "ポンチョ": "Poncho", "ﾎﾟﾝﾁｮ": "Poncho",
+            
+            // Hat/Cap
+            "帽子": "Hat", "ﾎﾞｳｼ": "Hat", "キャップ": "Hat", "ｷｬｯﾌﾟ": "Hat", 
+            "ハット": "Hat", "ﾊｯﾄ": "Hat", "Cap": "Hat", "cap": "Hat",
+            
+            // Socks
+            "靴下": "Socks", "ｸﾂｼﾀ": "Socks", "ソックス": "Socks", "ｿｯｸｽ": "Socks",
+            "Sox": "Socks", "sox": "Socks",
+            
+            // Bag
+            "バッグ": "Bag", "ﾊﾞｯｸﾞ": "Bag", "トート": "Bag", "ﾄｰﾄ": "Bag", "Bag": "Bag", "bag": "Bag",
+            
+            // Belt
+            "ベルト": "Belt", "ﾍﾞﾙﾄ": "Belt", "Belt": "Belt", "belt": "Belt",
+            
+            // Tie
+            "ネクタイ": "Tie", "ﾈｸﾀｲ": "Tie", "Tie": "Tie", "tie": "Tie",
+            
+            // Ribbon
+            "リボン": "Ribbon", "ﾘﾎﾞﾝ": "Ribbon", "Ribbon": "Ribbon", "ribbon": "Ribbon",
+            
+            // Bandana
+            "バンダナ": "Bandana", "ﾊﾞﾝﾀﾞﾅ": "Bandana", "Bandana": "Bandana", "bandana": "Bandana",
+            
+            // Key holder
+            "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
+            
+            // Shoe/Sneaker
+            "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
+            "靴": "Shoe", "ｸﾂ": "Shoe", "Shoes": "Shoe", "shoes": "Shoe", "Shoe": "Shoe", "shoe": "Shoe"
         };
+
+        const DENIM_KEYWORDS = [
+            '再び6.5', 'ﾌﾀﾀﾋﾞ6.5',
+            'ライ麦', 'ﾗｲﾑｷﾞ', 'ライ麦デニム', 'ﾗｲﾑｷﾞﾃﾞﾆﾑ',
+            'ツィードデニム', 'ﾂｨｰﾄﾞﾃﾞﾆﾑ',
+            '麦比古', 'ﾑｷﾞﾋｺ',
+            'AD3000',
+            'おこめ納戸納戸', 'ｵｺﾒﾅﾝﾄﾞﾅﾝﾄﾞ',
+            '大麦デニム', 'ｵｵﾑｷﾞﾃﾞﾆﾑ',
+            'モンプチデニム', 'ﾓﾝﾌﾟﾁﾃﾞﾆﾑ',
+            '13オンス', '13ｵﾝｽ',
+            'お米デニム', 'ｵｺﾒﾃﾞﾆﾑ',
+            'おこめデニム', 'ｵｺﾒﾃﾞﾆﾑ',
+            'ライトオンス', 'ﾗｲﾄｵﾝｽ',
+            'デニム', 'ﾃﾞﾆﾑ', 'denim', 'DENIM', 'Denim'
+        ];
 
         const COUNTRY_CODE_MAP = {
             'Japan': 'JP',
@@ -1474,13 +1783,50 @@
             const nameL = toFullWidth(productName || '').toLowerCase();
             const combined = itemL + ' ' + nameL;
             
+            // 固定ルール: 必ずWoven
             if (itemL.includes('シャツ'.toLowerCase())) return { result: 'Woven', matchType: 'item_rule' };
+            
+            // 固定ルール: 必ずKnit
             if (itemL.includes('カットソー'.toLowerCase()) || itemL.includes('ニット'.toLowerCase())) 
                 return { result: 'Knit', matchType: 'item_rule' };
+            
+            // グッズは別処理
             if (itemL.includes('グッズ'.toLowerCase())) return { result: null, matchType: 'item_rule' };
             
-            const wovenKw = ['ジャージフラノ', 'ｼﾞｬｰｼﾞﾌﾗﾉ', 'denim', 'デニム', 'シャツ', 'twill', 'ツイル'];
-            const knitKw = ['ニット', 'sweater', 'スウェット', 'cardigan', 'カーディガン', 'カットソー', '編み'];
+            // Wovenキーワード（品名一覧より49個）
+            const wovenKw = [
+                'ジャージフラノ', 'ｼﾞｬｰｼﾞﾌﾗﾉ', 'メルトン', 'ﾒﾙﾄﾝ', 'フランネル', 'ﾌﾗﾝﾈﾙ',
+                'ツィード', 'ﾂｨｰﾄﾞ', 'ツイード', 'ﾂｲｰﾄﾞ', 'USモー', 'USﾓｰ',
+                'コーデュロイ', 'ｺｰﾃﾞｭﾛｲ', 'デニム', 'ﾃﾞﾆﾑ', 'denim',
+                'ナイロン', 'ﾅｲﾛﾝ', 'クロス', 'ｸﾛｽ', 'コットンツィード', 'ｺｯﾄﾝﾂｨｰﾄﾞ',
+                'ベネシャン', 'ﾍﾞﾈｼｬﾝ', 'ダック', 'ﾀﾞｯｸ', 'ベルベット', 'ﾍﾞﾙﾍﾞｯﾄ',
+                'サージ', 'ｻｰｼﾞ', 'リップストップ', 'ﾘｯﾌﾟｽﾄｯﾌﾟ', 'サテン', 'ｻﾃﾝ',
+                'モンプチ', 'ﾓﾝﾌﾟﾁ', 'ライ麦', 'ﾗｲ麦', 'チノ', 'ﾁﾉ',
+                'リネンシルク', 'ﾘﾈﾝｼﾙｸ', 'プチデニム', 'ﾌﾟﾁﾃﾞﾆﾑ', 'ギャバ', 'ｷﾞｬﾊﾞ',
+                'オックス', 'ｵｯｸｽ', 'タペット', 'ﾀﾍﾟｯﾄ', 'ダンプ', 'ﾀﾞﾝﾌﾟ',
+                '二重織', 'ﾆｼﾞｭｳｵﾘ', 'シルク', 'ｼﾙｸ', 'カディ', 'ｶﾃﾞｨ',
+                '撚杢平', 'ﾈﾝﾓｸﾋﾗ', 'インドリネン', 'ｲﾝﾄﾞﾘﾈﾝ', 'ガーゼ', 'ｶﾞｰｾﾞ',
+                'ネル', 'ﾈﾙ', '180番三子', '180ﾊﾞﾝｻﾝｺ', 'スーピマオックス', 'ｽｰﾋﾟﾏｵｯｸｽ',
+                '帆布', 'ﾊﾝﾌﾟ', 'スーピマ綾', 'ｽｰﾋﾟﾏｱﾔ', '空比古比女', 'ｿﾗﾋｺﾋﾒ',
+                'クロスビー5', 'ｸﾛｽﾋﾞｰ5', 'シャルロット', 'ｼｬﾙﾛｯﾄ', 'シャルロットバギー', 'ｼｬﾙﾛｯﾄﾊﾞｷﾞｰ',
+                'バチ比女', 'ﾊﾞﾁﾋﾒ', 'スラックス', 'ｽﾗｯｸｽ', 'ペインター', 'ﾍﾟｲﾝﾀｰ',
+                'クロスオーバーパンツ', 'ｸﾛｽｵｰﾊﾞｰﾊﾟﾝﾂ', 'フロントリバー', 'ﾌﾛﾝﾄﾘﾊﾞｰ',
+                'ベイカーパンツ', 'ﾍﾞｲｶｰﾊﾟﾝﾂ', 'ホップサック', 'ﾎｯﾌﾟｻｯｸ',
+                'リネンクロス', 'ﾘﾈﾝｸﾛｽ', 'モールスキン', 'ﾓｰﾙｽｷﾝ',
+                'シャツ', 'ｼｬﾂ', 'twill', 'ツイル', 'ﾂｲﾙ'
+            ];
+            
+            // Knitキーワード（品名一覧より17個）
+            const knitKw = [
+                '裏毛', 'ｳﾗｹ', 'ウール', 'ｳｰﾙ', 'カノコ', 'ｶﾉｺ',
+                'でこぼこ天竺', 'ﾃﾞｺﾎﾞｺﾃﾝｼﾞｸ', '天竺', 'ﾃﾝｼﾞｸ', '縮絨', 'ｼｭｸｼﾞｭｳ',
+                'シェットランドニット', 'ｼｪｯﾄﾗﾝﾄﾞﾆｯﾄ', 'カシミヤ', 'ｶｼﾐﾔ',
+                '梳毛ウール', 'ｿﾓｳｳｰﾙ', '梳毛天竺', 'ｿﾓｳﾃﾝｼﾞｸ', 'ニットベルト', 'ﾆｯﾄﾍﾞﾙﾄ',
+                '超ガーゼ', 'ﾁｮｳｶﾞｰｾﾞ', 'ジャガード', 'ｼﾞｬｶﾞｰﾄﾞ', 'ジャカード', 'ｼﾞｬｶｰﾄﾞ',
+                'ニットソー', 'ﾆｯﾄｿｰ', 'スムースニット', 'ｽﾑｰｽﾆｯﾄ', 'スウェット', 'ｽｳｪｯﾄ',
+                'ニット', 'ﾆｯﾄ', 'sweater', 'cardigan', 'カーディガン', 'ｶｰﾃﾞｨｶﾞﾝ',
+                'カットソー', 'ｶｯﾄｿｰ', '編み', 'ｱﾐ'
+            ];
             
             for (const kw of wovenKw) if (combined.includes(kw.toLowerCase())) return { result: 'Woven', matchType: 'keyword' };
             for (const kw of knitKw) if (combined.includes(kw.toLowerCase())) return { result: 'Knit', matchType: 'keyword' };
@@ -1494,38 +1840,180 @@
             const item = row['アイテム'] || '';
             const productName = row['品名'] || '';
             const gender = (row['性別'] || '') === 'メンズ' ? 'M' : 'W';
-            const material = normalizeMaterial(row['素材1']);
             
             // 性別プレフィックスを取得
             const genderPrefix = GENDER_MAP[row['性別']] || 'Unisex';
             
+            // カテゴリを英語に変換
             const categoryEN = translateCategory(item);
             let description = genderPrefix + ' ' + categoryEN;
             let descMatched = true;
             
+            // グッズの場合は詳細アイテムタイプを判定
             if (item === 'グッズ') {
                 const normalized = toFullWidth(productName);
                 for (const [kw, trans] of Object.entries(GOODS_KEYWORDS)) {
-                    if (normalized.includes(kw)) { description = trans; break; }
+                    if (normalized.includes(kw)) {
+                        description = trans;
+                        descMatched = true;
+                        break;
+                    }
                 }
                 if (description === 'Goods') descMatched = false;
             }
             
+            // Vest判定（品名に「ベスト」「Vest」があるか）
+            const isVest = toFullWidth(productName).toLowerCase().includes('ベスト') || 
+                           productName.toLowerCase().includes('vest');
+            
+            // Knit/Woven判定
             const kwResult = determineKnitWoven(item, productName);
             const knitWoven = kwResult.result;
             const matchType = kwResult.matchType;
             
+            // 素材判定（デニムチェック優先）
+            const productNameFull = toFullWidth(productName).toLowerCase();
+            let material = normalizeMaterial(row['素材1']);
+            
+            // デニムキーワードチェック
+            const isDenim = DENIM_KEYWORDS.some(keyword => 
+                productNameFull.includes(toFullWidth(keyword).toLowerCase())
+            );
+            if (isDenim && knitWoven === 'Woven') {
+                material = 'Denim';
+            }
+            
+            // HSコード決定
             let hsCode = 'N/A';
             
+            // カテゴリ別処理
             if (item === 'グッズ') {
-                hsCode = HS_CODE_RULES['Goods'] || '42029260';
-            } else if (knitWoven) {
-                const key = `${categoryEN}-${knitWoven}-${gender}-${material}`;
+                // グッズの場合
+                let goodsCategory = description; // Scarf, Poncho, Hat, etc.
+                
+                // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要
+                if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
+                    const key = `${goodsCategory}-A-A-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `${goodsCategory}-A-A-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else {
+                    // その他のグッズは性別とKnit/Wovenが必要
+                    const genderCode = gender;
+                    let key;
+                    
+                    if (goodsCategory === 'Scarf' || goodsCategory === 'Poncho' || goodsCategory === 'Belt' || 
+                        goodsCategory === 'Socks' || goodsCategory === 'Bandana') {
+                        
+                        if (goodsCategory === 'Poncho' && knitWoven) {
+                            // Ponchoは性別必要
+                            key = `${goodsCategory}-${knitWoven}-${genderCode}-${material}`;
+                            hsCode = HS_CODE_RULES[key];
+                            if (!hsCode) {
+                                key = `${goodsCategory}-${knitWoven}-${genderCode}-Other`;
+                                hsCode = HS_CODE_RULES[key];
+                            }
+                        } else if (goodsCategory === 'Socks' && knitWoven) {
+                            // Socksは性別必要
+                            key = `${goodsCategory}-${knitWoven}-${genderCode}-${material}`;
+                            hsCode = HS_CODE_RULES[key];
+                            if (!hsCode) {
+                                key = `${goodsCategory}-${knitWoven}-${genderCode}-Other`;
+                                hsCode = HS_CODE_RULES[key];
+                            }
+                        } else if (knitWoven) {
+                            // Scarf, Belt, Bandana等は性別不要（All）
+                            key = `${goodsCategory}-${knitWoven}-A-${material}`;
+                            hsCode = HS_CODE_RULES[key];
+                            if (!hsCode) {
+                                key = `${goodsCategory}-${knitWoven}-A-Other`;
+                                hsCode = HS_CODE_RULES[key];
+                            }
+                        }
+                    } else if (goodsCategory === 'Tie' && knitWoven) {
+                        key = `${goodsCategory}-${knitWoven}-A-${material}`;
+                        hsCode = HS_CODE_RULES[key];
+                        if (!hsCode) {
+                            key = `${goodsCategory}-${knitWoven}-A-Other`;
+                            hsCode = HS_CODE_RULES[key];
+                        }
+                    }
+                }
+            } else if (item === 'カットソー' || item === 'ニット') {
+                // カットソー/ニットの場合
+                if (isVest) {
+                    // Vest
+                    const key = `Vest-Knit-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Vest-Knit-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else {
+                    // Knit Top (Pullover/Jacket等)
+                    const key = `Knit Top-Knit-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Knit Top-Knit-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'シャツ') {
+                // シャツは常にWoven
+                const key = `Shirt-Woven-${gender}-${material}`;
                 hsCode = HS_CODE_RULES[key];
                 if (!hsCode) {
-                    const keyNoMat = `${categoryEN}-${knitWoven}-${gender}`;
-                    for (const rk of Object.keys(HS_CODE_RULES)) {
-                        if (rk.startsWith(keyNoMat)) { hsCode = HS_CODE_RULES[rk]; break; }
+                    const keyOther = `Shirt-Woven-${gender}-Other`;
+                    hsCode = HS_CODE_RULES[keyOther];
+                }
+            } else if (item === 'スカート' || item === 'ワンピース') {
+                // スカート/ワンピースは女性のみ
+                const category = item === 'スカート' ? 'Skirt' : 'Dress';
+                if (knitWoven) {
+                    const key = `${category}-${knitWoven}-W-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `${category}-${knitWoven}-W-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'ブルゾン・ジャケット') {
+                // ジャケット/ベスト
+                if (isVest && knitWoven === 'Knit') {
+                    const key = `Vest-Knit-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Vest-Knit-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else if (knitWoven) {
+                    const key = `Jacket-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Jacket-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'コート') {
+                // コート
+                if (knitWoven) {
+                    const key = `Coat-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Coat-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'パンツ') {
+                // パンツ
+                if (knitWoven) {
+                    const key = `Pants-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Pants-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
                     }
                 }
             }
