@@ -1438,6 +1438,17 @@
             "Vest-Knit-W-Synthetic": "61103020",
             "Vest-Knit-W-Silk": "61109020",
             "Vest-Knit-W-Other": "61109090",
+            // Vest - Woven
+            "Vest-Woven-M-Wool": "62113290",
+            "Vest-Woven-M-Cotton": "62113390",
+            "Vest-Woven-M-Synthetic": "62113910",
+            "Vest-Woven-M-Silk": "62113920",
+            "Vest-Woven-M-Other": "62113990",
+            
+            "Vest-Woven-W-Cotton": "62114290",
+            "Vest-Woven-W-Synthetic": "62114390",
+            "Vest-Woven-W-Silk": "62114910",
+            "Vest-Woven-W-Other": "62114990",
             
             // ===== COAT (コート) =====
             // Knit - Men's
@@ -1888,6 +1899,13 @@
                 // グッズの場合
                 let goodsCategory = description; // Scarf, Poncho, Hat, etc.
                 
+                // グッズタイプが特定できない場合のデフォルト処理
+                if (goodsCategory === 'Goods') {
+                    // デフォルトで「Scarf」として扱う
+                    goodsCategory = 'Scarf';
+                    console.warn(`グッズの詳細タイプが不明: ${productName} → デフォルトでScarfとして処理`);
+                }
+                
                 // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要
                 if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
                     const key = `${goodsCategory}-A-A-${material}`;
@@ -1940,7 +1958,25 @@
                 }
             } else if (item === 'カットソー' || item === 'ニット') {
                 // カットソー/ニットの場合
-                if (isVest) {
+                
+                // Tシャツ・タンクトップ判定
+                const isTshirt = toFullWidth(productName).toLowerCase().includes('tシャツ') ||
+                                 toFullWidth(productName).toLowerCase().includes('tｼｬﾂ') ||
+                                 toFullWidth(productName).toLowerCase().includes('タンクトップ') ||
+                                 toFullWidth(productName).toLowerCase().includes('ﾀﾝｸﾄｯﾌﾟ') ||
+                                 productName.toLowerCase().includes('t-shirt') ||
+                                 productName.toLowerCase().includes('tshirt') ||
+                                 productName.toLowerCase().includes('tank top');
+                
+                if (isTshirt) {
+                    // Tシャツ用のHSコード（性別関係なくAll gender）
+                    const key = `T-shirt-Knit-A-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `T-shirt-Knit-A-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else if (isVest) {
                     // Vest
                     const key = `Vest-Knit-${gender}-${material}`;
                     hsCode = HS_CODE_RULES[key];
@@ -2013,6 +2049,32 @@
                         hsCode = HS_CODE_RULES[keyOther];
                     }
                 }
+            }
+
+            // 最終フォールバック: HSコードが決定できなかった場合
+            if (!hsCode || hsCode === 'N/A') {
+                console.warn('⚠️ HSコード決定失敗 - デフォルトHSコードを使用', {
+                    item: item,
+                    品名: productName,
+                    性別: gender,
+                    KnitWoven: knitWoven,
+                    素材: material
+                });
+                
+                // デフォルト: Women's + Woven + Cotton (またはOther)
+                const fallbackCodes = {
+                    'ブルゾン・ジャケット': '62043290',  // Jacket-Woven-W-Cotton
+                    'コート': '62023090',               // Coat-Woven-W-Cotton
+                    'シャツ': '62063010',               // Shirt-Woven-W-Cotton
+                    'スカート': '62045290',             // Skirt-Woven-W-Cotton
+                    'ワンピース': '62044290',           // Dress-Woven-W-Cotton
+                    'パンツ': '62046280',               // Pants-Woven-W-Cotton
+                    'カットソー': '61102020',           // Knit Top-Knit-W-Cotton
+                    'ニット': '61102020',               // Knit Top-Knit-W-Cotton
+                    'グッズ': '62149000'                // その他の衣類アクセサリー (Other)
+                };
+                
+                hsCode = fallbackCodes[item] || '62149000'; // どれにも該当しない場合
             }
             
             return { description, descMatched, hsCode: hsCode || 'N/A', matchType };
