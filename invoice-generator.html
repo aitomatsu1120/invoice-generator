@@ -242,6 +242,14 @@
             margin-bottom: 2rem;
             color: white;
         }
+
+        .control-section.sticky {
+            position: sticky;
+            top: 60px;
+            z-index: 90;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
         
         .control-section.active { display: flex; }
         
@@ -1591,6 +1599,7 @@
                     : '';
             });
             renderDataTable();
+            document.getElementById('controlSection').classList.add('sticky');
         }
         
         function renderDataTable() {
