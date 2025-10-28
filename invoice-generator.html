@@ -1790,9 +1790,6 @@
             if (itemL.includes('カットソー'.toLowerCase()) || itemL.includes('ニット'.toLowerCase())) 
                 return { result: 'Knit', matchType: 'item_rule' };
             
-            // グッズは別処理
-            if (itemL.includes('グッズ'.toLowerCase())) return { result: null, matchType: 'item_rule' };
-            
             // Wovenキーワード（品名一覧より49個）
             const wovenKw = [
                 'ジャージフラノ', 'ｼﾞｬｰｼﾞﾌﾗﾉ', 'メルトン', 'ﾒﾙﾄﾝ', 'フランネル', 'ﾌﾗﾝﾈﾙ',
@@ -1832,7 +1829,7 @@
             for (const kw of knitKw) if (combined.includes(kw.toLowerCase())) return { result: 'Knit', matchType: 'keyword' };
             
             const defaults = { 'ブルゾン・ジャケット': 'Woven', 'コート': 'Woven', 'スカート': 'Woven', 
-                              'ワンピース': 'Woven', 'パンツ': 'Woven' };
+                              'ワンピース': 'Woven', 'パンツ': 'Woven', 'グッズ': 'Woven' };
             return { result: defaults[item] || 'Woven', matchType: 'default' };
         }
         
