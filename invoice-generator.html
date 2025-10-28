@@ -2303,7 +2303,11 @@
         }
         
         function addNonCommercialRow() {
-            nonCommercialData.push({ description: '', quantity: 0 });
+            nonCommercialData.push({ 
+                description: '', 
+                quantity: 0,
+                needsReview: false 
+            });
             renderNonCommercialTable();
         }
         
@@ -2313,6 +2317,20 @@
                 return;
             }
             nonCommercialData.splice(idx, 1);
+            renderNonCommercialTable();
+        }
+
+        function updateNonCommercialDescription(idx, val) {
+            nonCommercialData[idx].description = val;
+            
+            if (val.trim() !== '') {
+                // 何か入力された場合は赤ハイライト
+                nonCommercialData[idx].needsReview = true;
+            } else {
+                // 空欄の場合はハイライト解除
+                nonCommercialData[idx].needsReview = false;
+            }
+            
             renderNonCommercialTable();
         }
         
@@ -2325,15 +2343,22 @@
                 // プリセットリストのオプション生成
                 const presetOptions = NON_COMMERCIAL_PRESETS.map(name => `<option value="${name}">`).join('');
                 
+                // Descriptionが入力されている場合は赤ハイライト
+                const highlightClass = item.needsReview ? 'preset-needs-review' : '';
+                
                 row.innerHTML = `
                     <td><input type="text" 
                                value="${item.description}" 
                                placeholder="入力または選択 / Enter or select from list" 
                                list="non-commercial-presets-${idx}"
-                               onchange="nonCommercialData[${idx}].description = this.value">
+                               onchange="updateNonCommercialDescription(${idx}, this.value)">
                         <datalist id="non-commercial-presets-${idx}">${presetOptions}</datalist>
                     </td>
-                    <td><input type="number" value="${item.quantity}" min="0" onchange="nonCommercialData[${idx}].quantity = parseInt(this.value) || 0"></td>
+                    <td><input type="number" 
+                               class="${highlightClass}"
+                               value="${item.quantity}" 
+                               min="0" 
+                               onchange="nonCommercialData[${idx}].quantity = parseInt(this.value) || 0; renderNonCommercialTable();"></td>
                     <td><button class="btn-delete" onclick="deleteNonCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
                 `;
             });
