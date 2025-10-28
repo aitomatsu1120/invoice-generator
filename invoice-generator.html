@@ -1730,8 +1730,15 @@
         };
         
         const DEFAULT_PRESETS = {
-            "Paper Catalog": { hs_code: "49019900", unit_value: 100, weight_per_unit: 0.1 },
-            "Calendar": { hs_code: "49100000", unit_value: 50, weight_per_unit: 0.1 }
+            "Paper Catalog": { hs_code: "49019900", unit_value: 300, weight_per_unit: 0.1 },
+            "Paper Calendar": { hs_code: "49100000", unit_value: 100, weight_per_unit: 0.05 },
+            "Paper Envelope": { hs_code: "48171000", unit_value: 10, weight_per_unit: 0.01 },
+            "Paper Bag": { hs_code: "48192000", unit_value: 50, weight_per_unit: 0.05 },
+            "Paper Bag Tape": { hs_code: "39191099", unit_value: 20, weight_per_unit: 0.02 },
+            "Plastic Bag": { hs_code: "39232100", unit_value: 10, weight_per_unit: 0.01 },
+            "Button": { hs_code: "96062200", unit_value: 20, weight_per_unit: 0.005 },
+            "Cotton Fabric Bag": { hs_code: "42021290", unit_value: 500, weight_per_unit: 0.15 },
+            "Fabric Bag (Non-Cotton)": { hs_code: "42021219", unit_value: 400, weight_per_unit: 0.12 }
         };
         
         let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
