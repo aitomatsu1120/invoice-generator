@@ -2191,7 +2191,8 @@
         function addNoCommercialRow() {
             noCommercialData.push({
                 itemCode: '', units: 0, weight: 0, measure: 'PCS',
-                description: '', hsCode: '', country: 'JP', unitValue: 0, totalValue: 0
+                description: '', hsCode: '', country: 'JP', unitValue: 0, totalValue: 0,
+                needsReview: false
             });
             renderNoCommercialTable();
         }
@@ -2213,6 +2214,9 @@
                 noCommercialData[idx].hsCode = preset.hs_code;
                 noCommercialData[idx].unitValue = preset.unit_value;
                 noCommercialData[idx].weight = noCommercialData[idx].units * (preset.weight_per_unit || 0.1);
+                noCommercialData[idx].needsReview = true; // プリセット使用フラグ
+            } else {
+                noCommercialData[idx].needsReview = false; // 手動入力フラグ
             }
             renderNoCommercialTable();
         }
@@ -2246,9 +2250,8 @@
                 const row = tbody.insertRow();
                 const presetOpts = Object.keys(presets).map(n => `<option value="${n}">`).join('');
                 
-                // プリセットから選択されているかチェック
-                const isPresetSelected = Object.keys(presets).includes(item.description);
-                const highlightClass = isPresetSelected ? 'preset-needs-review' : '';
+                // プリセット使用時は赤ハイライト
+                const highlightClass = item.needsReview ? 'preset-needs-review' : '';
                 
                 row.innerHTML = `
                     <td><input type="text" value="${item.itemCode}" onchange="noCommercialData[${idx}].itemCode = this.value"></td>
