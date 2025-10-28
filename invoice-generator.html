@@ -2209,15 +2209,29 @@
         function updateNoCommercialDescription(idx, val) {
             noCommercialData[idx].description = val;
             const matched = Object.keys(presets).find(n => n === val);
+            
             if (matched) {
+                // プリセットから選択された場合
                 const preset = presets[matched];
                 noCommercialData[idx].hsCode = preset.hs_code;
                 noCommercialData[idx].unitValue = preset.unit_value;
                 noCommercialData[idx].weight = noCommercialData[idx].units * (preset.weight_per_unit || 0.1);
-                noCommercialData[idx].needsReview = true; // プリセット使用フラグ
+                noCommercialData[idx].country = 'JP';
+                noCommercialData[idx].needsReview = true;
+            } else if (val.trim() !== '') {
+                // 手動入力された場合（空欄でない）
+                noCommercialData[idx].hsCode = '49111000';
+                noCommercialData[idx].unitValue = 0; // 空欄として扱う
+                noCommercialData[idx].country = 'JP';
+                noCommercialData[idx].needsReview = true; // 赤ハイライト表示
             } else {
-                noCommercialData[idx].needsReview = false; // 手動入力フラグ
+                // 空欄の場合
+                noCommercialData[idx].hsCode = '';
+                noCommercialData[idx].unitValue = 0;
+                noCommercialData[idx].country = 'JP';
+                noCommercialData[idx].needsReview = false;
             }
+            
             renderNoCommercialTable();
         }
 
