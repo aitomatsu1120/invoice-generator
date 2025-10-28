@@ -1345,6 +1345,22 @@
         let noCommercialData = [];
         let nonCommercialData = [];
         let uploadDate = new Date();
+
+        // 無償提供品のプリセットリスト
+        const NON_COMMERCIAL_PRESETS = [
+            "Caution Seal",
+            "Sticker",
+            "Tag",
+            "Product Sample",
+            "Fabric Sample",
+            "Paper Sample",
+            "Repair Item",
+            "Thread",
+            "Button",
+            "Document",
+            "Wrapping Paper",
+            "Recycled Polyethylene Bag"
+        ];
         
         // 初期化：デフォルト行を追加
         window.addEventListener('DOMContentLoaded', function() {
@@ -2305,8 +2321,18 @@
             tbody.innerHTML = '';
             nonCommercialData.forEach((item, idx) => {
                 const row = tbody.insertRow();
+                
+                // プリセットリストのオプション生成
+                const presetOptions = NON_COMMERCIAL_PRESETS.map(name => `<option value="${name}">`).join('');
+                
                 row.innerHTML = `
-                    <td><input type="text" value="${item.description}" placeholder="Enter description" onchange="nonCommercialData[${idx}].description = this.value"></td>
+                    <td><input type="text" 
+                               value="${item.description}" 
+                               placeholder="入力または選択 / Enter or select from list" 
+                               list="non-commercial-presets-${idx}"
+                               onchange="nonCommercialData[${idx}].description = this.value">
+                        <datalist id="non-commercial-presets-${idx}">${presetOptions}</datalist>
+                    </td>
                     <td><input type="number" value="${item.quantity}" min="0" onchange="nonCommercialData[${idx}].quantity = parseInt(this.value) || 0"></td>
                     <td><button class="btn-delete" onclick="deleteNonCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
                 `;
