@@ -2014,14 +2014,16 @@
                 }
             } else if (item === 'ブルゾン・ジャケット') {
                 // ジャケット/ベスト
-                if (isVest && knitWoven === 'Knit') {
-                    const key = `Vest-Knit-${gender}-${material}`;
+                if (isVest) {
+                    // ベストの場合（Knit/Woven両方対応）
+                    const key = `Vest-${knitWoven}-${gender}-${material}`;
                     hsCode = HS_CODE_RULES[key];
                     if (!hsCode) {
-                        const keyOther = `Vest-Knit-${gender}-Other`;
+                        const keyOther = `Vest-${knitWoven}-${gender}-Other`;
                         hsCode = HS_CODE_RULES[keyOther];
                     }
                 } else if (knitWoven) {
+                    // ジャケットの場合
                     const key = `Jacket-${knitWoven}-${gender}-${material}`;
                     hsCode = HS_CODE_RULES[key];
                     if (!hsCode) {
