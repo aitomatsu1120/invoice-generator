@@ -2227,12 +2227,14 @@
                 noCommercialData[idx].weight = noCommercialData[idx].units * 0.1;
             }
             renderNoCommercialTable();
+            updateGrandTotal();
         }
 
         function updateNoCommercialUnitValue(idx, val) {
             noCommercialData[idx].unitValue = parseInt(val.replace(/,/g, '')) || 0;
             noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
             renderNoCommercialTable();
+            updateGrandTotal();
         }
         
         function renderNoCommercialTable() {
