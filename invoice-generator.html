@@ -1394,6 +1394,12 @@
             'Vietnam': 'VN',
             'India': 'IN'
         };
+
+        const GENDER_MAP = {
+            'Unisex': 'Unisex',
+            'レディース': "Women's",
+            'メンズ': "Men's"
+        };
         
         const DEFAULT_PRESETS = {
             "Paper Catalog": { hs_code: "49019900", unit_value: 100, weight_per_unit: 0.1 },
@@ -1482,8 +1488,11 @@
             const gender = (row['性別'] || '') === 'メンズ' ? 'M' : 'W';
             const material = normalizeMaterial(row['素材1']);
             
+            // 性別プレフィックスを取得
+            const genderPrefix = GENDER_MAP[row['性別']] || 'Unisex';
+            
             const categoryEN = translateCategory(item);
-            let description = categoryEN;
+            let description = genderPrefix + ' ' + categoryEN;
             let descMatched = true;
             
             if (item === 'グッズ') {
@@ -1567,7 +1576,8 @@
                         originalRRP: row['上代'] || 0,
                         unitValue: calculatePrice(row['上代'] || 0),
                         totalValue: 0, matchType: hsResult.matchType,
-                        packageNos: [row['C/No.'] || 1]
+                        packageNos: [row['C/No.'] || 1],
+                        gender: row['性別'] || 'Unisex'
                     };
                 }
             });
@@ -2301,7 +2311,7 @@
                 body: [
                     [
                         { content: `EXPORTER:\n${exporter.name}\n${exporter.address}\nTEL: ${exporter.tel}\nFAX: ${exporter.fax}`, styles: { fontStyle: 'normal' } },
-                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: Bill Importer\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
+                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: T/T AT SIGHT\nTerms of Trade: F.O.B TOKYO\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
                     ],
                     [
                         { content: `CONSIGNEE:\n${consignee.name}\n${consignee.address}\nContact: ${consignee.contact}\nTEL: ${consignee.tel}\nEmail: ${consignee.email}` },
@@ -2604,7 +2614,7 @@
                 body: [
                     [
                         { content: `EXPORTER:\n${exporter.name}\n${exporter.address}\nTEL: ${exporter.tel}\nFAX: ${exporter.fax}`, styles: { fontStyle: 'normal' } },
-                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: Bill Importer\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
+                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: T/T AT SIGHT\nTerms of Trade: F.O.B TOKYO\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
                     ],
                     [
                         { content: `CONSIGNEE:\n${consignee.name}\n${consignee.address}\nContact: ${consignee.contact}\nTEL: ${consignee.tel}\nEmail: ${consignee.email}` },
@@ -3108,7 +3118,8 @@
                         <td style="width: 50%; border: 1px solid #1c2940; border-left: none; padding: 0.75rem; vertical-align: top;">
                             <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Ship Date:</span> ${dateStr}</div>
                             <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Invoice No.:</span> ${invoiceNo}</div>
-                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Payment Terms:</span> Bill Importer</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Payment Terms:</span> T/T AT SIGHT</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Terms of Trade:</span> F.O.B TOKYO</div>
                             <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Purpose of Shipment:</span> SOLD</div>
                             <div><span style="font-weight: 600;">Currency Code:</span> JPY</div>
                         </td>
