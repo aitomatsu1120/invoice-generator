@@ -1708,6 +1708,12 @@
         };
         
         const GOODS_KEYWORDS = {
+            // Collar（付け襟）
+            "付け襟": "Collar", "つけ襟": "Collar", "ツケエリ": "Collar", "ﾂｹｴﾘ": "Collar",
+            "襟": "Collar", "ｴﾘ": "Collar",
+            "Collar": "Collar", "collar": "Collar", "COLLAR": "Collar",
+
+            
             // Scarf
             "マフラー": "Scarf", "ﾏﾌﾗｰ": "Scarf", "ストール": "Scarf", "ｽﾄｰﾙ": "Scarf",
             "風呂敷": "Scarf", "フロシキ": "Scarf", "ﾌﾛｼｷ": "Scarf",
@@ -1741,11 +1747,6 @@
             
             // Key holder
             "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
-
-            // Collar（付け襟）
-            "付け襟": "Collar", "つけ襟": "Collar", "ツケエリ": "Collar", "ﾂｹｴﾘ": "Collar",
-            "襟": "Collar", "ｴﾘ": "Collar",
-            "Collar": "Collar", "collar": "Collar", "COLLAR": "Collar",
             
             // Shoe/Sneaker
             "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
@@ -1919,14 +1920,24 @@
             // グッズの場合は詳細アイテムタイプを判定
             if (item === 'グッズ') {
                 const normalized = toFullWidth(productName);
+                
+                // 最も長くマッチするキーワードを探す
+                let longestMatch = '';
+                let matchedType = '';
+                
                 for (const [kw, trans] of Object.entries(GOODS_KEYWORDS)) {
-                    if (normalized.includes(kw)) {
-                        description = trans;
-                        descMatched = true;
-                        break;
+                    if (normalized.includes(kw) && kw.length > longestMatch.length) {
+                        longestMatch = kw;
+                        matchedType = trans;
                     }
                 }
-                if (description === 'Goods') descMatched = false;
+                
+                if (matchedType) {
+                    description = matchedType;
+                    descMatched = true;
+                } else {
+                    descMatched = false;
+                }
             }
             
             // Vest判定（品名に「ベスト」「Vest」があるか）
