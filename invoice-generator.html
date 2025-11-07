@@ -3274,7 +3274,7 @@
             yPos += 4;
             pdf.text('I declare that all the information contained in this invoice is true and correct.', 15, yPos);
             
-            yPos += 15;
+            yPos += 25;
             
             // Signature
             pdf.setLineWidth(0.3);
@@ -3283,7 +3283,7 @@
 
             const signatureUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872';
             try {
-                pdf.addImage(signatureUrl, 'PNG', 20, yPos - 18, 50, 12);
+                pdf.addImage(signatureUrl, 'PNG', 20, yPos - 15, 50, 12);
             } catch(e) {
                 console.log('Signature load failed');
             }
@@ -3645,7 +3645,7 @@
             yPos += 4;
             pdf.text('I declare that all the information contained in this invoice is true and correct.', 15, yPos);
             
-            yPos += 15;
+            yPos += 25;
             
             // Signature
             pdf.setLineWidth(0.3);
@@ -3654,7 +3654,7 @@
 
             const signatureUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872';
             try {
-                pdf.addImage(signatureUrl, 'PNG', 20, yPos - 18, 50, 12);
+                pdf.addImage(signatureUrl, 'PNG', 20, yPos - 15, 50, 12);
             } catch(e) {
                 console.log('Signature load failed');
             }
@@ -4056,7 +4056,7 @@
                     
                     <div class="invoice-signature" style="display: flex; justify-content: space-between; margin-top: 3rem;">
                         <div style="width: 45%; text-align: center;">
-                            <img src="https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872" alt="Signature" style="max-width: 200px; height: auto; margin-bottom: 0.5rem;"><br>
+                            <img src="https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872" alt="Signature" style="max-width: 200px; height: auto;">
                             <div style="border-top: 1px solid #1c2940; padding-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
                                 Date: ${dateStr}
                             </div>
