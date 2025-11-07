@@ -1666,6 +1666,15 @@
             // Socks - Woven (All genders)
             "Socks-Woven-A-Cotton": "62171010",
             "Socks-Woven-A-Other": "62171020",
+
+            // ===== COLLAR (付け襟) =====
+            // Collar - Knit
+            "Collar-Knit-A-Cotton": "61178090",
+            "Collar-Knit-A-Other": "61178090",
+            
+            // Collar - Woven
+            "Collar-Woven-A-Cotton": "62171090",
+            "Collar-Woven-A-Other": "62171090",
             
             // Hat/Cap (All genders, no Knit/Woven distinction)
             "Hat-A-A-Cotton": "65050020",
@@ -1732,6 +1741,11 @@
             
             // Key holder
             "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
+
+            // Collar（付け襟）
+            "付け襟": "Collar", "つけ襟": "Collar", "ツケエリ": "Collar", "ﾂｹｴﾘ": "Collar",
+            "襟": "Collar", "ｴﾘ": "Collar",
+            "Collar": "Collar", "collar": "Collar", "COLLAR": "Collar",
             
             // Shoe/Sneaker
             "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
@@ -1980,7 +1994,7 @@
                     let key;
                     
                     if (goodsCategory === 'Scarf' || goodsCategory === 'Poncho' || goodsCategory === 'Belt' || 
-                        goodsCategory === 'Socks' || goodsCategory === 'Bandana') {
+                        goodsCategory === 'Socks' || goodsCategory === 'Bandana' || goodsCategory === 'Collar') {
                         
                         if (goodsCategory === 'Poncho' && knitWoven) {
                             // Ponchoは性別必要
@@ -1999,7 +2013,7 @@
                                 hsCode = HS_CODE_RULES[key];
                             }
                         } else if (knitWoven) {
-                            // Scarf, Belt, Bandana等は性別不要（All）
+                            // Scarf, Belt, Bandana, Collar等は性別不要（All）
                             key = `${goodsCategory}-${knitWoven}-A-${material}`;
                             hsCode = HS_CODE_RULES[key];
                             if (!hsCode) {
