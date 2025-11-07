@@ -1101,9 +1101,10 @@
                     <div class="summary-item">
                         <span class="summary-label">Invoice No.</span>
                         <div class="invoice-number-input">
-                            <span>RPM-EC-</span>
+                            <span>RPM-</span>
                             <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM">
                             <span>-</span>
+                            <input type="text" id="invoiceCarrier" maxlength="10" placeholder="FEDEX" style="width: 100px; text-transform: uppercase;">
                             <input type="text" id="invoiceSerial" class="serial" maxlength="3" required>
                         </div>
                     </div>
@@ -1808,6 +1809,7 @@
             const yy = uploadDate.getFullYear().toString().slice(-2);
             const mm = (uploadDate.getMonth() + 1).toString().padStart(2, '0');
             document.getElementById('invoiceYYMM').value = yy + mm;
+            document.getElementById('invoiceCarrier').value = 'FEDEX';
             document.getElementById('invoiceSerial').value = '';
         }
         
@@ -2435,8 +2437,9 @@
         }
         
         function generateInvoice() {
-            // バリデーション：3桁の連番のみチェック
+            // バリデーション
             const serialInput = document.getElementById('invoiceSerial').value;
+            const carrierInput = document.getElementById('invoiceCarrier').value.trim().toUpperCase();
             
             if (!serialInput || serialInput.length !== 3) {
                 alert('Invoice番号の連番（3桁）を入力してください\nPlease enter the 3-digit serial number');
@@ -2444,8 +2447,14 @@
                 return;
             }
             
+            if (!carrierInput) {
+                alert('配送業者名を入力してください\nPlease enter the carrier name (e.g., FEDEX)');
+                document.getElementById('invoiceCarrier').focus();
+                return;
+            }
+            
             const yymmInput = document.getElementById('invoiceYYMM').value;
-            const invoiceNo = 'RPM-EC-' + yymmInput + '-' + serialInput;
+            const invoiceNo = 'RPM-' + yymmInput + '-' + carrierInput + serialInput;
             
             console.log('=== DEBUG START ===');
             console.log('Invoice No:', invoiceNo);
@@ -2643,8 +2652,9 @@
             
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}`;
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -2937,9 +2947,10 @@
             
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}`;
-            const fileName = `RPM-EC-${yymmValue}-${serialValue}.pdf`;
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -3252,9 +3263,10 @@
             
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}`;
-            const fileName = `RPM-EC-${yymmValue}-${serialValue}.pdf`;
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -3551,8 +3563,9 @@
         function downloadExcel() {
             // Get invoice info
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}`;
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
             const fileName = `${invoiceNo}.xlsx`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
