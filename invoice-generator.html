@@ -1405,6 +1405,10 @@
             'レーヨン': 'Artificial', 'ﾚｰﾖﾝ': 'Artificial', 'RAYON': 'Artificial', 'Rayon': 'Artificial',
             'キュプロ': 'Artificial', 'キュプラ': 'Artificial', 'ｷｭﾌﾟﾛ': 'Artificial', 'ｷｭﾌﾟﾗ': 'Artificial',
             'CUPRO': 'Artificial', 'Cupro': 'Artificial', 'VISCOSE': 'Artificial',
+
+            // Leather (革)
+            'レザー': 'Leather', 'ﾚｻﾞｰ': 'Leather', '革': 'Leather', '皮': 'Leather',
+            'LEATHER': 'Leather', 'Leather': 'Leather',
             
             // Silk
             'シルク': 'Silk', 'ｼﾙｸ': 'Silk', '絹': 'Silk', 'SILK': 'Silk', 'Silk': 'Silk',
@@ -1633,6 +1637,19 @@
             "Belt-Knit-A-Other": "61178010",
             // Belt - Woven
             "Belt-Woven-A-Other": "62171050",
+
+            // ===== GOODS - LEATHER ITEMS (革製品) =====
+            // Belt - Leather
+            "Belt-A-A-Leather": "42033010",
+            
+            // Bag - Leather
+            "Bag-A-A-Leather": "42021219",
+            
+            // Hat - Leather (帽子はHS Code 65類のまま)
+            "Hat-A-A-Leather": "65050090",
+            
+            // Shoe - Leather (靴はHS Code 64類のまま、より詳細)
+            "Shoe-A-A-Leather": "64039900",
             
             // Socks - Knit - Men's
             "Socks-Knit-M-Wool": "61159410",
@@ -1934,8 +1951,23 @@
                     console.warn(`グッズの詳細タイプが不明: ${productName} → デフォルトでScarfとして処理`);
                 }
                 
-                // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要
-                if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
+                // === 革製品の特別処理（優先） ===
+                if (material === 'Leather' && ['Belt', 'Bag', 'Hat', 'Shoe'].includes(goodsCategory)) {
+                    const key = `${goodsCategory}-A-A-Leather`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        // フォールバック：一般的な革製品コード
+                        const leatherFallback = {
+                            'Belt': '42033010',
+                            'Bag': '42021219',
+                            'Hat': '65050090',
+                            'Shoe': '64039900'
+                        };
+                        hsCode = leatherFallback[goodsCategory] || '42029260';
+                    }
+                }
+                // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要（革製品以外）
+                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
                     const key = `${goodsCategory}-A-A-${material}`;
                     hsCode = HS_CODE_RULES[key];
                     if (!hsCode) {
@@ -1984,6 +2016,7 @@
                         }
                     }
                 }
+            }
             } else if (item === 'カットソー' || item === 'ニット') {
                 // カットソー/ニットの場合
                 
