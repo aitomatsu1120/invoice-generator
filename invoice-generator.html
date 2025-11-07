@@ -2447,19 +2447,13 @@
                 return;
             }
             
-            if (!carrierInput) {
-                alert('配送業者名を入力してください\nPlease enter the carrier name (e.g., FEDEX)');
-                document.getElementById('invoiceCarrier').focus();
-                return;
-            }
-            
             const yymmInput = document.getElementById('invoiceYYMM').value;
             const invoiceNo = 'RPM-' + yymmInput + '-' + carrierInput + serialInput;
-            
-            console.log('=== DEBUG START ===');
-            console.log('Invoice No:', invoiceNo);
-            console.log('Modal element:', document.getElementById('invoicePreviewModal'));
-            console.log('openInvoicePreview function exists:', typeof openInvoicePreview);
+                    
+                    console.log('=== DEBUG START ===');
+                    console.log('Invoice No:', invoiceNo);
+                    console.log('Modal element:', document.getElementById('invoicePreviewModal'));
+                    console.log('openInvoicePreview function exists:', typeof openInvoicePreview);
             
             // テスト：モーダルが存在するか
             const modal = document.getElementById('invoicePreviewModal');
