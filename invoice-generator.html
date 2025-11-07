@@ -2438,11 +2438,11 @@
         
         function generateInvoice() {
             // バリデーション
-            const serialInput = document.getElementById('invoiceSerial').value;
+            const serialInput = document.getElementById('invoiceSerial').value.trim();
             const carrierInput = document.getElementById('invoiceCarrier').value.trim().toUpperCase();
             
-            if (!serialInput || serialInput.length !== 3) {
-                alert('Invoice番号の連番（3桁）を入力してください\nPlease enter the 3-digit serial number');
+            if (!serialInput) {
+                alert('Invoice番号の連番を入力してください\nPlease enter the serial number');
                 document.getElementById('invoiceSerial').focus();
                 return;
             }
