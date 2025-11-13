@@ -3321,9 +3321,14 @@
             window.open(pdfUrl, '_blank');
         }
 
-        async function downloadPDF() {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
+            async function downloadPDF() {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
             
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
@@ -3365,7 +3370,8 @@
             // Logo and header
             const logoUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634';
             try {
-                pdf.addImage(logoUrl, 'PNG', 15, yPos, 30, 10);
+                const logoImg = await loadAndCompressImage(logoUrl, 150, 50);
+                pdf.addImage(logoImg, 'JPEG', 15, yPos, 30, 10, undefined, 'FAST');
             } catch(e) {
                 console.log('Logo load failed');
             }
@@ -3661,7 +3667,8 @@
 
             const signatureUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872';
             try {
-                pdf.addImage(signatureUrl, 'PNG', 20, yPos - 15, 50, 12);
+                const sigImg = await loadAndCompressImage(signatureUrl, 300, 80);
+                pdf.addImage(sigImg, 'JPEG', 20, yPos - 15, 50, 12, undefined, 'FAST');
             } catch(e) {
                 console.log('Signature load failed');
             }
