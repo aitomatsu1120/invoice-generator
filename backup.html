@@ -2520,7 +2520,6 @@
             
             if (input === GENERAL_INFO_PASSWORD) {
                 // パスワード正解
-                sessionStorage.setItem('generalInfoAuth', 'true');
                 closePasswordModal();
                 openGeneralInfoModalDirect(); // 直接モーダルを開く
             } else {
@@ -2544,12 +2543,8 @@
         });
 
         function openGeneralInfoModal() {
-            // セッション中に一度認証していればスキップ
-            if (sessionStorage.getItem('generalInfoAuth') === 'true') {
-                openGeneralInfoModalDirect();
-            } else {
-                openPasswordModal();
-            }
+            // 毎回パスワード入力を要求
+            openPasswordModal();
         }
         
         function openGeneralInfoModalDirect() {
