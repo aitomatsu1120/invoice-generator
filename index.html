@@ -2499,7 +2499,55 @@
             if (files.length > 0) processFile(files[0]);
         }, false);
 
+
+        // ===== パスワード保護機能 =====
+        const GENERAL_INFO_PASSWORD = '45rpm4545'; // 🔑 パスワードをここで設定
+        
+        function openPasswordModal() {
+            document.getElementById('passwordModal').classList.add('active');
+            document.getElementById('passwordInput').value = '';
+            document.getElementById('passwordError').style.display = 'none';
+            // フォーカスをパスワード入力欄に
+            setTimeout(() => document.getElementById('passwordInput').focus(), 100);
+        }
+        
+        function closePasswordModal() {
+            document.getElementById('passwordModal').classList.remove('active');
+        }
+        
+        function verifyPassword() {
+            const input = document.getElementById('passwordInput').value;
+            
+            if (input === GENERAL_INFO_PASSWORD) {
+                // パスワード正解
+                closePasswordModal();
+                openGeneralInfoModalDirect(); // 直接モーダルを開く
+            } else {
+                // パスワード不正解
+                document.getElementById('passwordError').style.display = 'block';
+                document.getElementById('passwordInput').value = '';
+                document.getElementById('passwordInput').focus();
+            }
+        }
+        
+        // Enterキーでパスワード送信
+        document.addEventListener('DOMContentLoaded', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            if (passwordInput) {
+                passwordInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        verifyPassword();
+                    }
+                });
+            }
+        });
+
         function openGeneralInfoModal() {
+            // 毎回パスワード入力を要求
+            openPasswordModal();
+        }
+        
+        function openGeneralInfoModalDirect() {
             document.getElementById('generalInfoModal').classList.add('active');
             loadGeneralInfo();
         }
@@ -4093,6 +4141,11 @@
             if (e.target === this) closeInvoicePreview();
         });
 
+　　　　　// ===== 🔥 ここに追加 =====
+        document.getElementById('passwordModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closePasswordModal();
+        });
+
         // ===== PDFサイズ圧縮 =====
         async function loadAndCompressImage(url, maxWidth, maxHeight) {
             return new Promise((resolve, reject) => {
@@ -4135,6 +4188,33 @@
             });
         }      
     </script>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>🔒 パスワード認証</h3>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom: 1rem; color: #64748b;">
+                    General Information にアクセスするにはパスワードが必要です
+                </p>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="passwordInput" 
+                           placeholder="パスワードを入力してください"
+                           style="width: 100%; padding: 0.625rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                </div>
+                <p id="passwordError" style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; display: none;">
+                    ❌ パスワードが正しくありません
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePasswordModal()">Cancel</button>
+                <button class="btn btn-save" onclick="verifyPassword()">OK</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Invoice Preview Modal -->
     <div id="invoicePreviewModal" class="invoice-preview-modal">
