@@ -1,0 +1,4167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Invoice Generator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+    
+    <style>
+        /* ===== 強制リセット ===== */
+        .invoice-preview-modal {
+            display: none !important;
+        }
+        
+        .invoice-preview-modal.active {
+            display: block !important;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background-color: #f5f7fa; }
+
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Roboto', sans-serif; background-color: #f5f7fa; }
+        
+        .header {
+            background-color: #1c2940;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background-color: white;
+            color: #1c2940;
+        }
+        
+        .btn-primary:hover {
+            background-color: #e8eaf0;
+        }
+        
+        .container {
+            max-width: 98%;
+            margin: 1rem auto;
+            padding: 0 0.5rem;
+        }
+        
+        .upload-section {
+            background: white;
+            padding: 2rem 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            margin-bottom: 0.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .section-subtitle {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2rem 1.5rem;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .drop-zone:hover {
+            border-color: #64748b;
+            background-color: #f1f5f9;
+        }
+        
+        .drop-zone.drag-over {
+            border-color: #1c2940;
+            background-color: #e0e7ff;
+            border-width: 3px;
+        }
+        
+        .drop-zone-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.25rem;
+            pointer-events: none;
+        }
+        
+        .drop-zone-icon { color: #94a3b8; }
+        .drop-zone.drag-over .drop-zone-icon { color: #1c2940; }
+        
+        .drop-zone-text {
+            color: #64748b;
+            font-size: 1rem;
+            font-weight: 500;
+        }
+        
+        .drop-zone.drag-over .drop-zone-text { color: #1c2940; }
+        
+        .or-text {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin: 0.5rem 0;
+        }
+        
+        .file-input-wrapper { position: relative; display: inline-block; }
+        .file-input-wrapper input[type="file"] { display: none; }
+        
+        .file-input-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 2rem;
+            background-color: #1c2940;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: all 0.2s;
+            pointer-events: auto;
+        }
+        
+        .file-input-label:hover {
+            background-color: #2a3d5f;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(28, 41, 64, 0.3);
+        }
+        
+        .format-text {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-top: 1rem;
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .loading-overlay.active { display: flex; }
+        
+        .loading-content {
+            background: white;
+            padding: 2rem 3rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 1rem;
+            border: 4px solid #e5e7eb;
+            border-top: 4px solid #1c2940;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            color: #1c2940;
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+        
+        .loading-subtext {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+        
+        .control-section {
+            display: flex;
+            background: linear-gradient(135deg, #5a6c8a 0%, #6b7a94 100%);
+            padding: 1.5rem 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 2rem;
+            color: white;
+        }
+
+        .control-section.sticky {
+            position: sticky;
+            top: 60px;
+            z-index: 90;
+            border-radius: 0;
+            margin-bottom: 0;
+        }
+        
+        .control-section.active { display: flex; }
+        
+        .control-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 2rem;
+        }
+        
+        .total-summary {
+            display: flex;
+            align-items: center;
+            gap: 3rem;
+        }
+        
+        .summary-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .summary-label {
+            font-size: 0.85rem;
+            opacity: 0.9;
+            margin-bottom: 0.25rem;
+        }
+        
+        .summary-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .invoice-number-input {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .invoice-number-input span {
+            font-size: 1.2rem;
+            font-weight: 700;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .invoice-number-input input {
+            padding: 0.5rem;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            background: rgba(255,255,255,0.9);
+            color: #1c2940;
+            font-size: 1rem;
+            font-weight: 600;
+            font-family: 'Montserrat', sans-serif;
+            width: 80px;
+            text-align: center;
+        }
+
+        .invoice-number-input input:focus {
+            outline: none;
+            border-color: white;
+            background: white;
+        }
+
+        .invoice-number-input input.serial {
+            width: 60px;
+        }
+
+        .invoice-number-input input.serial:not(:focus):invalid,
+        .invoice-number-input input.serial:not(:focus):placeholder-shown {
+            background-color: #ffc9c9;
+        }
+        
+        .data-section {
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+        }
+        
+        .data-section.hidden { display: none; }
+        .data-section.active { display: block; }
+        
+        .data-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .data-section-title { flex: 1; }
+        
+        .data-section-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .total-items {
+            font-size: 0.9rem;
+            color: #1c2940;
+            font-weight: 600;
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            border-radius: 6px;
+        }
+        
+        .data-table-wrapper {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            table-layout: fixed;
+        }
+        
+        .data-table th {
+            background-color: #1c2940;
+            color: white;
+            padding: 0.6rem 0.4rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .data-table th:nth-child(1) { width: 6.5%; }
+        .data-table th:nth-child(2) { width: 5.5%; }
+        .data-table th:nth-child(3) { width: 6.5%; }
+        .data-table th:nth-child(4) { width: 7.5%; }
+        .data-table th:nth-child(5) { width: 16.5%; }
+        .data-table th:nth-child(6) { width: 11.5%; }
+        .data-table th:nth-child(7) { width: 7.5%; }
+        .data-table th:nth-child(8) { width: 11.5%; }
+        .data-table th:nth-child(9) { width: 13.5%; }
+        .data-table th:nth-child(10) { width: 4%; text-align: center; }
+        
+        .data-table td {
+            padding: 0.6rem 0.4rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .data-table td:last-child {
+            text-align: center;
+        }
+        
+        .data-table tbody tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .data-table input,
+        .data-table select {
+            width: 100%;
+            padding: 0.4rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .data-table input:focus,
+        .data-table select:focus {
+            outline: none;
+            border-color: #1c2940;
+        }
+        
+        .data-table input[readonly] {
+            background-color: #f3f4f6;
+            cursor: not-allowed;
+        }
+
+        .data-table input.editable-readonly {
+            background-color: #f9fafb;
+            cursor: text;
+        }
+
+        .data-table input.editable-readonly:focus {
+            background-color: white;
+        }
+        
+        .data-table input.align-right {
+            text-align: right;
+        }
+        
+        .needs-review {
+            background-color: #fef3c7 !important;
+            border: 2px solid #f59e0b !important;
+        }
+
+        .preset-needs-review {
+            background-color: #fee2e2 !important;
+            border: 2px solid #ef4444 !important;
+        }
+        
+        .hs-match-default {
+            background-color: #f8d7da !important;
+        }
+        
+        .btn-add-row {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-add-row:hover {
+            background-color: #059669;
+        }
+        
+        .btn-generate {
+            padding: 0.75rem 2rem;
+            background-color: white;
+            color: #5a6c8a;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 1rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        
+        .btn-generate:hover {
+            background-color: rgba(255,255,255,0.9);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+        
+        .nc-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .nc-table th {
+            background-color: #1c2940;
+            color: white;
+            padding: 0.6rem 0.8rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .nc-table th:nth-child(1) { width: 63.5%; }
+        .nc-table th:nth-child(2) { width: 22.5%; }
+        .nc-table th:nth-child(3) { width: 4%; text-align: center; }
+        
+        .nc-table td:last-child {
+            text-align: center;
+        }
+        
+        .nc-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .nc-table input {
+            width: 100%;
+            padding: 0.4rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.active { display: flex; }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            max-height: 85vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .modal-header h3 {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            font-size: 1.25rem;
+        }
+        
+        .btn-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.25rem;
+            color: #6b7280;
+            transition: color 0.2s;
+        }
+        
+        .btn-close:hover { color: #1c2940; }
+        
+        .modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+        
+        .preset-item {
+            display: grid;
+            grid-template-columns: 2fr 1.5fr 1fr auto;
+            gap: 1rem;
+            padding: 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 0.75rem;
+            align-items: center;
+            background-color: #f9fafb;
+        }
+        
+        .preset-item input {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+        }
+        
+        .preset-item label {
+            font-size: 0.85rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+            display: block;
+        }
+        
+        .btn-delete {
+            background-color: transparent;
+            color: #ef4444;
+            border: 1px solid #fecaca;
+            padding: 0.35rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-delete:hover {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border-color: #fca5a5;
+        }
+        
+        .btn-add {
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #10b981;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 1rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-add:hover { background-color: #059669; }
+        
+        .modal-footer {
+            padding: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1rem;
+        }
+        
+        .btn-secondary {
+            background-color: #e5e7eb;
+            color: #374151;
+        }
+        
+        .btn-secondary:hover { background-color: #d1d5db; }
+        
+        .btn-save {
+            background-color: #1c2940;
+            color: white;
+        }
+        
+        .btn-save:hover { background-color: #2a3d5f; }
+
+        .form-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background-color: #f9fafb;
+        }
+
+        .form-section h4 {
+            font-family: 'Montserrat', sans-serif;
+            color: #1c2940;
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            font-size: 0.875rem;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            padding: 0.625rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 0.9rem;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #1c2940;
+        }
+
+     /* ===== Invoice Preview Modal Styles ===== */
+    .invoice-preview-modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.7);
+        z-index: 2000;
+        overflow-y: auto;
+    }
+    
+    .invoice-preview-modal.active {
+        display: block;
+    }
+    
+    .invoice-preview-container {
+        max-width: 210mm; /* A4 width */
+        margin: 2rem auto;
+        background: white;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    
+    .invoice-preview-header {
+        position: sticky;
+        top: 0;
+        background: #1c2940;
+        color: white;
+        padding: 1rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        z-index: 100;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    
+    .invoice-preview-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+    }
+    
+    .invoice-preview-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+    
+    .btn-back {
+        background-color: transparent;
+        color: white;
+        border: 1px solid rgba(255,255,255,0.3);
+    }
+    
+    .btn-back:hover {
+        background-color: rgba(255,255,255,0.1);
+        border-color: white;
+    }
+    
+    .btn-print {
+        background-color: white;
+        color: #1c2940;
+    }
+    
+    .btn-print:hover {
+        background-color: #e8eaf0;
+    }
+    
+    .btn-disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        position: relative;
+    }
+    
+    .btn-disabled:hover::after {
+        content: 'Coming Soon';
+        position: absolute;
+        bottom: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: #374151;
+        color: white;
+        padding: 0.25rem 0.75rem;
+        border-radius: 4px;
+        font-size: 0.75rem;
+        white-space: nowrap;
+    }
+    
+    /* Invoice Document Styles */
+    .invoice-document {
+        padding: 13mm;
+        background: white;
+        min-height: 297mm; /* A4 height */
+    }
+    
+    . {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 2px solid #1c2940;
+    }
+    
+    .invoice-logo {
+        width: 120px;
+    }
+    
+    .invoice-company-info {
+        text-align: right;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 0.75rem;
+        line-height: 1.4;
+        color: #1c2940;
+    }
+    
+    .invoice-company-name {
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin-bottom: 0.25rem;
+    }
+    
+    .invoice-title-section {
+        text-align: center;
+        margin: 1.1rem 0;
+    }
+    
+    .invoice-title {
+        font-family: 'Montserrat', sans-serif;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1c2940;
+        margin-bottom: 0.5rem;
+    }
+    
+    .invoice-page-number {
+        font-size: 0.65rem;
+        color: #64748b;
+    }
+    
+    .invoice-info-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 1.5rem;
+        margin-bottom: 1.5rem;
+        font-size: 0.55rem;
+    }
+    
+    .invoice-info-block h4 {
+        font-weight: 700;
+        color: #1c2940;
+        margin-bottom: 0.5rem;
+        font-size: 0.55rem;
+    }
+    
+    .invoice-info-block p {
+        margin: 0.35rem 0;
+        line-height: 1.4;
+        color: #374151;
+    }
+    
+    .invoice-info-label {
+        font-weight: 600;
+        color: #1c2940;
+    }
+    
+    .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        font-size: 0.65rem;
+    }
+    
+    .invoice-table th {
+        background-color: #1c2940;
+        color: white;
+        padding: 0.4rem 0.25rem;
+        text-align: center;
+        font-weight: 600;
+        font-size: 0.5rem;
+        border: 1px solid #1c2940;
+    }
+    
+    .invoice-table td {
+        padding: 0.45rem 0.35rem;
+        border: 1px solid #d1d5db;
+        vertical-align: top;
+        text-align: center;
+        font-size: 0.55rem;
+    }
+    
+    .invoice-table tbody tr:nth-child(even) {
+        background-color: #f9fafb;
+    }
+    
+    .invoice-table .align-right {
+        text-align: right !important;
+    }
+    
+    .invoice-totals {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .invoice-totals-table {
+        width: 40%;
+        font-size: 0.7rem;
+    }
+    
+    .invoice-totals-table tr td {
+        padding: 0.4rem 0.75rem;
+        border: none;
+    }
+    
+    .invoice-totals-table tr td:first-child {
+        text-align: right;
+        font-weight: 600;
+        color: #1c2940;
+    }
+    
+    .invoice-totals-table tr td:last-child {
+        text-align: right;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .invoice-totals-table tr:last-child td {
+        font-weight: 700;
+        font-size: 0.9rem;
+        color: #1c2940;
+        border-top: 2px solid #1c2940;
+        border-bottom: 2px solid #1c2940;
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .invoice-footer {
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    
+    .invoice-declaration {
+        font-size: 0.65rem;
+        margin-bottom: 1rem;
+    }
+    
+    .invoice-signature {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 2rem;
+    }
+    
+    .invoice-signature-line {
+        width: 45%;
+        border-top: 1px solid #1c2940;
+        padding-top: 0.5rem;
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    .invoice-notes {
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background-color: #f9fafb;
+        border-left: 3px solid #1c2940;
+        font-size: 0.8rem;
+        color: #374151;
+    }
+    
+    /* Print Styles */
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        
+        .invoice-preview-modal,
+        .invoice-preview-modal * {
+            visibility: visible;
+        }
+        
+        .invoice-preview-modal {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            background: white;
+            overflow: visible;
+        }
+        
+        .invoice-preview-header {
+            display: none !important;
+        }
+        
+        .invoice-preview-container {
+            max-width: 100%;
+            margin: 0;
+            box-shadow: none;
+        }
+        
+        .invoice-document {
+            padding: 0;
+            min-height: auto;
+        }
+        
+        @page {
+            size: A4;
+            margin: 15mm;
+        }
+    }
+
+        
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-title">
+            <i data-lucide="package" size="28"></i>
+            Invoice Generator
+        </div>
+        <div class="header-actions">
+            <button class="btn btn-primary" onclick="openGeneralInfoModal()">
+                <i data-lucide="file-text" size="18"></i>
+                General Info
+            </button>
+            <button class="btn btn-primary" onclick="openPresetModal()">
+                <i data-lucide="settings" size="18"></i>
+                Manage Presets
+            </button>
+            <button class="btn btn-primary" onclick="resetAllData()" style="background-color: #f17676;">
+                <i data-lucide="refresh-cw" size="18"></i>
+                Reset Data
+            </button>
+        </div>
+    </header>
+    
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="spinner"></div>
+            <div class="loading-text">処理中... / Processing...</div>
+            <div class="loading-subtext">ファイルを読み込んでいます / Reading file</div>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div id="uploadSection" class="upload-section">
+            <h2 class="section-title">商品明細のエクセルファイルをアップロード（オプション）</h2>
+            <p class="section-subtitle">Upload Product List Excel File (Optional)</p>
+            <div class="drop-zone" id="dropZone">
+                <div class="drop-zone-content">
+                    <div class="drop-zone-icon">
+                        <i data-lucide="file-spreadsheet" size="48"></i>
+                    </div>
+                    <p class="drop-zone-text">ファイルをドラッグ&ドロップ / Drag & Drop File</p>
+                    <p class="or-text">または / or</p>
+                    <div class="file-input-wrapper">
+                        <input type="file" id="fileInput" accept=".xlsx,.xls">
+                        <label for="fileInput" class="file-input-label">
+                            <i data-lucide="upload" size="18"></i>
+                            Choose File
+                        </label>
+                    </div>
+                    <p class="format-text">.xlsx または .xls 形式 / .xlsx or .xls format</p>
+                </div>
+            </div>
+        </div>
+        
+        <div id="controlSection" class="control-section">
+            <div class="control-content">
+                <div class="total-summary">
+                    <div class="summary-item">
+                        <span class="summary-label">Invoice No.</span>
+                        <div class="invoice-number-input">
+                            <span>RPM-</span>
+                            <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM">
+                            <span>-</span>
+                            <input type="text" id="invoiceCarrier" maxlength="10" placeholder="FEDEX" style="width: 100px; text-transform: uppercase;">
+                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" required>
+                        </div>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">全体合計点数 / Total Items</span>
+                        <span class="summary-value" id="grandTotalItems">0</span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">請求金額 / Invoice Amount</span>
+                        <span class="summary-value" id="grandTotalAmount">JPY 0</span>
+                    </div>
+                </div>
+                <button class="btn-generate" onclick="generateInvoice()">
+                    <i data-lucide="file-text" size="20"></i>
+                    インボイスを生成
+                </button>
+            </div>
+        </div>
+        
+        <div id="dataSection" class="data-section hidden">
+            <div class="data-section-header">
+                <div class="data-section-title">
+                    <h2 class="section-title">商品明細リスト / Product Details List</h2>
+                    <p class="section-subtitle">編集可能です / Editable</p>
+                </div>
+                <div class="data-section-info">
+                    <div class="total-items">
+                        合計点数 / Total: <span id="totalItemsCount1">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-table-wrapper">
+                <table class="data-table" id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>No. of Units</th>
+                            <th>Net Weight (KG)</th>
+                            <th>Unit of Measure</th>
+                            <th>Description of Goods</th>
+                            <th>Harmonized Tariff Number</th>
+                            <th>Country/Terr. of MFR</th>
+                            <th>Unit Value (JPY)</th>
+                            <th>Total Value (JPY)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="noCommercialSection" class="data-section">
+            <div class="data-section-header">
+                <div class="data-section-title">
+                    <h2 class="section-title">販促物・有償提供品 / Promotional Items (Commercial Value)</h2>
+                    <p class="section-subtitle">カタログ・販促物など / Catalogs, Promotional Materials</p>
+                </div>
+                <div class="data-section-info">
+                    <div class="total-items">
+                        合計点数 / Total: <span id="totalItemsCount2">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="data-table-wrapper">
+                <table class="data-table" id="noCommercialTable">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>No. of Units</th>
+                            <th>Net Weight (KG)</th>
+                            <th>Unit of Measure</th>
+                            <th>Description of Goods</th>
+                            <th>Harmonized Tariff Number</th>
+                            <th>Country/Terr. of MFR</th>
+                            <th>Unit Value (JPY)</th>
+                            <th>Total Value (JPY)</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="noCommercialBody"></tbody>
+                </table>
+            </div>
+            
+            <button class="btn-add-row" onclick="addNoCommercialRow()">
+                <i data-lucide="plus" size="16"></i>
+                行を追加 / Add Row
+            </button>
+        </div>
+        
+        <div id="nonCommercialSection" class="data-section">
+            <div class="data-section-header">
+                <div class="data-section-title">
+                    <h2 class="section-title">無償提供品 / Non-Commercial Value Items</h2>
+                    <p class="section-subtitle">無償サンプル・資料など / Free Samples, Documents (金額に含まれません / Not included in invoice amount)</p>
+                </div>
+            </div>
+            
+            <div class="data-table-wrapper">
+                <table class="nc-table" id="nonCommercialTable">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Quantity</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="nonCommercialBody"></tbody>
+                </table>
+            </div>
+            
+            <button class="btn-add-row" onclick="addNonCommercialRow()">
+                <i data-lucide="plus" size="16"></i>
+                行を追加 / Add Row
+            </button>
+        </div>
+    </div>
+    
+    <div id="generalInfoModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>General Information / 基本情報</h3>
+                <button class="btn-close" onclick="closeGeneralInfoModal()">
+                    <i data-lucide="x" size="24"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-section">
+                    <h4>EXPORTER / 輸出者</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Company Name / 会社名</label>
+                            <input type="text" id="exporterName" value="45RPM STUDIO Co.,Ltd.">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Address / 住所</label>
+                            <textarea id="exporterAddress">7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>TEL</label>
+                            <input type="text" id="exporterTel" value="81-3-3498-1345">
+                        </div>
+                        <div class="form-group">
+                            <label>FAX</label>
+                            <input type="text" id="exporterFax" value="81-3-3486-7145">
+                        </div>
+                        <div class="form-group">
+                            <label>卸値パーセンテージ / Wholesale Percentage (%)</label>
+                            <input type="number" id="pricePercentage" value="42" min="0" max="100" step="1">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>CONSIGNEE / 荷受人（実際の配送先）</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Company Name / 会社名</label>
+                            <input type="text" id="consigneeName" value="FENIX LOGISTIC SERVICES LIMITED">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Address / 住所</label>
+                            <textarea id="consigneeAddress">4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Contact Person / 担当者</label>
+                            <input type="text" id="consigneeContact" value="Kawa (Mr.) / Kit (Mr.)">
+                        </div>
+                        <div class="form-group">
+                            <label>TEL</label>
+                            <input type="text" id="consigneeTel" value="2127-4660">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Email</label>
+                            <input type="email" id="consigneeEmail" value="fls.wh@fls.com.hk">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h4>SOLD TO / IMPORTER / 買主・輸入者</h4>
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <label>Company Name / 会社名</label>
+                            <input type="text" id="importerName" value="Heritage R LTD.">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Address / 住所</label>
+                            <textarea id="importerAddress">36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG</textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>TEL</label>
+                            <input type="text" id="importerTel" value="852-2956-3266">
+                        </div>
+                        <div class="form-group">
+                            <label>FAX</label>
+                            <input type="text" id="importerFax" value="852-2956-1230">
+                        </div>
+                        <div class="form-group full-width">
+                            <label>Email</label>
+                            <input type="email" id="importerEmail" value="info@45rglobal.com">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeGeneralInfoModal()">Cancel</button>
+                <button class="btn btn-save" onclick="saveGeneralInfo()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="presetModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Manage Preset Goods</h3>
+                <button class="btn-close" onclick="closePresetModal()">
+                    <i data-lucide="x" size="24"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="presetList"></div>
+            <div style="padding: 0 1.5rem;">
+                <button class="btn-add" onclick="addNewPreset()">
+                    <i data-lucide="plus" size="18"></i> Add New Preset
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closePresetModal()">Cancel</button>
+                <button class="btn btn-save" onclick="savePresets()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        lucide.createIcons();
+        
+        let productData = [];
+        let noCommercialData = [];
+        let nonCommercialData = [];
+        let uploadDate = new Date();
+
+        // 無償提供品のプリセットリスト
+        const NON_COMMERCIAL_PRESETS = [
+            "Caution Seal",
+            "Sticker",
+            "Tag",
+            "Product Sample",
+            "Fabric Sample",
+            "Paper Sample",
+            "Repair Item",
+            "Thread",
+            "Sample Button",
+            "Document",
+            "Wrapping Paper",
+            "Recycled Polyethylene Bag"
+        ];
+        
+        // 初期化：デフォルト行を追加
+        window.addEventListener('DOMContentLoaded', function() {
+            addNoCommercialRow();
+            addNonCommercialRow();
+            setInvoiceNumber();
+            lucide.createIcons();
+        });
+        
+        const ITEM_WEIGHT_MAP = {
+            "ブルゾン・ジャケット": 0.8, "コート": 1.2, "シャツ": 0.3,
+            "スカート": 0.4, "ワンピース": 0.5, "パンツ": 0.5,
+            "カットソー": 0.3, "ニット": 0.4, "グッズ": 0.2
+        };
+        
+        const ITEM_CATEGORY_TRANSLATION = {
+            "ブルゾン・ジャケット": "Jacket", "コート": "Coat", "シャツ": "Shirt",
+            "スカート": "Skirt", "ワンピース": "Dress", "パンツ": "Pants",
+            "カットソー": "Knit Top", "ニット": "Knit Top", "グッズ": "Goods"
+        };
+        
+        const MATERIAL_BUCKETS = {
+            // Wool/Animal Hair
+            'ウール': 'Wool', 'ｳｰﾙ': 'Wool', '毛': 'Wool', 'アルパカ': 'Wool', 'WOOL': 'Wool', 'Wool': 'Wool',
+            
+            // Cashmere
+            'カシミヤ': 'Cashmere', 'カシミア': 'Cashmere', 'ｶｼﾐﾔ': 'Cashmere', 'ｶｼﾐｱ': 'Cashmere', 'CASHMERE': 'Cashmere', 'Cashmere': 'Cashmere',
+            
+            // Cotton
+            'コットン': 'Cotton', 'ｺｯﾄﾝ': 'Cotton', '綿': 'Cotton', 'COTTON': 'Cotton', 'Cotton': 'Cotton',
+            
+            // Linen (麻系)
+            'リネン': 'Cotton', 'ﾘﾈﾝ': 'Cotton', '麻': 'Cotton', 'LINEN': 'Cotton', 'Linen': 'Cotton',
+            'ラミー': 'Cotton', 'ﾗﾐｰ': 'Cotton', 'RAMIE': 'Cotton', 'Ramie': 'Cotton',
+            
+            // Synthetic Fibers
+            'ポリエステル': 'Synthetic', 'ﾎﾟﾘｴｽﾃﾙ': 'Synthetic', 'ナイロン': 'Synthetic', 'ﾅｲﾛﾝ': 'Synthetic', 
+            'アクリル': 'Synthetic', 'ｱｸﾘﾙ': 'Synthetic', 'NYLON': 'Synthetic', 'Nylon': 'Synthetic',
+            'POLYESTER': 'Synthetic', 'Polyester': 'Synthetic',
+            
+            // Artificial Fibres
+            'レーヨン': 'Artificial', 'ﾚｰﾖﾝ': 'Artificial', 'RAYON': 'Artificial', 'Rayon': 'Artificial',
+            'キュプロ': 'Artificial', 'キュプラ': 'Artificial', 'ｷｭﾌﾟﾛ': 'Artificial', 'ｷｭﾌﾟﾗ': 'Artificial',
+            'CUPRO': 'Artificial', 'Cupro': 'Artificial', 'VISCOSE': 'Artificial',
+
+            // Leather (革)
+            'レザー': 'Leather', 'ﾚｻﾞｰ': 'Leather', '革': 'Leather', '皮': 'Leather',
+            'LEATHER': 'Leather', 'Leather': 'Leather',
+            
+            // Silk
+            'シルク': 'Silk', 'ｼﾙｸ': 'Silk', '絹': 'Silk', 'SILK': 'Silk', 'Silk': 'Silk',
+            
+            // Denim (special case)
+            'デニム': 'Denim', 'ﾃﾞﾆﾑ': 'Denim', 'DENIM': 'Denim', 'Denim': 'Denim'
+        };
+        
+        const HS_CODE_RULES = {
+            // ===== JACKET (ブルゾン・ジャケット) =====
+            // Knit - Men's
+            "Jacket-Knit-M-Wool": "61033100",
+            "Jacket-Knit-M-Cotton": "61033200",
+            "Jacket-Knit-M-Synthetic": "61033300",
+            "Jacket-Knit-M-Artificial": "61033910",
+            "Jacket-Knit-M-Other": "61033990",
+            // Knit - Women's
+            "Jacket-Knit-W-Wool": "61043100",
+            "Jacket-Knit-W-Cotton": "61043200",
+            "Jacket-Knit-W-Synthetic": "61043300",
+            "Jacket-Knit-W-Artificial": "61043910",
+            "Jacket-Knit-W-Other": "61043990",
+            // Woven - Men's
+            "Jacket-Woven-M-Wool": "62033100",
+            "Jacket-Woven-M-Denim": "62033210",
+            "Jacket-Woven-M-Cotton": "62033290",
+            "Jacket-Woven-M-Synthetic": "62033300",
+            "Jacket-Woven-M-Artificial": "62033910",
+            "Jacket-Woven-M-Silk": "62033920",
+            "Jacket-Woven-M-Other": "62033990",
+            // Woven - Women's
+            "Jacket-Woven-W-Wool": "62043100",
+            "Jacket-Woven-W-Denim": "62043210",
+            "Jacket-Woven-W-Cotton": "62043290",
+            "Jacket-Woven-W-Synthetic": "62043300",
+            "Jacket-Woven-W-Artificial": "62043910",
+            "Jacket-Woven-W-Silk": "62043920",
+            "Jacket-Woven-W-Other": "62043990",
+            
+            // ===== VEST (ベスト) =====
+            // Knit - Men's
+            "Vest-Knit-M-Wool": "61101110",
+            "Vest-Knit-M-Cashmere": "61101210",
+            "Vest-Knit-M-Cotton": "61102010",
+            "Vest-Knit-M-Synthetic": "61103010",
+            "Vest-Knit-M-Silk": "61109010",
+            "Vest-Knit-M-Other": "61109080",
+            // Knit - Women's
+            "Vest-Knit-W-Wool": "61101120",
+            "Vest-Knit-W-Cashmere": "61101220",
+            "Vest-Knit-W-Cotton": "61102020",
+            "Vest-Knit-W-Synthetic": "61103020",
+            "Vest-Knit-W-Silk": "61109020",
+            "Vest-Knit-W-Other": "61109090",
+            // Vest - Woven
+            "Vest-Woven-M-Wool": "62113290",
+            "Vest-Woven-M-Cotton": "62113390",
+            "Vest-Woven-M-Synthetic": "62113910",
+            "Vest-Woven-M-Silk": "62113920",
+            "Vest-Woven-M-Other": "62113990",
+            
+            "Vest-Woven-W-Cotton": "62114290",
+            "Vest-Woven-W-Synthetic": "62114390",
+            "Vest-Woven-W-Silk": "62114910",
+            "Vest-Woven-W-Other": "62114990",
+            
+            // ===== COAT (コート) =====
+            // Knit - Men's
+            "Coat-Knit-M-Wool": "61019010",
+            "Coat-Knit-M-Cotton": "61012000",
+            "Coat-Knit-M-Synthetic": "61013010",
+            "Coat-Knit-M-Other": "61019090",
+            // Knit - Women's
+            "Coat-Knit-W-Wool": "61021000",
+            "Coat-Knit-W-Cotton": "61022000",
+            "Coat-Knit-W-Synthetic": "61023010",
+            "Coat-Knit-W-Other": "61029090",
+            // Woven - Men's
+            "Coat-Woven-M-Wool": "62012000",
+            "Coat-Woven-M-Cotton": "62013090",
+            "Coat-Woven-M-Synthetic": "62014010",
+            "Coat-Woven-M-Other": "62019090",
+            // Woven - Women's
+            "Coat-Woven-W-Wool": "62022000",
+            "Coat-Woven-W-Cotton": "62023090",
+            "Coat-Woven-W-Synthetic": "62024010",
+            "Coat-Woven-W-Other": "62029090",
+            
+            // ===== SHIRT (シャツ) =====
+            // Woven - Men's
+            "Shirt-Woven-M-Wool": "62059030",
+            "Shirt-Woven-M-Denim": "62052010",
+            "Shirt-Woven-M-Cotton": "62052020",
+            "Shirt-Woven-M-Synthetic": "62053010",
+            "Shirt-Woven-M-Silk": "62059010",
+            "Shirt-Woven-M-Other": "62059080",
+            // Woven - Women's
+            "Shirt-Woven-W-Wool": "62062010",
+            "Shirt-Woven-W-Cotton": "62063010",
+            "Shirt-Woven-W-Synthetic": "62064010",
+            "Shirt-Woven-W-Silk": "62061010",
+            "Shirt-Woven-W-Other": "62069010",
+            
+            // ===== SKIRT (スカート) =====
+            // Knit - Women's
+            "Skirt-Knit-W-Wool": "61045100",
+            "Skirt-Knit-W-Cotton": "61045200",
+            "Skirt-Knit-W-Synthetic": "61045300",
+            "Skirt-Knit-W-Artificial": "61045910",
+            "Skirt-Knit-W-Other": "61045990",
+            // Woven - Women's
+            "Skirt-Woven-W-Wool": "62045100",
+            "Skirt-Woven-W-Denim": "62045210",
+            "Skirt-Woven-W-Cotton": "62045290",
+            "Skirt-Woven-W-Synthetic": "62045300",
+            "Skirt-Woven-W-Artificial": "62045910",
+            "Skirt-Woven-W-Silk": "62045920",
+            "Skirt-Woven-W-Other": "62045990",
+            
+            // ===== DRESS (ワンピース) =====
+            // Knit - Women's
+            "Dress-Knit-W-Wool": "61044100",
+            "Dress-Knit-W-Cotton": "61044200",
+            "Dress-Knit-W-Synthetic": "61044300",
+            "Dress-Knit-W-Artificial": "61044400",
+            "Dress-Knit-W-Silk": "61044910",
+            "Dress-Knit-W-Other": "61044990",
+            // Woven - Women's
+            "Dress-Woven-W-Wool": "62044100",
+            "Dress-Woven-W-Denim": "62044210",
+            "Dress-Woven-W-Cotton": "62044290",
+            "Dress-Woven-W-Synthetic": "62044300",
+            "Dress-Woven-W-Artificial": "62044400",
+            "Dress-Woven-W-Silk": "62044910",
+            "Dress-Woven-W-Other": "62044990",
+            
+            // ===== PANTS (パンツ) =====
+            // Knit - Men's
+            "Pants-Knit-M-Wool": "61034100",
+            "Pants-Knit-M-Cotton": "61034210",
+            "Pants-Knit-M-Synthetic": "61034300",
+            "Pants-Knit-M-Other": "61034990",
+            // Knit - Women's
+            "Pants-Knit-W-Wool": "61046100",
+            "Pants-Knit-W-Cotton": "61046210",
+            "Pants-Knit-W-Synthetic": "61046300",
+            "Pants-Knit-W-Other": "61046990",
+            // Woven - Men's
+            "Pants-Woven-M-Wool": "62034100",
+            "Pants-Woven-M-Denim": "62034210",
+            "Pants-Woven-M-Cotton": "62034240",
+            "Pants-Woven-M-Synthetic": "62034300",
+            "Pants-Woven-M-Other": "62034990",
+            // Woven - Women's
+            "Pants-Woven-W-Wool": "62046100",
+            "Pants-Woven-W-Denim": "62046210",
+            "Pants-Woven-W-Cotton": "62046280",
+            "Pants-Woven-W-Synthetic": "62046300",
+            "Pants-Woven-W-Other": "62046990",
+            
+            // ===== KNIT TOP / CUT & SWEN (カットソー/ニット) =====
+            // Pullover/Jacket - Knit - Men's
+            "Knit Top-Knit-M-Wool": "61101110",
+            "Knit Top-Knit-M-Cashmere": "61101210",
+            "Knit Top-Knit-M-Cotton": "61102010",
+            "Knit Top-Knit-M-Synthetic": "61103010",
+            "Knit Top-Knit-M-Silk": "61109010",
+            "Knit Top-Knit-M-Other": "61109080",
+            // Pullover/Jacket - Knit - Women's
+            "Knit Top-Knit-W-Wool": "61101120",
+            "Knit Top-Knit-W-Cashmere": "61101220",
+            "Knit Top-Knit-W-Cotton": "61102020",
+            "Knit Top-Knit-W-Synthetic": "61103020",
+            "Knit Top-Knit-W-Silk": "61109020",
+            "Knit Top-Knit-W-Other": "61109090",
+            
+            // T-shirt - Knit (All genders)
+            "T-shirt-Knit-A-Cotton": "61091010",
+            "T-shirt-Knit-A-Synthetic": "61099010",
+            "T-shirt-Knit-A-Silk": "61099040",
+            "T-shirt-Knit-A-Other": "61099051",
+            
+            // ===== GOODS (グッズ) =====
+            // Scarf - Knit
+            "Scarf-Knit-A-Wool": "61171020",
+            "Scarf-Knit-A-Cashmere": "61171019",
+            "Scarf-Knit-A-Other": "61171090",
+            // Scarf - Woven
+            "Scarf-Woven-A-Wool": "62142010",
+            "Scarf-Woven-A-Cashmere": "62142020",
+            "Scarf-Woven-A-Synthetic": "62143000",
+            "Scarf-Woven-A-Artificial": "62144000",
+            "Scarf-Woven-A-Silk": "62141000",
+            "Scarf-Woven-A-Other": "62149000",
+            
+            // Poncho - Knit - Men's
+            "Poncho-Knit-M-Wool": "61033100",
+            "Poncho-Knit-M-Cotton": "61033200",
+            "Poncho-Knit-M-Synthetic": "61033300",
+            "Poncho-Knit-M-Artificial": "61033910",
+            "Poncho-Knit-M-Other": "61033990",
+            // Poncho - Knit - Women's
+            "Poncho-Knit-W-Wool": "61043100",
+            "Poncho-Knit-W-Cotton": "61043200",
+            "Poncho-Knit-W-Synthetic": "61043300",
+            "Poncho-Knit-W-Artificial": "61033910",
+            "Poncho-Knit-W-Other": "61033990",
+            // Poncho - Woven - Men's
+            "Poncho-Woven-M-Wool": "62033100",
+            "Poncho-Woven-M-Denim": "62033210",
+            "Poncho-Woven-M-Cotton": "62033290",
+            "Poncho-Woven-M-Synthetic": "62033300",
+            "Poncho-Woven-M-Artificial": "62033910",
+            "Poncho-Woven-M-Silk": "62033920",
+            "Poncho-Woven-M-Other": "62033990",
+            // Poncho - Woven - Women's
+            "Poncho-Woven-W-Wool": "62043100",
+            "Poncho-Woven-W-Denim": "62043210",
+            "Poncho-Woven-W-Cotton": "62043290",
+            "Poncho-Woven-W-Synthetic": "62043300",
+            "Poncho-Woven-W-Artificial": "62043910",
+            "Poncho-Woven-W-Silk": "62043920",
+            "Poncho-Woven-W-Other": "62043990",
+            
+            // Belt - Knit
+            "Belt-Knit-A-Other": "61178010",
+            // Belt - Woven
+            "Belt-Woven-A-Other": "62171050",
+
+            // ===== GOODS - LEATHER ITEMS (革製品) =====
+            // Belt - Leather
+            "Belt-A-A-Leather": "42033010",
+            
+            // Bag - Leather
+            "Bag-A-A-Leather": "42021219",
+            
+            // Hat - Leather (帽子はHS Code 65類のまま)
+            "Hat-A-A-Leather": "65050090",
+            
+            // Shoe - Leather (靴はHS Code 64類のまま、より詳細)
+            "Shoe-A-A-Leather": "64039900",
+            
+            // Socks - Knit - Men's
+            "Socks-Knit-M-Wool": "61159410",
+            "Socks-Knit-M-Cotton": "61159510",
+            "Socks-Knit-M-Synthetic": "61159610",
+            "Socks-Knit-M-Artificial": "61159910",
+            "Socks-Knit-M-Other": "61159980",
+            // Socks - Knit - Women's
+            "Socks-Knit-W-Wool": "61159420",
+            "Socks-Knit-W-Cotton": "61159520",
+            "Socks-Knit-W-Synthetic": "61159620",
+            "Socks-Knit-W-Artificial": "61159920",
+            "Socks-Knit-W-Other": "61159990",
+            // Socks - Woven (All genders)
+            "Socks-Woven-A-Cotton": "62171010",
+            "Socks-Woven-A-Other": "62171020",
+
+            // ===== COLLAR (付け襟) =====
+            // Collar - Knit
+            "Collar-Knit-A-Cotton": "61178090",
+            "Collar-Knit-A-Other": "61178090",
+            
+            // Collar - Woven
+            "Collar-Woven-A-Cotton": "62171090",
+            "Collar-Woven-A-Other": "62171090",
+            
+            // Hat/Cap (All genders, no Knit/Woven distinction)
+            "Hat-A-A-Cotton": "65050020",
+            "Hat-A-A-Wool": "65050030",
+            "Hat-A-A-Other": "65050090",
+            
+            // Tie - Knit
+            "Tie-Knit-A-Other": "61178020",
+            // Tie - Woven
+            "Tie-Woven-A-Synthetic": "62152000",
+            "Tie-Woven-A-Silk": "62151000",
+            "Tie-Woven-A-Other": "62159000",
+            
+            // Ribbon (All genders, no Knit/Woven distinction)
+            "Ribbon-A-A-Other": "50079000",
+            
+            // Bandana - Knit
+            "Bandana-Knit-A-Other": "61178090",
+            // Bandana - Woven
+            "Bandana-Woven-A-Cotton": "62132010",
+            "Bandana-Woven-A-Other": "62139010",
+            
+            // Key holder (All genders, no Knit/Woven distinction)
+            "Key holder-A-A-Other": "71171900",
+            
+            // Bag (All genders, no Knit/Woven distinction)
+            "Bag-A-A-Other": "42029260",
+            
+            // Shoe (All genders, no Knit/Woven distinction)
+            "Shoe-A-A-Other": "64041900"
+        };
+        
+        const GOODS_KEYWORDS = {
+            // Collar（付け襟）
+            "付け襟": "Collar", "つけ襟": "Collar", "ツケエリ": "Collar", "ﾂｹｴﾘ": "Collar",
+            "襟": "Collar", "ｴﾘ": "Collar",
+            "Collar": "Collar", "collar": "Collar", "COLLAR": "Collar",
+
+            
+            // Scarf
+            "マフラー": "Scarf", "ﾏﾌﾗｰ": "Scarf", "ストール": "Scarf", "ｽﾄｰﾙ": "Scarf",
+            "風呂敷": "Scarf", "フロシキ": "Scarf", "ﾌﾛｼｷ": "Scarf",
+            "Furoshiki": "Scarf", "furoshiki": "Scarf", "FUROSHIKI": "Scarf",
+            
+            // Poncho (Scarfとは別)
+            "ポンチョ": "Poncho", "ﾎﾟﾝﾁｮ": "Poncho",
+            
+            // Hat/Cap
+            "帽子": "Hat", "ﾎﾞｳｼ": "Hat", "キャップ": "Hat", "ｷｬｯﾌﾟ": "Hat", 
+            "ハット": "Hat", "ﾊｯﾄ": "Hat", "Cap": "Hat", "cap": "Hat",
+            
+            // Socks
+            "靴下": "Socks", "ｸﾂｼﾀ": "Socks", "ソックス": "Socks", "ｿｯｸｽ": "Socks",
+            "Sox": "Socks", "sox": "Socks",
+            
+            // Bag
+            "バッグ": "Bag", "ﾊﾞｯｸﾞ": "Bag", "トート": "Bag", "ﾄｰﾄ": "Bag", "Bag": "Bag", "bag": "Bag",
+            
+            // Belt
+            "ベルト": "Belt", "ﾍﾞﾙﾄ": "Belt", "Belt": "Belt", "belt": "Belt",
+            
+            // Tie
+            "ネクタイ": "Tie", "ﾈｸﾀｲ": "Tie", "Tie": "Tie", "tie": "Tie",
+            
+            // Ribbon
+            "リボン": "Ribbon", "ﾘﾎﾞﾝ": "Ribbon", "Ribbon": "Ribbon", "ribbon": "Ribbon",
+            
+            // Bandana
+            "バンダナ": "Bandana", "ﾊﾞﾝﾀﾞﾅ": "Bandana", "Bandana": "Bandana", "bandana": "Bandana",
+            
+            // Key holder
+            "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
+            
+            // Shoe/Sneaker
+            "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
+            "靴": "Shoe", "ｸﾂ": "Shoe", "Shoes": "Shoe", "shoes": "Shoe", "Shoe": "Shoe", "shoe": "Shoe"
+        };
+
+        const DENIM_KEYWORDS = [
+            '再び6.5', 'ﾌﾀﾀﾋﾞ6.5',
+            'ライ麦', 'ﾗｲﾑｷﾞ', 'ライ麦デニム', 'ﾗｲﾑｷﾞﾃﾞﾆﾑ',
+            'ツィードデニム', 'ﾂｨｰﾄﾞﾃﾞﾆﾑ',
+            '麦比古', 'ﾑｷﾞﾋｺ',
+            'AD3000',
+            'おこめ納戸納戸', 'ｵｺﾒﾅﾝﾄﾞﾅﾝﾄﾞ',
+            '大麦デニム', 'ｵｵﾑｷﾞﾃﾞﾆﾑ',
+            'モンプチデニム', 'ﾓﾝﾌﾟﾁﾃﾞﾆﾑ',
+            '13オンス', '13ｵﾝｽ',
+            'お米デニム', 'ｵｺﾒﾃﾞﾆﾑ',
+            'おこめデニム', 'ｵｺﾒﾃﾞﾆﾑ',
+            'ライトオンス', 'ﾗｲﾄｵﾝｽ',
+            'デニム', 'ﾃﾞﾆﾑ', 'denim', 'DENIM', 'Denim'
+        ];
+
+        const COUNTRY_CODE_MAP = {
+            'Japan': 'JP',
+            'China': 'CN',
+            'Vietnam': 'VN',
+            'India': 'IN'
+        };
+
+        const GENDER_MAP = {
+            'Unisex': 'Unisex',
+            'レディース': "Women's",
+            'メンズ': "Men's"
+        };
+        
+        const DEFAULT_PRESETS = {
+            "Paper Catalog": { hs_code: "49019900", unit_value: 300, weight_per_unit: 0.1 },
+            "Paper Calendar": { hs_code: "49100000", unit_value: 100, weight_per_unit: 0.05 },
+            "Paper Envelope": { hs_code: "48171000", unit_value: 10, weight_per_unit: 0.01 },
+            "Paper Bag": { hs_code: "48192000", unit_value: 50, weight_per_unit: 0.05 },
+            "Paper Bag Tape": { hs_code: "39191099", unit_value: 20, weight_per_unit: 0.02 },
+            "Plastic Bag": { hs_code: "39232100", unit_value: 10, weight_per_unit: 0.01 },
+            "Button": { hs_code: "96062200", unit_value: 20, weight_per_unit: 0.005 },
+            "Cotton Fabric Bag": { hs_code: "42021290", unit_value: 500, weight_per_unit: 0.15 },
+            "Fabric Bag (Non-Cotton)": { hs_code: "42021219", unit_value: 400, weight_per_unit: 0.12 }
+        };
+        
+        let presets = JSON.parse(localStorage.getItem('invoicePresets')) || DEFAULT_PRESETS;
+        let generalInfo = JSON.parse(localStorage.getItem('generalInfo')) || {};
+        let pricePercentage = parseFloat(localStorage.getItem('pricePercentage')) || 42;
+        
+        function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
+        function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
+        function calculatePrice(p) { return Math.round((p * (pricePercentage / 100)) / 10) * 10; }
+        function getWeightByCategory(c) { return ITEM_WEIGHT_MAP[c] || 0.5; }
+        function translateCategory(c) { return ITEM_CATEGORY_TRANSLATION[c] || c; }
+        
+        function setInvoiceNumber() {
+            const yy = uploadDate.getFullYear().toString().slice(-2);
+            const mm = (uploadDate.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('invoiceYYMM').value = yy + mm;
+            document.getElementById('invoiceCarrier').value = 'FEDEX';
+            document.getElementById('invoiceSerial').value = '';
+        }
+        
+        function toFullWidth(str) {
+            if (!str) return '';
+            let result = str;
+            const dakuten = {
+                'ｶﾞ': 'ガ', 'ｷﾞ': 'ギ', 'ｸﾞ': 'グ', 'ｹﾞ': 'ゲ', 'ｺﾞ': 'ゴ',
+                'ｻﾞ': 'ザ', 'ｼﾞ': 'ジ', 'ｽﾞ': 'ズ', 'ｾﾞ': 'ゼ', 'ｿﾞ': 'ゾ',
+                'ﾀﾞ': 'ダ', 'ﾁﾞ': 'ヂ', 'ﾂﾞ': 'ヅ', 'ﾃﾞ': 'デ', 'ﾄﾞ': 'ド',
+                'ﾊﾞ': 'バ', 'ﾋﾞ': 'ビ', 'ﾌﾞ': 'ブ', 'ﾍﾞ': 'ベ', 'ﾎﾞ': 'ボ',
+                'ﾊﾟ': 'パ', 'ﾋﾟ': 'ピ', 'ﾌﾟ': 'プ', 'ﾍﾟ': 'ペ', 'ﾎﾟ': 'ポ', 'ｳﾞ': 'ヴ'
+            };
+            for (const [h, f] of Object.entries(dakuten)) result = result.split(h).join(f);
+            const kanaMap = {
+                'ｧ': 'ァ', 'ｱ': 'ア', 'ｨ': 'ィ', 'ｲ': 'イ', 'ｩ': 'ゥ', 'ｳ': 'ウ', 'ｪ': 'ェ', 'ｴ': 'エ', 'ｫ': 'ォ', 'ｵ': 'オ',
+                'ｶ': 'カ', 'ｷ': 'キ', 'ｸ': 'ク', 'ｹ': 'ケ', 'ｺ': 'コ', 'ｻ': 'サ', 'ｼ': 'シ', 'ｽ': 'ス', 'ｾ': 'セ', 'ｿ': 'ソ',
+                'ﾀ': 'タ', 'ﾁ': 'チ', 'ｯ': 'ッ', 'ﾂ': 'ツ', 'ﾃ': 'テ', 'ﾄ': 'ト', 'ﾅ': 'ナ', 'ﾆ': 'ニ', 'ﾇ': 'ヌ', 'ﾈ': 'ネ', 'ﾉ': 'ノ',
+                'ﾊ': 'ハ', 'ﾋ': 'ヒ', 'ﾌ': 'フ', 'ﾍ': 'ヘ', 'ﾎ': 'ホ', 'ﾏ': 'マ', 'ﾐ': 'ミ', 'ﾑ': 'ム', 'ﾒ': 'メ', 'ﾓ': 'モ',
+                'ｬ': 'ャ', 'ﾔ': 'ヤ', 'ｭ': 'ュ', 'ﾕ': 'ユ', 'ｮ': 'ョ', 'ﾖ': 'ヨ', 'ﾗ': 'ラ', 'ﾘ': 'リ', 'ﾙ': 'ル', 'ﾚ': 'レ', 'ﾛ': 'ロ',
+                'ﾜ': 'ワ', 'ｦ': 'ヲ', 'ﾝ': 'ン', 'ｰ': 'ー'
+            };
+            for (const [h, f] of Object.entries(kanaMap)) result = result.split(h).join(f);
+            return result;
+        }
+        
+        function normalizeMaterial(m) {
+            if (!m) return "Other";
+            const mat = m.toString().toUpperCase().trim();
+            for (const [k, b] of Object.entries(MATERIAL_BUCKETS)) {
+                if (mat.includes(k.toUpperCase())) return b;
+            }
+            return "Other";
+        }
+
+        function convertCountryCode(country) {
+            if (!country) return 'JP';
+            const trimmed = country.toString().trim();
+            return COUNTRY_CODE_MAP[trimmed] || trimmed;
+        }
+        
+        function determineKnitWoven(item, productName) {
+            const itemL = (item || '').toLowerCase();
+            const nameL = toFullWidth(productName || '').toLowerCase();
+            const combined = itemL + ' ' + nameL;
+            
+            // 固定ルール: 必ずWoven
+            if (itemL.includes('シャツ'.toLowerCase())) return { result: 'Woven', matchType: 'item_rule' };
+            
+            // 固定ルール: 必ずKnit
+            if (itemL.includes('カットソー'.toLowerCase()) || itemL.includes('ニット'.toLowerCase())) 
+                return { result: 'Knit', matchType: 'item_rule' };
+            
+            // Wovenキーワード（品名一覧より49個）
+            const wovenKw = [
+                'ジャージフラノ', 'ｼﾞｬｰｼﾞﾌﾗﾉ', 'メルトン', 'ﾒﾙﾄﾝ', 'フランネル', 'ﾌﾗﾝﾈﾙ',
+                'ツィード', 'ﾂｨｰﾄﾞ', 'ツイード', 'ﾂｲｰﾄﾞ', 'USモー', 'USﾓｰ',
+                'コーデュロイ', 'ｺｰﾃﾞｭﾛｲ', 'デニム', 'ﾃﾞﾆﾑ', 'denim',
+                'ナイロン', 'ﾅｲﾛﾝ', 'クロス', 'ｸﾛｽ', 'コットンツィード', 'ｺｯﾄﾝﾂｨｰﾄﾞ',
+                'ベネシャン', 'ﾍﾞﾈｼｬﾝ', 'ダック', 'ﾀﾞｯｸ', 'ベルベット', 'ﾍﾞﾙﾍﾞｯﾄ',
+                'サージ', 'ｻｰｼﾞ', 'リップストップ', 'ﾘｯﾌﾟｽﾄｯﾌﾟ', 'サテン', 'ｻﾃﾝ',
+                'モンプチ', 'ﾓﾝﾌﾟﾁ', 'ライ麦', 'ﾗｲ麦', 'チノ', 'ﾁﾉ',
+                'リネンシルク', 'ﾘﾈﾝｼﾙｸ', 'プチデニム', 'ﾌﾟﾁﾃﾞﾆﾑ', 'ギャバ', 'ｷﾞｬﾊﾞ',
+                'オックス', 'ｵｯｸｽ', 'タペット', 'ﾀﾍﾟｯﾄ', 'ダンプ', 'ﾀﾞﾝﾌﾟ',
+                '二重織', 'ﾆｼﾞｭｳｵﾘ', 'シルク', 'ｼﾙｸ', 'カディ', 'ｶﾃﾞｨ',
+                '撚杢平', 'ﾈﾝﾓｸﾋﾗ', 'インドリネン', 'ｲﾝﾄﾞﾘﾈﾝ', 'ガーゼ', 'ｶﾞｰｾﾞ',
+                'ネル', 'ﾈﾙ', '180番三子', '180ﾊﾞﾝｻﾝｺ', 'スーピマオックス', 'ｽｰﾋﾟﾏｵｯｸｽ',
+                '帆布', 'ﾊﾝﾌﾟ', 'スーピマ綾', 'ｽｰﾋﾟﾏｱﾔ', '空比古比女', 'ｿﾗﾋｺﾋﾒ',
+                'クロスビー5', 'ｸﾛｽﾋﾞｰ5', 'シャルロット', 'ｼｬﾙﾛｯﾄ', 'シャルロットバギー', 'ｼｬﾙﾛｯﾄﾊﾞｷﾞｰ',
+                'バチ比女', 'ﾊﾞﾁﾋﾒ', 'スラックス', 'ｽﾗｯｸｽ', 'ペインター', 'ﾍﾟｲﾝﾀｰ',
+                'クロスオーバーパンツ', 'ｸﾛｽｵｰﾊﾞｰﾊﾟﾝﾂ', 'フロントリバー', 'ﾌﾛﾝﾄﾘﾊﾞｰ',
+                'ベイカーパンツ', 'ﾍﾞｲｶｰﾊﾟﾝﾂ', 'ホップサック', 'ﾎｯﾌﾟｻｯｸ',
+                'リネンクロス', 'ﾘﾈﾝｸﾛｽ', 'モールスキン', 'ﾓｰﾙｽｷﾝ',
+                'シャツ', 'ｼｬﾂ', 'twill', 'ツイル', 'ﾂｲﾙ'
+            ];
+            
+            // Knitキーワード（品名一覧より17個）
+            const knitKw = [
+                '裏毛', 'ｳﾗｹ', 'ウール', 'ｳｰﾙ', 'カノコ', 'ｶﾉｺ',
+                'でこぼこ天竺', 'ﾃﾞｺﾎﾞｺﾃﾝｼﾞｸ', '天竺', 'ﾃﾝｼﾞｸ', '縮絨', 'ｼｭｸｼﾞｭｳ',
+                'シェットランドニット', 'ｼｪｯﾄﾗﾝﾄﾞﾆｯﾄ', 'カシミヤ', 'ｶｼﾐﾔ',
+                '梳毛ウール', 'ｿﾓｳｳｰﾙ', '梳毛天竺', 'ｿﾓｳﾃﾝｼﾞｸ', 'ニットベルト', 'ﾆｯﾄﾍﾞﾙﾄ',
+                '超ガーゼ', 'ﾁｮｳｶﾞｰｾﾞ', 'ジャガード', 'ｼﾞｬｶﾞｰﾄﾞ', 'ジャカード', 'ｼﾞｬｶｰﾄﾞ',
+                'ニットソー', 'ﾆｯﾄｿｰ', 'スムースニット', 'ｽﾑｰｽﾆｯﾄ', 'スウェット', 'ｽｳｪｯﾄ',
+                'ニット', 'ﾆｯﾄ', 'sweater', 'cardigan', 'カーディガン', 'ｶｰﾃﾞｨｶﾞﾝ',
+                'カットソー', 'ｶｯﾄｿｰ', '編み', 'ｱﾐ'
+            ];
+            
+            for (const kw of wovenKw) if (combined.includes(kw.toLowerCase())) return { result: 'Woven', matchType: 'keyword' };
+            for (const kw of knitKw) if (combined.includes(kw.toLowerCase())) return { result: 'Knit', matchType: 'keyword' };
+            
+            const defaults = { 'ブルゾン・ジャケット': 'Woven', 'コート': 'Woven', 'スカート': 'Woven', 
+                              'ワンピース': 'Woven', 'パンツ': 'Woven', 'グッズ': 'Woven' };
+            return { result: defaults[item] || 'Woven', matchType: 'default' };
+        }
+        
+        function determineHSCode(row) {
+            const item = row['アイテム'] || '';
+            const productName = row['品名'] || '';
+            const gender = (row['性別'] || '') === 'メンズ' ? 'M' : 'W';
+            
+            // 性別プレフィックスを取得
+            const genderPrefix = GENDER_MAP[row['性別']] || 'Unisex';
+            
+            // カテゴリを英語に変換
+            const categoryEN = translateCategory(item);
+            let description = genderPrefix + ' ' + categoryEN;
+            let descMatched = true;
+            
+            // グッズの場合は詳細アイテムタイプを判定
+            if (item === 'グッズ') {
+                const normalized = toFullWidth(productName);
+                
+                // 最も長くマッチするキーワードを探す
+                let longestMatch = '';
+                let matchedType = '';
+                
+                for (const [kw, trans] of Object.entries(GOODS_KEYWORDS)) {
+                    if (normalized.includes(kw) && kw.length > longestMatch.length) {
+                        longestMatch = kw;
+                        matchedType = trans;
+                    }
+                }
+                
+                if (matchedType) {
+                    description = matchedType;
+                    descMatched = true;
+                } else {
+                    descMatched = false;
+                }
+            }
+            
+            // Vest判定（品名に「ベスト」「Vest」があるか）
+            const isVest = toFullWidth(productName).toLowerCase().includes('ベスト') || 
+                           productName.toLowerCase().includes('vest');
+            
+            // Knit/Woven判定
+            const kwResult = determineKnitWoven(item, productName);
+            const knitWoven = kwResult.result;
+            const matchType = kwResult.matchType;
+            
+            // 素材判定（デニムチェック優先）
+            const productNameFull = toFullWidth(productName).toLowerCase();
+            let material = normalizeMaterial(row['素材1']);
+            
+            // デニムキーワードチェック
+            const isDenim = DENIM_KEYWORDS.some(keyword => 
+                productNameFull.includes(toFullWidth(keyword).toLowerCase())
+            );
+            if (isDenim && knitWoven === 'Woven') {
+                material = 'Denim';
+            }
+            
+            // HSコード決定
+            let hsCode = 'N/A';
+            
+            // カテゴリ別処理
+            if (item === 'グッズ') {
+                // グッズの場合
+                let goodsCategory = description; // Scarf, Poncho, Hat, etc.
+                
+                // グッズタイプが特定できない場合のデフォルト処理
+                if (goodsCategory === 'Goods') {
+                    // デフォルトで「Scarf」として扱う
+                    goodsCategory = 'Scarf';
+                    console.warn(`グッズの詳細タイプが不明: ${productName} → デフォルトでScarfとして処理`);
+                }
+                
+                // === 革製品の特別処理（優先） ===
+                if (material === 'Leather' && ['Belt', 'Bag', 'Hat', 'Shoe'].includes(goodsCategory)) {
+                    const key = `${goodsCategory}-A-A-Leather`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        // フォールバック：一般的な革製品コード
+                        const leatherFallback = {
+                            'Belt': '42033010',
+                            'Bag': '42021219',
+                            'Hat': '65050090',
+                            'Shoe': '64039900'
+                        };
+                        hsCode = leatherFallback[goodsCategory] || '42029260';
+                    }
+                }
+                // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要（革製品以外）
+                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
+                    const key = `${goodsCategory}-A-A-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `${goodsCategory}-A-A-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else {
+                    // その他のグッズは性別とKnit/Wovenが必要
+                    const genderCode = gender;
+                    let key;
+                    
+                    if (goodsCategory === 'Scarf' || goodsCategory === 'Poncho' || goodsCategory === 'Belt' || 
+                        goodsCategory === 'Socks' || goodsCategory === 'Bandana' || goodsCategory === 'Collar') {
+                        
+                        if (goodsCategory === 'Poncho' && knitWoven) {
+                            // Ponchoは性別必要
+                            key = `${goodsCategory}-${knitWoven}-${genderCode}-${material}`;
+                            hsCode = HS_CODE_RULES[key];
+                            if (!hsCode) {
+                                key = `${goodsCategory}-${knitWoven}-${genderCode}-Other`;
+                                hsCode = HS_CODE_RULES[key];
+                            }
+                        } else if (goodsCategory === 'Socks' && knitWoven) {
+                            // Socksは性別必要
+                            key = `${goodsCategory}-${knitWoven}-${genderCode}-${material}`;
+                            hsCode = HS_CODE_RULES[key];
+                            if (!hsCode) {
+                                key = `${goodsCategory}-${knitWoven}-${genderCode}-Other`;
+                                hsCode = HS_CODE_RULES[key];
+                            }
+                        } else if (knitWoven) {
+                            // Scarf, Belt, Bandana, Collar等は性別不要（All）
+                            key = `${goodsCategory}-${knitWoven}-A-${material}`;
+                            hsCode = HS_CODE_RULES[key];
+                            if (!hsCode) {
+                                key = `${goodsCategory}-${knitWoven}-A-Other`;
+                                hsCode = HS_CODE_RULES[key];
+                            }
+                        }
+                    } else if (goodsCategory === 'Tie' && knitWoven) {
+                        key = `${goodsCategory}-${knitWoven}-A-${material}`;
+                        hsCode = HS_CODE_RULES[key];
+                        if (!hsCode) {
+                            key = `${goodsCategory}-${knitWoven}-A-Other`;
+                            hsCode = HS_CODE_RULES[key];
+                        }
+                    }
+                }
+            } else if (item === 'カットソー' || item === 'ニット') {
+                // カットソー/ニットの場合
+                
+                // Tシャツ・タンクトップ判定
+                const isTshirt = toFullWidth(productName).toLowerCase().includes('tシャツ') ||
+                                 toFullWidth(productName).toLowerCase().includes('tｼｬﾂ') ||
+                                 toFullWidth(productName).toLowerCase().includes('タンクトップ') ||
+                                 toFullWidth(productName).toLowerCase().includes('ﾀﾝｸﾄｯﾌﾟ') ||
+                                 productName.toLowerCase().includes('t-shirt') ||
+                                 productName.toLowerCase().includes('tshirt') ||
+                                 productName.toLowerCase().includes('tank top');
+                
+                if (isTshirt) {
+                    // Tシャツ用のHSコード（性別関係なくAll gender）
+                    const key = `T-shirt-Knit-A-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `T-shirt-Knit-A-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else if (isVest) {
+                    // Vest
+                    const key = `Vest-Knit-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Vest-Knit-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else {
+                    // Knit Top (Pullover/Jacket等)
+                    const key = `Knit Top-Knit-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Knit Top-Knit-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'シャツ') {
+                // シャツは常にWoven
+                const key = `Shirt-Woven-${gender}-${material}`;
+                hsCode = HS_CODE_RULES[key];
+                if (!hsCode) {
+                    const keyOther = `Shirt-Woven-${gender}-Other`;
+                    hsCode = HS_CODE_RULES[keyOther];
+                }
+            } else if (item === 'スカート' || item === 'ワンピース') {
+                // スカート/ワンピースは女性のみ
+                const category = item === 'スカート' ? 'Skirt' : 'Dress';
+                if (knitWoven) {
+                    const key = `${category}-${knitWoven}-W-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `${category}-${knitWoven}-W-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'ブルゾン・ジャケット') {
+                // ジャケット/ベスト
+                if (isVest) {
+                    // ベストの場合（Knit/Woven両方対応）
+                    const key = `Vest-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Vest-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                } else if (knitWoven) {
+                    // ジャケットの場合
+                    const key = `Jacket-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Jacket-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'コート') {
+                // コート
+                if (knitWoven) {
+                    const key = `Coat-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Coat-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            } else if (item === 'パンツ') {
+                // パンツ
+                if (knitWoven) {
+                    const key = `Pants-${knitWoven}-${gender}-${material}`;
+                    hsCode = HS_CODE_RULES[key];
+                    if (!hsCode) {
+                        const keyOther = `Pants-${knitWoven}-${gender}-Other`;
+                        hsCode = HS_CODE_RULES[keyOther];
+                    }
+                }
+            }
+        
+            // 最終フォールバック: HSコードが決定できなかった場合
+            if (!hsCode || hsCode === 'N/A') {
+                console.warn('⚠️ HSコード決定失敗 - デフォルトHSコードを使用', {
+                    item: item,
+                    品名: productName,
+                    性別: gender,
+                    KnitWoven: knitWoven,
+                    素材: material
+                });
+                
+                // デフォルト: Women's + Woven + Cotton (またはOther)
+                const fallbackCodes = {
+                    'ブルゾン・ジャケット': '62043290',  // Jacket-Woven-W-Cotton
+                    'コート': '62023090',               // Coat-Woven-W-Cotton
+                    'シャツ': '62063010',               // Shirt-Woven-W-Cotton
+                    'スカート': '62045290',             // Skirt-Woven-W-Cotton
+                    'ワンピース': '62044290',           // Dress-Woven-W-Cotton
+                    'パンツ': '62046280',               // Pants-Woven-W-Cotton
+                    'カットソー': '61102020',           // Knit Top-Knit-W-Cotton
+                    'ニット': '61102020',               // Knit Top-Knit-W-Cotton
+                    'グッズ': '62149000'                // その他の衣類アクセサリー (Other)
+                };
+                
+                hsCode = fallbackCodes[item] || '62149000'; // どれにも該当しない場合
+            }
+            
+            return { description, descMatched, hsCode: hsCode || 'N/A', matchType };
+        }
+        
+        function getFirst8Digits(s) { return s ? s.toString().trim().substring(0, 8) : ''; }
+        
+        function processFile(file) {
+            if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('Excelファイルをアップロードしてください'); return; }
+            showLoading();
+            uploadDate = new Date();
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    processExcelData(jsonData);
+                    hideLoading();
+                    document.getElementById('uploadSection').style.display = 'none';
+                    document.getElementById('dataSection').classList.add('active');
+                    setInvoiceNumber();
+                    updateGrandTotal();
+                    lucide.createIcons();
+                } catch (error) {
+                    hideLoading();
+                    alert('ファイル読み込みエラー: ' + error.message);
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        function processExcelData(jsonData) {
+            const validRows = jsonData.filter(r => r['品番'] && r['品名'] && r['アイテム']);
+            const grouped = {};
+            validRows.forEach(row => {
+                const first8 = getFirst8Digits(row['品番']);
+                if (!first8) return;
+                if (grouped[first8]) {
+                    grouped[first8].units += (row['数量'] || 0);
+                    const cno = row['C/No.'] || 1;
+                    if (!grouped[first8].packageNos.includes(cno)) {
+                        grouped[first8].packageNos.push(cno);
+                    }
+                } else {
+                    const hsResult = determineHSCode(row);
+                    grouped[first8] = {
+                        itemCode: first8, units: row['数量'] || 0,
+                        weightPerUnit: getWeightByCategory(row['アイテム']),
+                        measure: 'PCS', description: hsResult.description,
+                        matched: hsResult.descMatched, hsCode: hsResult.hsCode,
+                        country: convertCountryCode(row['原産国']), 
+                        originalRRP: row['上代'] || 0,
+                        unitValue: calculatePrice(row['上代'] || 0),
+                        totalValue: 0, matchType: hsResult.matchType,
+                        packageNos: [row['C/No.'] || 1],
+                        gender: row['性別'] || 'Unisex'
+                    };
+                }
+            });
+            productData = Object.values(grouped);
+            productData.forEach(item => {
+                item.totalValue = item.units * item.unitValue;
+                item.weight = item.weightPerUnit * item.units;
+                item.packageCount = item.packageNos.length;
+                item.remarksText = item.packageNos.length > 0 
+                    ? 'C/No. ' + item.packageNos.sort((a,b) => a-b).join(', ')
+                    : '';
+            });
+            renderDataTable();
+            document.getElementById('controlSection').classList.add('sticky');
+        }
+        
+        function renderDataTable() {
+            const tbody = document.getElementById('dataTableBody');
+            tbody.innerHTML = '';
+            let totalUnits = 0;
+            productData.forEach((item, idx) => {
+                totalUnits += item.units;
+                const row = tbody.insertRow();
+                if (item.matchType === 'default') row.classList.add('hs-match-default');
+                row.innerHTML = `
+                    <td><input type="text" value="${item.itemCode}"></td>
+                    <td><input type="number" value="${item.units}" min="0"></td>
+                    <td><input type="number" value="${item.weight.toFixed(2)}" min="0" step="0.1"></td>
+                    <td><select><option value="PCS">PCS</option></select></td>
+                    <td><input type="text" value="${item.description}"></td>
+                    <td><input type="text" value="${item.hsCode}"></td>
+                    <td><input type="text" value="${item.country}"></td>
+                    <td><input type="text" class="align-right" value="${item.unitValue.toLocaleString()}"></td>
+                    <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
+                `;
+            });
+            document.getElementById('totalItemsCount1').textContent = totalUnits;
+            updateGrandTotal();
+            lucide.createIcons();
+        }
+        
+        function addNoCommercialRow() {
+            noCommercialData.push({
+                itemCode: '', units: 0, weight: 0, measure: 'PCS',
+                description: '', hsCode: '', country: 'JP', unitValue: 0, totalValue: 0,
+                needsReview: false
+            });
+            renderNoCommercialTable();
+        }
+        
+        function deleteNoCommercialRow(idx) {
+            if (idx === 0) {
+                alert('最初の行は削除できません / Cannot delete the first row');
+                return;
+            }
+            noCommercialData.splice(idx, 1);
+            renderNoCommercialTable();
+        }
+        
+        function updateNoCommercialDescription(idx, val) {
+            noCommercialData[idx].description = val;
+            const matched = Object.keys(presets).find(n => n === val);
+            
+            if (matched) {
+                // プリセットから選択された場合
+                const preset = presets[matched];
+                noCommercialData[idx].hsCode = preset.hs_code;
+                noCommercialData[idx].unitValue = preset.unit_value;
+                noCommercialData[idx].weight = noCommercialData[idx].units * (preset.weight_per_unit || 0.1);
+                noCommercialData[idx].country = 'JP';
+                noCommercialData[idx].needsReview = true;
+            } else if (val.trim() !== '') {
+                // 手動入力された場合（空欄でない）
+                noCommercialData[idx].hsCode = '49111000';
+                noCommercialData[idx].unitValue = 0; // 空欄として扱う
+                noCommercialData[idx].country = 'JP';
+                noCommercialData[idx].needsReview = true; // 赤ハイライト表示
+            } else {
+                // 空欄の場合
+                noCommercialData[idx].hsCode = '';
+                noCommercialData[idx].unitValue = 0;
+                noCommercialData[idx].country = 'JP';
+                noCommercialData[idx].needsReview = false;
+            }
+            
+            renderNoCommercialTable();
+        }
+
+        function updateNoCommercialUnits(idx, val) {
+            noCommercialData[idx].units = parseInt(val) || 0;
+            noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
+            const matched = Object.keys(presets).find(n => n === noCommercialData[idx].description);
+            if (matched && presets[matched]) {
+                noCommercialData[idx].weight = noCommercialData[idx].units * (presets[matched].weight_per_unit || 0.1);
+            } else {
+                noCommercialData[idx].weight = noCommercialData[idx].units * 0.1;
+            }
+            renderNoCommercialTable();
+            updateGrandTotal();
+        }
+
+        function updateNoCommercialUnitValue(idx, val) {
+            noCommercialData[idx].unitValue = parseInt(val.replace(/,/g, '')) || 0;
+            noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
+            renderNoCommercialTable();
+            updateGrandTotal();
+        }
+        
+        function renderNoCommercialTable() {
+            const tbody = document.getElementById('noCommercialBody');
+            tbody.innerHTML = '';
+            let totalUnits = 0;
+            noCommercialData.forEach((item, idx) => {
+                totalUnits += item.units;
+                const row = tbody.insertRow();
+                const presetOpts = Object.keys(presets).map(n => `<option value="${n}">`).join('');
+                
+                // プリセット使用時は赤ハイライト
+                const highlightClass = item.needsReview ? 'preset-needs-review' : '';
+                
+                row.innerHTML = `
+                    <td><input type="text" value="${item.itemCode}" onchange="noCommercialData[${idx}].itemCode = this.value"></td>
+                    <td><input type="number" class="${highlightClass}" value="${item.units}" min="0" onchange="updateNoCommercialUnits(${idx}, this.value)"></td>
+                    <td><input type="number" value="${item.weight.toFixed(1)}" min="0" step="0.1" onchange="noCommercialData[${idx}].weight = parseFloat(this.value) || 0"></td>
+                    <td><select><option value="PCS">PCS</option></select></td>
+                    <td><input type="text" value="${item.description}" onchange="updateNoCommercialDescription(${idx}, this.value)" list="presets-${idx}" placeholder="選択または入力">
+                        <datalist id="presets-${idx}">${presetOpts}</datalist></td>
+                    <td><input type="text" value="${item.hsCode}" readonly></td>
+                    <td><input type="text" value="${item.country}" onchange="noCommercialData[${idx}].country = this.value"></td>
+                    <td><input type="text" class="align-right editable-readonly ${highlightClass}" value="${item.unitValue.toLocaleString()}" onchange="updateNoCommercialUnitValue(${idx}, this.value)"></td>
+                    <td><input type="text" class="align-right" value="${item.totalValue.toLocaleString()}" readonly></td>
+                    <td><button class="btn-delete" onclick="deleteNoCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
+                `;
+            });
+            document.getElementById('totalItemsCount2').textContent = totalUnits;
+            updateGrandTotal();
+            lucide.createIcons();
+        }
+        
+        function addNonCommercialRow() {
+            nonCommercialData.push({ 
+                description: '', 
+                quantity: 0,
+                needsReview: false 
+            });
+            renderNonCommercialTable();
+        }
+        
+        function deleteNonCommercialRow(idx) {
+            if (idx === 0) {
+                alert('最初の行は削除できません / Cannot delete the first row');
+                return;
+            }
+            nonCommercialData.splice(idx, 1);
+            renderNonCommercialTable();
+        }
+
+        function updateNonCommercialDescription(idx, val) {
+            nonCommercialData[idx].description = val;
+            
+            if (val.trim() !== '') {
+                // 何か入力された場合は赤ハイライト
+                nonCommercialData[idx].needsReview = true;
+            } else {
+                // 空欄の場合はハイライト解除
+                nonCommercialData[idx].needsReview = false;
+            }
+            
+            renderNonCommercialTable();
+        }
+        
+        function renderNonCommercialTable() {
+            const tbody = document.getElementById('nonCommercialBody');
+            tbody.innerHTML = '';
+            nonCommercialData.forEach((item, idx) => {
+                const row = tbody.insertRow();
+                
+                // プリセットリストのオプション生成
+                const presetOptions = NON_COMMERCIAL_PRESETS.map(name => `<option value="${name}">`).join('');
+                
+                // Descriptionが入力されている場合は赤ハイライト
+                const highlightClass = item.needsReview ? 'preset-needs-review' : '';
+                
+                row.innerHTML = `
+                    <td><input type="text" 
+                               value="${item.description}" 
+                               placeholder="入力または選択 / Enter or select from list" 
+                               list="non-commercial-presets-${idx}"
+                               onchange="updateNonCommercialDescription(${idx}, this.value)">
+                        <datalist id="non-commercial-presets-${idx}">${presetOptions}</datalist>
+                    </td>
+                    <td><input type="number" 
+                               class="${highlightClass}"
+                               value="${item.quantity}" 
+                               min="0" 
+                               onchange="nonCommercialData[${idx}].quantity = parseInt(this.value) || 0; renderNonCommercialTable();"></td>
+                    <td><button class="btn-delete" onclick="deleteNonCommercialRow(${idx})"><i data-lucide="trash-2" size="16"></i></button></td>
+                `;
+            });
+            lucide.createIcons();
+        }
+        
+        function updateGrandTotal() {
+            const t1 = productData.reduce((s, i) => s + i.units, 0);
+            const t2 = noCommercialData.reduce((s, i) => s + i.units, 0);
+            const t3 = nonCommercialData.reduce((s, i) => s + i.quantity, 0);
+            const grandTotal = t1 + t2 + t3;
+            const a1 = productData.reduce((s, i) => s + i.totalValue, 0);
+            const a2 = noCommercialData.reduce((s, i) => s + i.totalValue, 0);
+            const grandAmount = a1 + a2;
+            document.getElementById('grandTotalItems').textContent = grandTotal;
+            document.getElementById('grandTotalAmount').textContent = `JPY ${grandAmount.toLocaleString()}`;
+        }
+        
+        function generateInvoice() {
+            // バリデーション
+            const serialInput = document.getElementById('invoiceSerial').value.trim();
+            const carrierInput = document.getElementById('invoiceCarrier').value.trim().toUpperCase();
+            
+            if (!serialInput) {
+                alert('Invoice番号の連番を入力してください\nPlease enter the serial number');
+                document.getElementById('invoiceSerial').focus();
+                return;
+            }
+            
+            const yymmInput = document.getElementById('invoiceYYMM').value;
+            const invoiceNo = 'RPM-' + yymmInput + '-' + carrierInput + serialInput;
+                    
+                    console.log('=== DEBUG START ===');
+                    console.log('Invoice No:', invoiceNo);
+                    console.log('Modal element:', document.getElementById('invoicePreviewModal'));
+                    console.log('openInvoicePreview function exists:', typeof openInvoicePreview);
+            
+            // テスト：モーダルが存在するか
+            const modal = document.getElementById('invoicePreviewModal');
+            if (!modal) {
+                alert('エラー: invoicePreviewModal が見つかりません');
+                return;
+            }
+            
+            // プレビューモーダルを開く
+            try {
+                openInvoicePreview(invoiceNo);
+            } catch (error) {
+                console.error('Error:', error);
+                alert('エラーが発生しました: ' + error.message);
+            }
+        }
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) processFile(file);
+        });
+        
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('click', function(e) {
+            if (e.target.closest('.file-input-wrapper')) return;
+            document.getElementById('fileInput').click();
+        });
+        
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, function(e) { e.preventDefault(); e.stopPropagation(); }, false);
+        });
+        
+        ['dragenter', 'dragover'].forEach(ev => {
+            dropZone.addEventListener(ev, function() { this.classList.add('drag-over'); }, false);
+        });
+        
+        ['dragleave', 'drop'].forEach(ev => {
+            dropZone.addEventListener(ev, function() { this.classList.remove('drag-over'); }, false);
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            const files = e.dataTransfer.files;
+            if (files.length > 0) processFile(files[0]);
+        }, false);
+
+        function openGeneralInfoModal() {
+            document.getElementById('generalInfoModal').classList.add('active');
+            loadGeneralInfo();
+        }
+
+        function closeGeneralInfoModal() {
+            document.getElementById('generalInfoModal').classList.remove('active');
+        }
+
+        function loadGeneralInfo() {
+            document.getElementById('exporterName').value = generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.';
+            document.getElementById('exporterAddress').value = generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN';
+            document.getElementById('exporterTel').value = generalInfo.exporterTel || '81-3-3498-1345';
+            document.getElementById('exporterFax').value = generalInfo.exporterFax || '81-3-3486-7145';
+            document.getElementById('pricePercentage').value = pricePercentage;
+            
+            document.getElementById('consigneeName').value = generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED';
+            document.getElementById('consigneeAddress').value = generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong';
+            document.getElementById('consigneeContact').value = generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)';
+            document.getElementById('consigneeTel').value = generalInfo.consigneeTel || '2127-4660';
+            document.getElementById('consigneeEmail').value = generalInfo.consigneeEmail || 'fls.wh@fls.com.hk';
+            
+            document.getElementById('importerName').value = generalInfo.importerName || 'Heritage R LTD.';
+            document.getElementById('importerAddress').value = generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG';
+            document.getElementById('importerTel').value = generalInfo.importerTel || '852-2956-3266';
+            document.getElementById('importerFax').value = generalInfo.importerFax || '852-2956-1230';
+            document.getElementById('importerEmail').value = generalInfo.importerEmail || 'info@45rglobal.com'; 
+        }
+
+        function saveGeneralInfo() {
+            pricePercentage = parseFloat(document.getElementById('pricePercentage').value) || 42;
+            localStorage.setItem('pricePercentage', pricePercentage);
+            
+            generalInfo = {
+                exporterName: document.getElementById('exporterName').value,
+                exporterAddress: document.getElementById('exporterAddress').value,
+                exporterTel: document.getElementById('exporterTel').value,
+                exporterFax: document.getElementById('exporterFax').value,
+                
+                consigneeName: document.getElementById('consigneeName').value,
+                consigneeAddress: document.getElementById('consigneeAddress').value,
+                consigneeContact: document.getElementById('consigneeContact').value,
+                consigneeTel: document.getElementById('consigneeTel').value,
+                consigneeEmail: document.getElementById('consigneeEmail').value,
+                
+                importerName: document.getElementById('importerName').value,
+                importerAddress: document.getElementById('importerAddress').value,
+                importerTel: document.getElementById('importerTel').value,
+                importerFax: document.getElementById('importerFax').value,
+                importerEmail: document.getElementById('importerEmail').value
+            };
+            localStorage.setItem('generalInfo', JSON.stringify(generalInfo));
+            alert('保存しました / Saved successfully!');
+            closeGeneralInfoModal();
+        }
+        
+        function openPresetModal() {
+            document.getElementById('presetModal').classList.add('active');
+            renderPresets();
+        }
+        
+        function closePresetModal() {
+            document.getElementById('presetModal').classList.remove('active');
+        }
+        
+        function renderPresets() {
+            const container = document.getElementById('presetList');
+            container.innerHTML = '';
+            for (const [name, data] of Object.entries(presets)) {
+                const item = document.createElement('div');
+                item.className = 'preset-item';
+                item.innerHTML = `
+                    <div><label>Description</label><input type="text" value="${name}" data-field="name" data-original="${name}"></div>
+                    <div><label>HS Code</label><input type="text" value="${data.hs_code}" data-field="hs_code" data-name="${name}"></div>
+                    <div><label>Unit Value (JPY)</label><input type="number" value="${data.unit_value}" data-field="unit_value" data-name="${name}"></div>
+                    <button class="btn-delete" onclick="deletePreset('${name}')"><i data-lucide="trash-2" size="18"></i></button>
+                `;
+                container.appendChild(item);
+            }
+            lucide.createIcons();
+        }
+        
+        function addNewPreset() {
+            const newName = `New Item ${Object.keys(presets).length + 1}`;
+            presets[newName] = { hs_code: "", unit_value: 0, weight_per_unit: 0.1 };
+            renderPresets();
+        }
+        
+        function deletePreset(name) {
+            if (confirm(`Delete "${name}"?`)) { delete presets[name]; renderPresets(); }
+        }
+        
+        function savePresets() {
+            const items = document.querySelectorAll('.preset-item');
+            const newPresets = {};
+            items.forEach(item => {
+                const nameInput = item.querySelector('[data-field="name"]');
+                const hsInput = item.querySelector('[data-field="hs_code"]');
+                const valueInput = item.querySelector('[data-field="unit_value"]');
+                const name = nameInput.value.trim();
+                if (name) {
+                    newPresets[name] = {
+                        hs_code: hsInput.value.trim(),
+                        unit_value: parseFloat(valueInput.value) || 0,
+                        weight_per_unit: 0.1
+                    };
+                }
+            });
+            presets = newPresets;
+            localStorage.setItem('invoicePresets', JSON.stringify(presets));
+            alert('保存しました / Presets saved successfully!');
+            closePresetModal();
+            renderNoCommercialTable();
+        }
+        
+        document.getElementById('presetModal').addEventListener('click', function(e) {
+            if (e.target === this) closePresetModal();
+        });
+
+        document.getElementById('generalInfoModal').addEventListener('click', function(e) {
+            if (e.target === this) closeGeneralInfoModal();
+        });
+
+        // ===== Invoice Preview Functions =====
+
+        function openInvoicePreview(invoiceNo) {
+            generateInvoiceHTML(invoiceNo);
+            document.getElementById('invoicePreviewModal').classList.add('active');
+            document.body.style.overflow = 'hidden'; // スクロール防止
+            lucide.createIcons();
+        }
+        
+        function closeInvoicePreview() {
+            document.getElementById('invoicePreviewModal').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function printInvoice() {
+            window.print();
+        }
+
+        async function generateAndViewPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            
+            // Get data
+            const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
+            const serialValue = document.getElementById('invoiceSerial').value || '000';
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const exporter = {
+                name: generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.',
+                address: generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN',
+                tel: generalInfo.exporterTel || '81-3-3498-1345',
+                fax: generalInfo.exporterFax || '81-3-3486-7145'
+            };
+            
+            const consignee = {
+                name: generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED',
+                address: generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong',
+                contact: generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)',
+                tel: generalInfo.consigneeTel || '2127-4660',
+                email: generalInfo.consigneeEmail || 'fls.wh@fls.com.hk'
+            };
+            
+            const importer = {
+                name: generalInfo.importerName || 'Heritage R LTD.',
+                address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
+                tel: generalInfo.importerTel || '852-2956-3266',
+                fax: generalInfo.importerFax || '852-2956-1230',
+                email: generalInfo.importerEmail || 'info@45rglobal.com'
+            };
+            
+            let yPos = 15;
+
+            // Logo and header (side by side)
+            const logoUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634';
+            try {
+                pdf.addImage(logoUrl, 'PNG', 15, yPos, 30, 10);
+            } catch(e) {
+                console.log('Logo load failed');
+            }
+            
+            // Company info - aligned to the right at the same height as logo
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('45rpm Studio. co., ltd', 195, yPos + 3, { align: 'right' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7);
+            pdf.text('Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062', 195, yPos + 7, { align: 'right' });
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Invoice No.: ${invoiceNo}`, 195, yPos + 11, { align: 'right' });
+            
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(15, yPos + 15, 195, yPos + 15);
+            
+            yPos += 25;
+            
+            // Title
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Commercial Invoice', 105, yPos, { align: 'center' });
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Page 1 of 1', 105, yPos + 5, { align: 'center' });
+            
+            yPos += 12;
+            
+            // Information table
+            pdf.autoTable({
+                startY: yPos,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 3.5, lineColor: [28, 41, 64], lineWidth: 0.1 },
+                headStyles: { fillColor: false, textColor: [0, 0, 0], fontStyle: 'bold' },
+                body: [
+                    [
+                        { content: `EXPORTER:\n${exporter.name}\n${exporter.address}\nTEL: ${exporter.tel}\nFAX: ${exporter.fax}`, styles: { fontStyle: 'normal' } },
+                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: Bill Importer\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
+                    ],
+                    [
+                        { content: `CONSIGNEE:\n${consignee.name}\n${consignee.address}\nContact: ${consignee.contact}\nTEL: ${consignee.tel}\nEmail: ${consignee.email}` },
+                        { content: `SOLD TO / IMPORTER:\n${importer.name}\n${importer.address}\nTEL: ${importer.tel}\nFAX: ${importer.fax}\nEmail: ${importer.email}` }
+                    ]
+                ],
+                columnStyles: {
+                    0: { cellWidth: 95 },
+                    1: { cellWidth: 95 }
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 3;
+            pdf.setFontSize(7);
+            pdf.text('Parties to Transaction: Non-Related', 15, yPos);
+            
+            yPos += 5;
+            
+            // Product data
+            productData.forEach(item => {
+                excelData.push([
+                    item.remarksText || '',
+                    item.packageCount || 1,
+                    item.itemCode,
+                    item.units,
+                    parseFloat(item.weight.toFixed(2)),
+                    item.measure,
+                    item.description,
+                    item.hsCode,
+                    item.country,
+                    parseFloat(item.unitValue),
+                    parseFloat(item.totalValue)
+                ]);
+            });
+            
+            // No commercial data
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    excelData.push([
+                        '',
+                        1,
+                        item.itemCode,
+                        item.units,
+                        parseFloat(item.weight.toFixed(2)),
+                        item.measure,
+                        item.description,
+                        item.hsCode,
+                        item.country,
+                        parseFloat(item.unitValue),
+                        parseFloat(item.totalValue)
+                    ]);
+                }
+            });
+            
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            pdf.autoTable({
+                startY: yPos,
+                head: [[
+                    'C/No.', 'No. of Pkgs', 'Item Code', 'No. of Units', 
+                    'Net Weight (KG)', 'Unit of Measure', 'Description of Goods',
+                    'Harmonized Tariff Number', 'Country/Terr. of MFR',
+                    'Unit Value (JPY)', 'Total Value (JPY)'
+                ]],
+                body: tableData,
+                foot: [[
+                    '', '', '', totalUnits, `${totalWeight.toFixed(2)} KG`, '', '', '', '', '', `JPY ${subtotal.toLocaleString()}`
+                ]],
+                showFoot: 'lastPage',
+                theme: 'grid',
+                styles: { 
+                    fontSize: 6, 
+                    cellPadding: 1.5,
+                    lineColor: [209, 213, 219],
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    fillColor: [28, 41, 64],
+                    textColor: [255, 255, 255],
+                    fontSize: 5.5,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                footStyles: {
+                    fillColor: [243, 244, 246],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    fontSize: 6,
+                    halign: 'right'
+                },
+                footColumnStyles: {
+                    10: { halign: 'right' }
+                },
+                columnStyles: {
+                    0: { cellWidth: 12, halign: 'center' },
+                    1: { cellWidth: 10, halign: 'center' },
+                    2: { cellWidth: 16, halign: 'center' },
+                    3: { cellWidth: 12, halign: 'center' },
+                    4: { cellWidth: 14, halign: 'center' },
+                    5: { cellWidth: 14, halign: 'center' },
+                    6: { cellWidth: 24, halign: 'center' },
+                    7: { cellWidth: 22, halign: 'center' },
+                    8: { cellWidth: 16, halign: 'center' },
+                    9: { cellWidth: 20, halign: 'right' },
+                    10: { cellWidth: 26, halign: 'right' }
+                },
+                didDrawPage: function(data) {
+                    // Header（after page 2）
+                    if (data.pageNumber > 1) {
+                        pdf.setFontSize(9);
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('45rpm Studio. co., ltd', 15, 10);
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                        
+                        pdf.setDrawColor(28, 41, 64);
+                        pdf.setLineWidth(0.3);
+                        pdf.line(15, 12, 195, 12);
+                    }
+                    
+                    // page info
+                    pdf.setFontSize(7);
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(`Page ${data.pageNumber} of ${pdf.internal.getNumberOfPages()}`, 105, 287, { align: 'center' });
+                }   
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 10;
+
+            // Invoice Total (上の線)
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
+            
+            yPos += 6;
+            
+            // Invoice Total テキスト
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Invoice Total:', 145, yPos, { align: 'right' });
+            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
+            
+            yPos += 2;
+            
+            // Invoice Total (下の線)
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
+            
+            // Remarks for non-commercial items
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                yPos += 10;
+                pdf.setFillColor(249, 250, 251);
+                pdf.rect(15, yPos - 3, 180, 15 + (nonCommItems.length * 4), 'F');
+                pdf.setDrawColor(28, 41, 64);
+                pdf.setLineWidth(1);
+                pdf.line(15, yPos - 3, 15, yPos + 12 + (nonCommItems.length * 4));
+                
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text('REMARKS:', 18, yPos);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7);
+                yPos += 4;
+                pdf.text('This shipment also contains the following non-commercial items (no commercial value):', 18, yPos);
+                yPos += 4;
+                nonCommItems.forEach(item => {
+                    pdf.text(`• ${item.description}: ${item.quantity} pcs`, 18, yPos);
+                    yPos += 4;
+                });
+            }
+            
+            yPos += 10;
+            
+            // Declaration
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Declaration Statement:', 15, yPos);
+            pdf.setFont('helvetica', 'normal');
+            yPos += 4;
+            pdf.text('I declare that all the information contained in this invoice is true and correct.', 15, yPos);
+            
+            yPos += 15;
+            
+            // Signature section
+            pdf.setLineWidth(0.3);
+            pdf.line(15, yPos, 90, yPos);
+            pdf.line(110, yPos, 195, yPos);
+
+            const signatureUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872';
+            try {
+                pdf.addImage(signatureUrl, 'PNG', 20, yPos - 18, 50, 12);
+            } catch(e) {
+                console.log('Signature load failed');
+            }
+            
+            pdf.setFontSize(7);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text(`Date: ${dateStr}`, 15, yPos + 4);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(exporter.name, 152.5, yPos - 4, { align: 'center' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Company Name', 152.5, yPos + 4, { align: 'center' });
+            
+            // Open PDF in new tab
+            const pdfBlob = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            window.open(pdfUrl, '_blank');
+        }
+
+            async function generateAndDownloadPDF() {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+            
+            // Get data
+            const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
+            const serialValue = document.getElementById('invoiceSerial').value || '000';
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const exporter = {
+                name: generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.',
+                address: generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN',
+                tel: generalInfo.exporterTel || '81-3-3498-1345',
+                fax: generalInfo.exporterFax || '81-3-3486-7145'
+            };
+            
+            const consignee = {
+                name: generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED',
+                address: generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong',
+                contact: generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)',
+                tel: generalInfo.consigneeTel || '2127-4660',
+                email: generalInfo.consigneeEmail || 'fls.wh@fls.com.hk'
+            };
+            
+            const importer = {
+                name: generalInfo.importerName || 'Heritage R LTD.',
+                address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
+                tel: generalInfo.importerTel || '852-2956-3266',
+                fax: generalInfo.importerFax || '852-2956-1230',
+                email: generalInfo.importerEmail || 'info@45rglobal.com'
+            };
+            
+            let yPos = 15;
+            
+            // Logo and header (圧縮版)
+            const logoUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634';
+            try {
+                const logoImg = await loadAndCompressImage(logoUrl, 150, 50);
+                pdf.addImage(logoImg, 'JPEG', 15, yPos, 30, 10, undefined, 'FAST');
+            } catch(e) {
+                console.log('Logo load failed');
+            }
+            
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('45rpm Studio. co., ltd', 195, yPos + 3, { align: 'right' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7);
+            pdf.text('Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062', 195, yPos + 7, { align: 'right' });
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Invoice No.: ${invoiceNo}`, 195, yPos + 11, { align: 'right' });
+            
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(15, yPos + 15, 195, yPos + 15);
+            
+            yPos += 20;
+            
+            // Title
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Commercial Invoice', 105, yPos, { align: 'center' });
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Page 1 of 1', 105, yPos + 5, { align: 'center' });
+            
+            yPos += 12;
+            
+            // Information table
+            pdf.autoTable({
+                startY: yPos,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 3.5, lineColor: [28, 41, 64], lineWidth: 0.1, lineHeight: 1.5, minCellHeight: 11 },
+                headStyles: { fillColor: false, textColor: [0, 0, 0], fontStyle: 'bold' },
+                body: [
+                    [
+                        { content: `EXPORTER:\n${exporter.name}\n${exporter.address}\nTEL: ${exporter.tel}\nFAX: ${exporter.fax}`, styles: { fontStyle: 'normal' } },
+                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: T/T AT SIGHT\nTerms of Trade: F.O.B TOKYO\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
+                    ],
+                    [
+                        { content: `CONSIGNEE:\n${consignee.name}\n${consignee.address}\nContact: ${consignee.contact}\nTEL: ${consignee.tel}\nEmail: ${consignee.email}` },
+                        { content: `SOLD TO / IMPORTER:\n${importer.name}\n${importer.address}\nTEL: ${importer.tel}\nFAX: ${importer.fax}\nEmail: ${importer.email}` }
+                    ]
+                ],
+                columnStyles: {
+                    0: { cellWidth: 95 },
+                    1: { cellWidth: 95 }
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 3;
+            pdf.setFontSize(7);
+            pdf.text('Parties to Transaction: Non-Related', 15, yPos);
+            
+            yPos += 5;
+            
+            // Product table
+            const tableData = [];
+            
+            productData.forEach(item => {
+                tableData.push([
+                    item.remarksText || '',
+                    item.packageCount || 1,
+                    item.itemCode,
+                    item.units,
+                    item.weight.toFixed(2),
+                    item.measure,
+                    item.description,
+                    item.hsCode,
+                    item.country,
+                    item.unitValue.toLocaleString(),
+                    item.totalValue.toLocaleString()
+                ]);
+            });
+            
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    tableData.push([
+                        '',
+                        1,
+                        item.itemCode,
+                        item.units,
+                        item.weight.toFixed(2),
+                        item.measure,
+                        item.description,
+                        item.hsCode,
+                        item.country,
+                        item.unitValue.toLocaleString(),
+                        item.totalValue.toLocaleString()
+                    ]);
+                }
+            });
+            
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            pdf.autoTable({
+                startY: yPos,
+                margin: { top: 25, bottom: 20, left: 15, right: 15 },
+                head: [[
+                    'C/No.', 'No. of Pkgs', 'Item Code', 'No. of Units', 
+                    'Net Weight (KG)', 'Unit of Measure', 'Description of Goods',
+                    'Harmonized Tariff Number', 'Country/Terr. of MFR',
+                    'Unit Value (JPY)', 'Total Value (JPY)'
+                ]],
+                body: tableData,
+                foot: [[
+                    '', '', '', totalUnits, `${totalWeight.toFixed(2)} KG`, '', '', '', '', '', `JPY ${subtotal.toLocaleString()}`
+                ]],
+                showFoot: 'lastPage',
+                theme: 'grid',
+                styles: { 
+                    fontSize: 6, 
+                    cellPadding: 1.5,
+                    lineColor: [209, 213, 219],
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    fillColor: [28, 41, 64],
+                    textColor: [255, 255, 255],
+                    fontSize: 5.5,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                footStyles: {
+                    fillColor: [243, 244, 246],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    fontSize: 6,
+                    halign: 'right'
+                },
+                footColumnStyles: {
+                    10: { halign: 'right' }
+                },
+                columnStyles: {
+                    0: { cellWidth: 12, halign: 'center' },
+                    1: { cellWidth: 10, halign: 'center' },
+                    2: { cellWidth: 16, halign: 'center' },
+                    3: { cellWidth: 12, halign: 'center' },
+                    4: { cellWidth: 14, halign: 'center' },
+                    5: { cellWidth: 14, halign: 'center' },
+                    6: { cellWidth: 24, halign: 'left' },
+                    7: { cellWidth: 22, halign: 'center' },
+                    8: { cellWidth: 16, halign: 'center' },
+                    9: { cellWidth: 20, halign: 'right' },
+                    10: { cellWidth: 26, halign: 'right' }
+                },
+                didDrawPage: function(data) {
+                    if (data.pageNumber > 1) {
+                        pdf.setFontSize(9);
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('45rpm Studio. co., ltd', 15, 10);
+                        
+                        // ページ番号を中央に配置
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setTextColor(100, 116, 139);
+                        pdf.text(`Page ${data.pageNumber} of ${pdf.internal.getNumberOfPages()}`, 105, 10, { align: 'center' });
+                        
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setTextColor(0, 0, 0);
+                        pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                        
+                        pdf.setDrawColor(28, 41, 64);
+                        pdf.setLineWidth(0.3);
+                        pdf.line(15, 12, 195, 12);
+                    }
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 10;
+
+           // Invoice Total (上の線)
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
+            
+            yPos += 6;
+            
+            // Invoice Total テキスト
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Invoice Total:', 145, yPos, { align: 'right' });
+            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
+            
+            yPos += 2;
+            
+            // Invoice Total (下の線)
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
+            
+            // Remarks
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                yPos += 10;
+                
+                // ページが残り少ない場合は新しいページを追加
+                const remarksHeight = 15 + (nonCommItems.length * 4);
+                if (yPos + remarksHeight > 270) {
+                    pdf.addPage();
+                    
+                    // 新しいページのヘッダーを描画
+                    const currentPage = pdf.internal.getCurrentPageInfo().pageNumber;
+                    pdf.setFontSize(9);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text('45rpm Studio. co., ltd', 15, 10);
+                    
+                    pdf.setFontSize(7);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(`Page ${currentPage}`, 105, 10, { align: 'center' });
+                    
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                    
+                    pdf.setDrawColor(28, 41, 64);
+                    pdf.setLineWidth(0.3);
+                    pdf.line(15, 12, 195, 12);
+                    
+                    yPos = 20;
+                }
+                
+                pdf.setFillColor(249, 250, 251);
+                pdf.rect(15, yPos - 3, 180, remarksHeight, 'F');
+                pdf.setDrawColor(28, 41, 64);
+                pdf.setLineWidth(1);
+                pdf.line(15, yPos - 3, 15, yPos + 12 + (nonCommItems.length * 4));
+                
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(0, 0, 0);
+                pdf.text('REMARKS:', 18, yPos);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7);
+                yPos += 4;
+                pdf.text('This shipment also contains the following non-commercial items (no commercial value):', 18, yPos);
+                yPos += 4;
+                nonCommItems.forEach(item => {
+                    pdf.text(`• ${item.description}: ${item.quantity} pcs`, 18, yPos);
+                    yPos += 4;
+                });
+            }
+            
+            yPos += 10;
+            
+            // ページが残り少ない場合は新しいページを追加（Declaration用）
+            if (yPos > 240) {
+                pdf.addPage();
+                
+                // 新しいページのヘッダーを描画
+                const currentPage = pdf.internal.getCurrentPageInfo().pageNumber;
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(0, 0, 0);
+                pdf.text('45rpm Studio. co., ltd', 15, 10);
+                
+                pdf.setFontSize(7);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(100, 116, 139);
+                pdf.text(`Page ${currentPage}`, 105, 10, { align: 'center' });
+                
+                pdf.setTextColor(0, 0, 0);
+                pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                
+                pdf.setDrawColor(28, 41, 64);
+                pdf.setLineWidth(0.3);
+                pdf.line(15, 12, 195, 12);
+                
+                yPos = 20;
+            }
+            
+            
+            // Declaration
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Declaration Statement:', 15, yPos);
+            pdf.setFont('helvetica', 'normal');
+            yPos += 4;
+            pdf.text('I declare that all the information contained in this invoice is true and correct.', 15, yPos);
+            
+            yPos += 25;
+            
+            // Signature
+            pdf.setLineWidth(0.3);
+            pdf.line(15, yPos, 90, yPos);
+            pdf.line(110, yPos, 195, yPos);
+
+            const signatureUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872';
+            try {
+                const sigImg = await loadAndCompressImage(signatureUrl, 300, 80);
+                pdf.addImage(sigImg, 'JPEG', 20, yPos - 15, 50, 12, undefined, 'FAST');
+            } catch(e) {
+                console.log('Signature load failed');
+            }
+            
+            pdf.setFontSize(7);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text(`Date: ${dateStr}`, 15, yPos + 4);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(exporter.name, 152.5, yPos - 4, { align: 'center' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Company Name', 152.5, yPos + 4, { align: 'center' });
+            
+            // Create blob and URL
+            const pdfBlob = pdf.output('blob');
+            const pdfUrl = URL.createObjectURL(pdfBlob);
+            
+            // Download with correct filename
+            const link = document.createElement('a');
+            link.href = pdfUrl;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            // Open in new tab
+            window.open(pdfUrl, '_blank');
+        }
+
+            async function downloadPDF() {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: 'p',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+            
+            // Get data
+            const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
+            const serialValue = document.getElementById('invoiceSerial').value || '000';
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const exporter = {
+                name: generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.',
+                address: generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN',
+                tel: generalInfo.exporterTel || '81-3-3498-1345',
+                fax: generalInfo.exporterFax || '81-3-3486-7145'
+            };
+            
+            const consignee = {
+                name: generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED',
+                address: generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong',
+                contact: generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)',
+                tel: generalInfo.consigneeTel || '2127-4660',
+                email: generalInfo.consigneeEmail || 'fls.wh@fls.com.hk'
+            };
+            
+            const importer = {
+                name: generalInfo.importerName || 'Heritage R LTD.',
+                address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
+                tel: generalInfo.importerTel || '852-2956-3266',
+                fax: generalInfo.importerFax || '852-2956-1230',
+                email: generalInfo.importerEmail || 'info@45rglobal.com'
+            };
+            
+            let yPos = 15;
+            
+            // Logo and header
+            const logoUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634';
+            try {
+                const logoImg = await loadAndCompressImage(logoUrl, 150, 50);
+                pdf.addImage(logoImg, 'JPEG', 15, yPos, 30, 10, undefined, 'FAST');
+            } catch(e) {
+                console.log('Logo load failed');
+            }
+            
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('45rpm Studio. co., ltd', 195, yPos + 3, { align: 'right' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setFontSize(7);
+            pdf.text('Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062', 195, yPos + 7, { align: 'right' });
+            pdf.setFont('helvetica', 'bold');
+            pdf.text(`Invoice No.: ${invoiceNo}`, 195, yPos + 11, { align: 'right' });
+            
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(15, yPos + 15, 195, yPos + 15);
+            
+            yPos += 25;
+            
+            // Title
+            pdf.setFontSize(16);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Commercial Invoice', 105, yPos, { align: 'center' });
+            pdf.setFontSize(7);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Page 1 of 1', 105, yPos + 5, { align: 'center' });
+            
+            yPos += 12;
+
+            // Information table
+            pdf.autoTable({
+                startY: yPos,
+                theme: 'grid',
+                styles: { fontSize: 7, cellPadding: 3.5, lineColor: [28, 41, 64], lineWidth: 0.1, lineHeight: 1.5, minCellHeight: 11 },
+                headStyles: { fillColor: false, textColor: [0, 0, 0], fontStyle: 'bold' },
+                body: [
+                    [
+                        { content: `EXPORTER:\n${exporter.name}\n${exporter.address}\nTEL: ${exporter.tel}\nFAX: ${exporter.fax}`, styles: { fontStyle: 'normal' } },
+                        { content: `Ship Date: ${dateStr}\nInvoice No.: ${invoiceNo}\nPayment Terms: T/T AT SIGHT\nTerms of Trade: F.O.B TOKYO\nPurpose of Shipment: SOLD\nCurrency Code: JPY` }
+                    ],
+                    [
+                        { content: `CONSIGNEE:\n${consignee.name}\n${consignee.address}\nContact: ${consignee.contact}\nTEL: ${consignee.tel}\nEmail: ${consignee.email}` },
+                        { content: `SOLD TO / IMPORTER:\n${importer.name}\n${importer.address}\nTEL: ${importer.tel}\nFAX: ${importer.fax}\nEmail: ${importer.email}` }
+                    ]
+                ],
+                columnStyles: {
+                    0: { cellWidth: 95 },
+                    1: { cellWidth: 95 }
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 3;
+            pdf.setFontSize(7);
+            pdf.text('Parties to Transaction: Non-Related', 15, yPos);
+            
+            yPos += 5;
+            
+            // Product table
+            const tableData = [];
+            
+            productData.forEach(item => {
+                tableData.push([
+                    item.remarksText || '',
+                    item.packageCount || 1,
+                    item.itemCode,
+                    item.units,
+                    item.weight.toFixed(2),
+                    item.measure,
+                    item.description,
+                    item.hsCode,
+                    item.country,
+                    item.unitValue.toLocaleString(),
+                    item.totalValue.toLocaleString()
+                ]);
+            });
+            
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    tableData.push([
+                        '',
+                        1,
+                        item.itemCode,
+                        item.units,
+                        item.weight.toFixed(2),
+                        item.measure,
+                        item.description,
+                        item.hsCode,
+                        item.country,
+                        item.unitValue.toLocaleString(),
+                        item.totalValue.toLocaleString()
+                    ]);
+                }
+            });
+            
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            pdf.autoTable({
+                startY: yPos,
+                margin: { top: 25, bottom: 20, left: 15, right: 15 },
+                head: [[
+                    'C/No.', 'No. of Pkgs', 'Item Code', 'No. of Units', 
+                    'Net Weight (KG)', 'Unit of Measure', 'Description of Goods',
+                    'Harmonized Tariff Number', 'Country/Terr. of MFR',
+                    'Unit Value (JPY)', 'Total Value (JPY)'
+                ]],
+                body: tableData,
+                foot: [[
+                    '', '', '', totalUnits, `${totalWeight.toFixed(2)} KG`, '', '', '', '', '', `JPY ${subtotal.toLocaleString()}`
+                ]],
+                showFoot: 'lastPage',
+                theme: 'grid',
+                styles: { 
+                    fontSize: 6, 
+                    cellPadding: 1.5,
+                    lineColor: [209, 213, 219],
+                    lineWidth: 0.1
+                },
+                headStyles: {
+                    fillColor: [28, 41, 64],
+                    textColor: [255, 255, 255],
+                    fontSize: 5.5,
+                    fontStyle: 'bold',
+                    halign: 'center'
+                },
+                footStyles: {
+                    fillColor: [243, 244, 246],
+                    textColor: [0, 0, 0],
+                    fontStyle: 'bold',
+                    fontSize: 6,
+                    halign: 'right'
+                },
+                footColumnStyles: {
+                    10: { halign: 'right' }
+                },
+                columnStyles: {
+                    0: { cellWidth: 12, halign: 'center' },
+                    1: { cellWidth: 10, halign: 'center' },
+                    2: { cellWidth: 16, halign: 'center' },
+                    3: { cellWidth: 12, halign: 'center' },
+                    4: { cellWidth: 14, halign: 'center' },
+                    5: { cellWidth: 14, halign: 'left' },
+                    6: { cellWidth: 24, halign: 'center' },
+                    7: { cellWidth: 22, halign: 'center' },
+                    8: { cellWidth: 16, halign: 'center' },
+                    9: { cellWidth: 20, halign: 'right' },
+                    10: { cellWidth: 26, halign: 'right' }
+                },
+                didDrawPage: function(data) {
+                    if (data.pageNumber > 1) {
+                        pdf.setFontSize(9);
+                        pdf.setFont('helvetica', 'bold');
+                        pdf.text('45rpm Studio. co., ltd', 15, 10);
+                        
+                        // ページ番号を中央に配置
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setTextColor(100, 116, 139);
+                        pdf.text(`Page ${data.pageNumber} of ${pdf.internal.getNumberOfPages()}`, 105, 10, { align: 'center' });
+                        
+                        pdf.setFontSize(7);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.setTextColor(0, 0, 0);
+                        pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                        
+                        pdf.setDrawColor(28, 41, 64);
+                        pdf.setLineWidth(0.3);
+                        pdf.line(15, 12, 195, 12);
+                    }
+                }
+            });
+            
+            yPos = pdf.lastAutoTable.finalY + 10;
+
+            // Invoice Total (上の線)
+            pdf.setDrawColor(28, 41, 64);
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
+            
+            yPos += 6;
+            
+            // Invoice Total テキスト
+            pdf.setFontSize(11);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Invoice Total:', 145, yPos, { align: 'right' });
+            pdf.text(`JPY ${subtotal.toLocaleString()}`, 195, yPos, { align: 'right' });
+            
+            yPos += 2;
+            
+            // Invoice Total (下の線)
+            pdf.setLineWidth(0.5);
+            pdf.line(120, yPos, 195, yPos);
+            
+            // Remarks
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                yPos += 10;
+                
+                // ページが残り少ない場合は新しいページを追加
+                const remarksHeight = 15 + (nonCommItems.length * 4);
+                if (yPos + remarksHeight > 270) {
+                    pdf.addPage();
+                    
+                    // 新しいページのヘッダーを描画
+                    const currentPage = pdf.internal.getCurrentPageInfo().pageNumber;
+                    pdf.setFontSize(9);
+                    pdf.setFont('helvetica', 'bold');
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text('45rpm Studio. co., ltd', 15, 10);
+                    
+                    pdf.setFontSize(7);
+                    pdf.setFont('helvetica', 'normal');
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(`Page ${currentPage}`, 105, 10, { align: 'center' });
+                    
+                    pdf.setTextColor(0, 0, 0);
+                    pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                    
+                    pdf.setDrawColor(28, 41, 64);
+                    pdf.setLineWidth(0.3);
+                    pdf.line(15, 12, 195, 12);
+                    
+                    yPos = 20;
+                }
+                
+                pdf.setFillColor(249, 250, 251);
+                pdf.rect(15, yPos - 3, 180, remarksHeight, 'F');
+                pdf.setDrawColor(28, 41, 64);
+                pdf.setLineWidth(1);
+                pdf.line(15, yPos - 3, 15, yPos + 12 + (nonCommItems.length * 4));
+                
+                pdf.setFontSize(8);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(0, 0, 0);
+                pdf.text('REMARKS:', 18, yPos);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setFontSize(7);
+                yPos += 4;
+                pdf.text('This shipment also contains the following non-commercial items (no commercial value):', 18, yPos);
+                yPos += 4;
+                nonCommItems.forEach(item => {
+                    pdf.text(`• ${item.description}: ${item.quantity} pcs`, 18, yPos);
+                    yPos += 4;
+                });
+            }
+            
+            yPos += 10;
+            
+            // ページが残り少ない場合は新しいページを追加（Declaration用）
+            if (yPos > 240) {
+                pdf.addPage();
+                
+                // 新しいページのヘッダーを描画
+                const currentPage = pdf.internal.getCurrentPageInfo().pageNumber;
+                pdf.setFontSize(9);
+                pdf.setFont('helvetica', 'bold');
+                pdf.setTextColor(0, 0, 0);
+                pdf.text('45rpm Studio. co., ltd', 15, 10);
+                
+                pdf.setFontSize(7);
+                pdf.setFont('helvetica', 'normal');
+                pdf.setTextColor(100, 116, 139);
+                pdf.text(`Page ${currentPage}`, 105, 10, { align: 'center' });
+                
+                pdf.setTextColor(0, 0, 0);
+                pdf.text(`Invoice No.: ${invoiceNo}`, 195, 10, { align: 'right' });
+                
+                pdf.setDrawColor(28, 41, 64);
+                pdf.setLineWidth(0.3);
+                pdf.line(15, 12, 195, 12);
+                
+                yPos = 20;
+            }
+            
+            // Declaration
+            pdf.setFontSize(8);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Declaration Statement:', 15, yPos);
+            pdf.setFont('helvetica', 'normal');
+            yPos += 4;
+            pdf.text('I declare that all the information contained in this invoice is true and correct.', 15, yPos);
+            
+            yPos += 25;
+            
+            // Signature
+            pdf.setLineWidth(0.3);
+            pdf.line(15, yPos, 90, yPos);
+            pdf.line(110, yPos, 195, yPos);
+
+            const signatureUrl = 'https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872';
+            try {
+                const sigImg = await loadAndCompressImage(signatureUrl, 300, 80);
+                pdf.addImage(sigImg, 'JPEG', 20, yPos - 15, 50, 12, undefined, 'FAST');
+            } catch(e) {
+                console.log('Signature load failed');
+            }
+            
+            pdf.setFontSize(7);
+            pdf.setTextColor(100, 116, 139);
+            pdf.text(`Date: ${dateStr}`, 15, yPos + 4);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(0, 0, 0);
+            pdf.text(exporter.name, 152.5, yPos - 4, { align: 'center' });
+            pdf.setFont('helvetica', 'normal');
+            pdf.setTextColor(100, 116, 139);
+            pdf.text('Company Name', 152.5, yPos + 4, { align: 'center' });
+            
+            // Download PDF
+            pdf.save(fileName);
+        }
+
+        function downloadExcel() {
+            // Get invoice info
+            const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
+            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
+            const serialValue = document.getElementById('invoiceSerial').value || '000';
+            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const fileName = `${invoiceNo}.xlsx`;
+            const dateStr = new Date().toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            const exporter = generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.';
+            const consignee = generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED';
+            const importer = generalInfo.importerName || 'Heritage R LTD.';
+            
+            // Prepare data
+            const excelData = [];
+            
+            // Header rows
+            excelData.push(['Commercial Invoice']);
+            excelData.push([]);
+            excelData.push(['Invoice No.:', invoiceNo]);
+            excelData.push(['Ship Date:', dateStr]);
+            excelData.push(['Exporter:', exporter]);
+            excelData.push(['Consignee:', consignee]);
+            excelData.push(['Importer:', importer]);
+            excelData.push([]);
+            
+            // Table headers
+            excelData.push([
+                'Item Code',
+                'No. of Units',
+                'Description of Goods',
+                'Country/Terr. of MFR',
+                'JP Original RRP (JPY)',
+                'Unit Value (JPY)',
+                'Total Value (JPY)',
+                'Unit Value (HKD)',
+                'Total Value (HKD)'
+            ]);
+            
+            // Product data
+            let currentRow = 10;
+            productData.forEach(item => {
+                excelData.push([
+                    item.itemCode,
+                    item.units,
+                    item.description,
+                    item.country,
+                    { t: 'n', v: item.originalRRP || 0, z: '#,##0' },
+                    { f: `E${currentRow}*0.42`, z: '#,##0' },
+                    { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
+                    { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
+                    { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
+                ]);
+                currentRow++;
+            });
+            
+            // No commercial data
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    excelData.push([
+                        item.itemCode,
+                        item.units,
+                        item.description,
+                        item.country,
+                        { t: 'n', v: 0, z: '#,##0' },
+                        item.unitValue,
+                        { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
+                        { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
+                        { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
+                    ]);
+                    currentRow++;
+                }
+            });
+            
+            // Totals
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const subtotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            const subtotalHKD = productData.reduce((sum, item) => {
+                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                return sum + (unitValueHKD * item.units);
+            }, 0) + noCommercialData.reduce((sum, item) => {
+                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                return sum + (unitValueHKD * item.units);
+            }, 0);
+            
+            excelData.push(['Invoice Total:', totalUnits, '', '', '', 
+                { f: `SUM(F10:F${currentRow-1})`, z: '#,##0' },
+                '',
+                '',
+                { f: `SUM(I10:I${currentRow-1})`, z: '#,##0.00' }
+            ]);
+            
+            // Non-commercial items
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                excelData.push([]);
+                excelData.push(['REMARKS:']);
+                excelData.push(['This shipment also contains the following non-commercial items (no commercial value):']);
+                nonCommItems.forEach(item => {
+                    excelData.push([`${item.description}: ${item.quantity} pcs`]);
+                });
+            }
+            
+            // Create workbook
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(excelData);
+            
+            // Set column widths
+            ws['!cols'] = [
+                { wch: 15 },  // Item Code
+                { wch: 12 },  // No. of Units
+                { wch: 30 },  // Description
+                { wch: 15 },  // Country
+                { wch: 18 },  // JP Original RRP (JPY)
+                { wch: 15 },  // Unit Value (JPY)
+                { wch: 15 },  // Total Value (JPY)
+                { wch: 15 },  // Unit Value (HKD)
+                { wch: 15 }   // Total Value (HKD)
+            ];
+
+            // フォーマット設定
+            const range = XLSX.utils.decode_range(ws['!ref']);
+            
+            // 各セルにフォーマットを適用
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+                for (let C = range.s.c; C <= range.e.c; ++C) {
+                    const cell_address = XLSX.utils.encode_cell({ r: R, c: C });
+                    if (!ws[cell_address]) continue;
+                    
+                    const cell = ws[cell_address];
+                    
+                    // Unit Value (JPY) と Total Value (JPY) の列（7列目と8列目、インデックス6と7）
+                    if ((C === 6 || C === 7) && R >= 9 && typeof cell.v === 'number') {
+                        cell.z = '#,##0';
+                    }
+                    
+                    // Unit Value (HKD) と Total Value (HKD) の列（9列目と10列目、インデックス8と9）
+                    if ((C === 8 || C === 9) && R >= 9 && typeof cell.v === 'number') {
+                        cell.z = '#,##0.00';
+                    }
+                }
+            }
+            
+            // シート名を生成（RPM除外、形式: Invoice 2511-FEDEX001）
+            const sheetName = `Invoice ${yymmValue}-${carrierValue}${serialValue}`;
+            XLSX.utils.book_append_sheet(wb, ws, sheetName);
+            XLSX.writeFile(wb, fileName);
+        }
+
+        function resetAllData() {
+            if (confirm('すべての保存データ（プリセット・会社情報・価格設定）を削除しますか？\n\nこの操作は取り消せません。')) {
+                localStorage.removeItem('invoicePresets');
+                localStorage.removeItem('generalInfo');
+                localStorage.removeItem('pricePercentage');
+                alert('保存データをリセットしました。\nページを再読み込みします。');
+                location.reload();
+            }
+        }
+        
+        function generateInvoiceHTML(invoiceNo) {
+            const doc = document.getElementById('invoiceDocument');
+            
+            // 日付フォーマット
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            
+            // General Info取得
+            const exporter = {
+                name: generalInfo.exporterName || '45RPM STUDIO Co.,Ltd.',
+                address: generalInfo.exporterAddress || '7-2-1 MINAMIAOYAMA, MINATO-KU, TOKYO 107-0062 JAPAN',
+                tel: generalInfo.exporterTel || '81-3-3498-1345',
+                fax: generalInfo.exporterFax || '81-3-3486-7145'
+            };
+            
+            const consignee = {
+                name: generalInfo.consigneeName || 'FENIX LOGISTIC SERVICES LIMITED',
+                address: generalInfo.consigneeAddress || '4/F, Chuan Kei Factory Building, 15-23 Kin Hong Street, Kwai Chung, N.T., Hong Kong',
+                contact: generalInfo.consigneeContact || 'Kawa (Mr.) / Kit (Mr.)',
+                tel: generalInfo.consigneeTel || '2127-4660',
+                email: generalInfo.consigneeEmail || 'fls.wh@fls.com.hk'
+            };
+            
+            const importer = {
+                name: generalInfo.importerName || 'Heritage R LTD.',
+                address: generalInfo.importerAddress || '36/F, TOWER 2, THE GATEWAY, 25 CANTON ROAD, TSIM SHA TSUI, KOWLOON, HONG KONG',
+                tel: generalInfo.importerTel || '852-2956-3266',
+                fax: generalInfo.importerFax || '852-2956-1230',
+                email: generalInfo.importerEmail || 'info@45rglobal.com'
+            };
+            
+            // 合計計算
+            const totalPackages = productData.length + noCommercialData.length;
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+                               noCommercialData.reduce((sum, item) => sum + item.units, 0);
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+                                noCommercialData.reduce((sum, item) => sum + item.weight, 0);
+            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            // 商品テーブル行生成
+            let productRows = '';
+            
+            // Product Data
+            productData.forEach(item => {
+                productRows += `
+                    <tr>
+                        <td>${item.remarksText || ''}</td>
+                        <td>${item.packageCount || 1}</td>
+                        <td>${item.itemCode}</td>
+                        <td>${item.units}</td>
+                        <td class="align-right">${item.weight.toFixed(2)}</td>
+                        <td>${item.measure}</td>
+                        <td>${item.description}</td>
+                        <td>${item.hsCode}</td>
+                        <td>${item.country}</td>
+                        <td class="align-right">${item.unitValue.toLocaleString()}</td>
+                        <td class="align-right">${item.totalValue.toLocaleString()}</td>
+                    </tr>
+                `;
+            });
+            
+            // No Commercial Data
+            noCommercialData.forEach(item => {
+                if (item.units > 0) {
+                    productRows += `
+                        <tr>
+                            <td></td>
+                            <td>1</td>
+                            <td>${item.itemCode}</td>
+                            <td>${item.units}</td>
+                            <td class="align-right">${item.weight.toFixed(2)}</td>
+                            <td>${item.measure}</td>
+                            <td>${item.description}</td>
+                            <td>${item.hsCode}</td>
+                            <td>${item.country}</td>
+                            <td class="align-right">${item.unitValue.toLocaleString()}</td>
+                            <td class="align-right">${item.totalValue.toLocaleString()}</td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            // Remarks Section for Non-Commercial Items
+            let nonCommercialNote = '';
+            const nonCommItems = nonCommercialData.filter(item => item.description && item.quantity > 0);
+            if (nonCommItems.length > 0) {
+                const itemList = nonCommItems.map(item => `• ${item.description}: ${item.quantity} pcs`).join('<br>\n                        ');
+                nonCommercialNote = `
+                    <div class="invoice-notes">
+                        <strong>REMARKS :</strong><br>
+                        This shipment also contains the following non-commercial items<br>
+                        (no commercial value :<br>
+                        <div style="margin-top: 0.5rem;">
+                            ${itemList}
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Generate HTML
+            doc.innerHTML = `
+                <div class="invoice-logo-header" style="border-bottom: 2px solid #1c2940;">
+                    <img src="https://cdn.shopify.com/s/files/1/0666/5089/8714/files/45_logo.png?v=1684477634" 
+                         alt="45RPM Studio" class="invoice-logo">
+                    <div class="invoice-company-info">
+                        <div class="invoice-company-name">45rpm Studio. co., ltd</div>
+                        <div>Seiko Building, 7-2-1 Minami Aoyama, Minato-ku, Tokyo, Japan, 107-0062</div>
+                        <div style="margin-top: 0.5rem; font-weight: 600;">Invoice No.: ${invoiceNo}</div>
+                    </div>
+                </div>
+                
+                <div class="invoice-title-section">
+                    <h1 class="invoice-title">Commercial Invoice</h1>
+                    <div class="invoice-page-number">Page 1 of 1</div>
+                </div>
+
+                <table style="width: 100%; border-collapse: collapse; margin-bottom: 1.5rem; font-size: 0.65rem;">
+                    <tr>
+                        <td style="width: 50%; border: 1px solid #1c2940; padding: 0.75rem; vertical-align: top;">
+                            <div style="font-weight: 700; color: #1c2940; margin-bottom: 0.5rem; font-size: 0.65rem;">EXPORTER:</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${exporter.name}</div>
+                            <div style="line-height: 1.4; color: #374151;">${exporter.address}</div>
+                            <div style="margin-top: 0.35rem;"><span style="font-weight: 600;">TEL:</span> ${exporter.tel}</div>
+                            <div><span style="font-weight: 600;">FAX:</span> ${exporter.fax}</div>
+                        </td>
+                        <td style="width: 50%; border: 1px solid #1c2940; border-left: none; padding: 0.75rem; vertical-align: top;">
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Ship Date:</span> ${dateStr}</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Invoice No.:</span> ${invoiceNo}</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Payment Terms:</span> T/T AT SIGHT</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Terms of Trade:</span> F.O.B TOKYO</div>
+                            <div style="margin-bottom: 0.35rem;"><span style="font-weight: 600;">Purpose of Shipment:</span> SOLD</div>
+                            <div><span style="font-weight: 600;">Currency Code:</span> JPY</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="border: 1px solid #1c2940; border-top: none; padding: 0.75rem; vertical-align: top;">
+                            <div style="font-weight: 700; color: #1c2940; margin-bottom: 0.5rem; font-size: 0.65rem;">CONSIGNEE:</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${consignee.name}</div>
+                            <div style="line-height: 1.4; color: #374151;">${consignee.address}</div>
+                            <div style="margin-top: 0.35rem;"><span style="font-weight: 600;">Contact:</span> ${consignee.contact}</div>
+                            <div><span style="font-weight: 600;">TEL:</span> ${consignee.tel}</div>
+                            <div><span style="font-weight: 600;">Email:</span> ${consignee.email}</div>
+                        </td>
+                        <td style="border: 1px solid #1c2940; border-top: none; border-left: none; padding: 0.75rem; vertical-align: top;">
+                            <div style="font-weight: 700; color: #1c2940; margin-bottom: 0.5rem; font-size: 0.65rem;">SOLD TO / IMPORTER:</div>
+                            <div style="font-weight: 600; margin-bottom: 0.25rem;">${importer.name}</div>
+                            <div style="line-height: 1.4; color: #374151;">${importer.address}</div>
+                            <div style="margin-top: 0.35rem;"><span style="font-weight: 600;">TEL:</span> ${importer.tel}</div>
+                            <div><span style="font-weight: 600;">FAX:</span> ${importer.fax}</div>
+                            <div><span style="font-weight: 600;">Email:</span> ${importer.email}</div>
+                        </td>
+                    </tr>
+                </table>
+                
+                <div style="margin-bottom: 1.5rem; font-size: 0.65rem;">
+                    <span style="font-weight: 600;">Parties to Transaction:</span> Non-Related
+                </div>
+                
+                <table class="invoice-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 9%;">C/No.</th>
+                            <th style="width: 5%;">No. of Pkgs</th>
+                            <th style="width: 8%;">Item Code</th>
+                            <th style="width: 6%;">No. of Units</th>
+                            <th style="width: 7%;">Net Weight (KG)</th>
+                            <th style="width: 7%;">Unit of Measure</th>
+                            <th style="width: 12%; text-align: left;">Description of Goods</th>
+                            <th style="width: 12%;">Harmonized Tariff Number</th>
+                            <th style="width: 8%;">Country/Terr. of MFR</th>
+                            <th style="width: 11%;">Unit Value (JPY)</th>
+                            <th style="width: 15%;">Total Value (JPY)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${productRows}
+                    </tbody>
+                    <tfoot>
+                        <tr style="font-weight: 600; background-color: #f3f4f6;">
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>${totalUnits}</td>
+                            <td class="align-right">${totalWeight.toFixed(2)} KG</td>
+                            <td colspan="5"></td>
+                            <td class="align-right">JPY ${subtotal.toLocaleString()}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+                
+                <div class="invoice-totals">
+                    <table class="invoice-totals-table">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td>JPY ${subtotal.toLocaleString()}</td>
+                        </tr>
+                        <tr>
+                            <td>Invoice Total:</td>
+                            <td>JPY ${subtotal.toLocaleString()}</td>
+                        </tr>
+                    </table>
+                </div>
+                
+                ${nonCommercialNote}
+                
+                <div class="invoice-footer">
+                    <div class="invoice-declaration">
+                        <strong>Declaration Statement:</strong><br>
+                        I declare that all the information contained in this invoice to be true and correct.
+                    </div>
+                    
+                    <div class="invoice-signature" style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 3rem;">
+                        <div style="width: 45%; text-align: center;">
+                            <div style="height: 70px; display: flex; align-items: flex-end; justify-content: center; margin-bottom: 0.25rem;">
+                                <img src="https://cdn.shopify.com/s/files/1/0666/5089/8714/files/StudioR_Signature.png?v=1762501872" alt="Signature" style="max-width: 200px; height: auto; max-height: 70px;">
+                            </div>
+                            <div style="border-top: 1px solid #1c2940; padding-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                Date: ${dateStr}
+                            </div>
+                        </div>
+                        <div style="width: 45%; text-align: center;">
+                            <div style="height: 70px; margin-bottom: 0.25rem;"></div>
+                            <div style="font-weight: 400; margin-bottom: 0.5rem;">${exporter.name}</div>
+                            <div style="border-top: 1px solid #1c2940; padding-top: 0.5rem; font-size: 0.75rem; color: #64748b;">
+                                Company Name
+                            </div>
+                        </div>
+                    </div>
+            `;
+        }
+        
+        // モーダル外クリックで閉じる
+        document.getElementById('invoicePreviewModal')?.addEventListener('click', function(e) {
+            if (e.target === this) closeInvoicePreview();
+        });
+
+        // ===== PDFサイズ圧縮 =====
+        async function loadAndCompressImage(url, maxWidth, maxHeight) {
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.crossOrigin = 'Anonymous';
+                
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    let width = img.width;
+                    let height = img.height;
+                    
+                    if (width > maxWidth) {
+                        height = (height * maxWidth) / width;
+                        width = maxWidth;
+                    }
+                    if (height > maxHeight) {
+                        width = (width * maxHeight) / height;
+                        height = maxHeight;
+                    }
+                    
+                    canvas.width = width;
+                    canvas.height = height;
+
+                    // 🔥 白背景を描画（透明背景対策）
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, width, height);
+                    
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    resolve(compressedDataUrl);
+                };
+                
+                img.onerror = () => reject(new Error('Image load failed'));
+                img.src = url;
+            });
+        }      
+    </script>
+
+    <!-- Invoice Preview Modal -->
+    <div id="invoicePreviewModal" class="invoice-preview-modal">
+        <div class="invoice-preview-header">
+            <div class="invoice-preview-title">📄 Invoice Preview</div>
+            <div class="invoice-preview-actions">
+                <button class="btn btn-back" onclick="closeInvoicePreview()">
+                    <i data-lucide="arrow-left" size="18"></i>
+                    戻る / Back
+                </button>
+                <button class="btn btn-print" onclick="generateAndDownloadPDF()">
+                    <i data-lucide="printer" size="18"></i>
+                    <i data-lucide="file-text" size="18"></i>
+                    印刷 / PDF
+                </button>
+                <button class="btn btn-primary" onclick="downloadExcel()">
+                    <i data-lucide="file-spreadsheet" size="18"></i>
+                    Excel
+                </button>
+            </div>
+        </div>
+        
+        <div class="invoice-preview-container">
+            <div class="invoice-document" id="invoiceDocument">
+                <!-- Invoice content will be generated here -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>
