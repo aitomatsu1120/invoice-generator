@@ -1704,8 +1704,8 @@
             // Bag (All genders, no Knit/Woven distinction)
             "Bag-A-A-Other": "42029260",
             
-            // Shoe (All genders, no Knit/Woven distinction)
-            "Shoe-A-A-Other": "64041900",
+            // Textile Accessories (ネックレス・イヤリング等) - All genders, no Knit/Woven distinction
+            "Textile Accessories-A-A-Other": "62171090"
 
             // Jewelry (ジュエリー・アクセサリー) - All genders, no Knit/Woven distinction
             "Jewelry-A-A-Other": "71171900"
@@ -1752,13 +1752,13 @@
             // Key holder
             "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
 
-            // Jewelry (ジュエリー・アクセサリー)
-            "ネックレス": "Jewelry", "ﾈｯｸﾚｽ": "Jewelry", "Necklace": "Jewelry", "necklace": "Jewelry",
-            "チョーカー": "Jewelry", "ﾁｮｰｶｰ": "Jewelry", "Choker": "Jewelry", "choker": "Jewelry",
-            "イヤリング": "Jewelry", "ｲﾔﾘﾝｸﾞ": "Jewelry", "Earring": "Jewelry", "earring": "Jewelry",
-            "ブレスレット": "Jewelry", "ﾌﾞﾚｽﾚｯﾄ": "Jewelry", "Bracelet": "Jewelry", "bracelet": "Jewelry",
-            "ブローチ": "Jewelry", "ﾌﾞﾛｰﾁ": "Jewelry", "Brooch": "Jewelry", "brooch": "Jewelry",
-            "ピアス": "Jewelry", "ﾋﾟｱｽ": "Jewelry", "Piercing": "Jewelry", "piercing": "Jewelry",
+            // Textile Accessories (ネックレス・イヤリング等)
+            "ネックレス": "Textile Accessories", "ﾈｯｸﾚｽ": "Textile Accessories", "Necklace": "Textile Accessories", "necklace": "Textile Accessories",
+            "チョーカー": "Textile Accessories", "ﾁｮｰｶｰ": "Textile Accessories", "Choker": "Textile Accessories", "choker": "Textile Accessories",
+            "イヤリング": "Textile Accessories", "ｲﾔﾘﾝｸﾞ": "Textile Accessories", "Earring": "Textile Accessories", "earring": "Textile Accessories",
+            "ブレスレット": "Textile Accessories", "ﾌﾞﾚｽﾚｯﾄ": "Textile Accessories", "Bracelet": "Textile Accessories", "bracelet": "Textile Accessories",
+            "ブローチ": "Textile Accessories", "ﾌﾞﾛｰﾁ": "Textile Accessories", "Brooch": "Textile Accessories", "brooch": "Textile Accessories",
+            "ピアス": "Textile Accessories", "ﾋﾟｱｽ": "Textile Accessories", "Piercing": "Textile Accessories", "piercing": "Textile Accessories",
             
             // Shoe/Sneaker
             "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
@@ -2004,8 +2004,8 @@
                         hsCode = leatherFallback[goodsCategory] || '42029260';
                     }
                 }
-                // Hat, Shoe, Bag, Ribbon, Key holder, Jewelryは性別・Knit/Woven不要（革製品以外）
-                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder', 'Jewelry'].includes(goodsCategory)) {
+                // Hat, Shoe, Bag, Ribbon, Key holder, Textile Accessoriesは性別・Knit/Woven不要（革製品以外）
+                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder', 'Textile Accessories'].includes(goodsCategory)) {
                     const key = `${goodsCategory}-A-A-${material}`;
                     hsCode = HS_CODE_RULES[key];
                     if (!hsCode) {
