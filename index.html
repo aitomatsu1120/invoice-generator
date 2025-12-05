@@ -3884,8 +3884,8 @@
                 }
             }
             
-            // シート名を生成（RPM除外、形式: Invoice 2511-FEDEX001）
-            const sheetName = `Invoice ${yymmValue}-${carrierValue}${serialValue}`;
+        // シート名を生成
+        const sheetName = `Invoice ${yymmValue}-${serialValue}${suffixValue}`;
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
             XLSX.writeFile(wb, fileName);
         }
