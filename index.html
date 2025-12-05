@@ -1101,11 +1101,11 @@
                     <div class="summary-item">
                         <span class="summary-label">Invoice No.</span>
                         <div class="invoice-number-input">
-                            <span>RPM-</span>
-                            <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM">
+                            <span>RPM-EC-</span>
+                            <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM" readonly style="background-color: rgba(255,255,255,0.7); cursor: default;">
                             <span>-</span>
-                            <input type="text" id="invoiceCarrier" maxlength="10" placeholder="FEDEX" style="width: 100px; text-transform: uppercase;">
-                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" required>
+                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" required placeholder="001">
+                            <input type="text" id="invoiceSuffix" maxlength="5" value="F" style="width: 50px; text-transform: uppercase;">
                         </div>
                     </div>
                     <div class="summary-item">
@@ -1809,8 +1809,8 @@
             const yy = uploadDate.getFullYear().toString().slice(-2);
             const mm = (uploadDate.getMonth() + 1).toString().padStart(2, '0');
             document.getElementById('invoiceYYMM').value = yy + mm;
-            document.getElementById('invoiceCarrier').value = 'FEDEX';
             document.getElementById('invoiceSerial').value = '';
+            document.getElementById('invoiceSuffix').value = 'F';
         }
         
         function toFullWidth(str) {
@@ -2439,7 +2439,7 @@
         function generateInvoice() {
             // バリデーション
             const serialInput = document.getElementById('invoiceSerial').value.trim();
-            const carrierInput = document.getElementById('invoiceCarrier').value.trim().toUpperCase();
+            const suffixInput = document.getElementById('invoiceSuffix').value.trim().toUpperCase();
             
             if (!serialInput) {
                 alert('Invoice番号の連番を入力してください\nPlease enter the serial number');
@@ -2448,7 +2448,7 @@
             }
             
             const yymmInput = document.getElementById('invoiceYYMM').value;
-            const invoiceNo = 'RPM-' + yymmInput + '-' + carrierInput + serialInput;
+            const invoiceNo = 'RPM-EC-' + yymmInput + '-' + serialInput + suffixInput;
                     
                     console.log('=== DEBUG START ===');
                     console.log('Invoice No:', invoiceNo);
@@ -2694,9 +2694,9 @@
             
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -2990,21 +2990,21 @@
             window.open(pdfUrl, '_blank');
         }
 
-            async function generateAndDownloadPDF() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4',
-                    compress: true
-                });
-            
+        async function generateAndDownloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'mm',
+                format: 'a4',
+                compress: true
+            });
+        
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
-            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
+            const fileName = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}.pdf`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -3369,21 +3369,21 @@
             window.open(pdfUrl, '_blank');
         }
 
-            async function downloadPDF() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4',
-                    compress: true
-                });
-            
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'mm',
+                format: 'a4',
+                compress: true
+            });
+        
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
-            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
+            const fileName = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}.pdf`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -3738,9 +3738,9 @@
         function downloadExcel() {
             // Get invoice info
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
             const fileName = `${invoiceNo}.xlsx`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
