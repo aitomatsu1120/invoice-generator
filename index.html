@@ -1697,6 +1697,11 @@
             // Bandana - Woven
             "Bandana-Woven-A-Cotton": "62132010",
             "Bandana-Woven-A-Other": "62139010",
+
+            // Hairband - Knit only（ヘアバンドは必ずKnit）
+            "Hairband-Knit-A-Cotton": "61171090",
+            "Hairband-Knit-A-Wool": "61171020",
+            "Hairband-Knit-A-Other": "61171090",
             
             // Key holder (All genders, no Knit/Woven distinction)
             "Key holder-A-A-Other": "71171900",
@@ -1725,7 +1730,7 @@
             
             // Hat/Cap
             "帽子": "Hat", "ﾎﾞｳｼ": "Hat", "キャップ": "Hat", "ｷｬｯﾌﾟ": "Hat", 
-            "ハット": "Hat", "ﾊｯﾄ": "Hat", "Cap": "Hat", "cap": "Hat",
+            "ハット": "Hat", "ﾊｯﾄ": "Hat", "Cap": "Hat", "cap": "Hat", "CAP": "Hat",
             
             // Socks
             "靴下": "Socks", "ｸﾂｼﾀ": "Socks", "ソックス": "Socks", "ｿｯｸｽ": "Socks",
@@ -1745,6 +1750,9 @@
             
             // Bandana
             "バンダナ": "Bandana", "ﾊﾞﾝﾀﾞﾅ": "Bandana", "Bandana": "Bandana", "bandana": "Bandana",
+
+            // Hairband（ヘアバンド）- 必ずKnit
+            "ヘアバンド": "Hairband", "ﾍｱﾊﾞﾝﾄﾞ": "Hairband", "Hairband": "Hairband", "hairband": "Hairband", "HAIRBAND": "Hairband",
             
             // Key holder
             "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
@@ -2046,6 +2054,13 @@
                                 key = `${goodsCategory}-${knitWoven}-A-Other`;
                                 hsCode = HS_CODE_RULES[key];
                             }
+                        }
+                        } else if (goodsCategory === 'Hairband') {
+                        // Hairbandは必ずKnit
+                        key = `Hairband-Knit-A-${material}`;
+                        hsCode = HS_CODE_RULES[key];
+                        if (!hsCode) {
+                            hsCode = HS_CODE_RULES['Hairband-Knit-A-Other'];
                         }
                     } else if (goodsCategory === 'Tie' && knitWoven) {
                         key = `${goodsCategory}-${knitWoven}-A-${material}`;
