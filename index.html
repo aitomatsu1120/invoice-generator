@@ -1705,7 +1705,10 @@
             "Bag-A-A-Other": "42029260",
             
             // Shoe (All genders, no Knit/Woven distinction)
-            "Shoe-A-A-Other": "64041900"
+            "Shoe-A-A-Other": "64041900",
+
+            // Jewelry (ジュエリー・アクセサリー) - All genders, no Knit/Woven distinction
+            "Jewelry-A-A-Other": "71171900"
         };
         
         const GOODS_KEYWORDS = {
@@ -1748,6 +1751,14 @@
             
             // Key holder
             "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
+
+            // Jewelry (ジュエリー・アクセサリー)
+            "ネックレス": "Jewelry", "ﾈｯｸﾚｽ": "Jewelry", "Necklace": "Jewelry", "necklace": "Jewelry",
+            "チョーカー": "Jewelry", "ﾁｮｰｶｰ": "Jewelry", "Choker": "Jewelry", "choker": "Jewelry",
+            "イヤリング": "Jewelry", "ｲﾔﾘﾝｸﾞ": "Jewelry", "Earring": "Jewelry", "earring": "Jewelry",
+            "ブレスレット": "Jewelry", "ﾌﾞﾚｽﾚｯﾄ": "Jewelry", "Bracelet": "Jewelry", "bracelet": "Jewelry",
+            "ブローチ": "Jewelry", "ﾌﾞﾛｰﾁ": "Jewelry", "Brooch": "Jewelry", "brooch": "Jewelry",
+            "ピアス": "Jewelry", "ﾋﾟｱｽ": "Jewelry", "Piercing": "Jewelry", "piercing": "Jewelry",
             
             // Shoe/Sneaker
             "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
@@ -1993,8 +2004,8 @@
                         hsCode = leatherFallback[goodsCategory] || '42029260';
                     }
                 }
-                // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要（革製品以外）
-                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
+                // Hat, Shoe, Bag, Ribbon, Key holder, Jewelryは性別・Knit/Woven不要（革製品以外）
+                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder', 'Jewelry'].includes(goodsCategory)) {
                     const key = `${goodsCategory}-A-A-${material}`;
                     hsCode = HS_CODE_RULES[key];
                     if (!hsCode) {
