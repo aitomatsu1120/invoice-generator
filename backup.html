@@ -1101,11 +1101,11 @@
                     <div class="summary-item">
                         <span class="summary-label">Invoice No.</span>
                         <div class="invoice-number-input">
-                            <span>RPM-</span>
-                            <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM">
+                            <span>RPM-EC-</span>
+                            <input type="text" id="invoiceYYMM" maxlength="4" placeholder="YYMM" readonly style="background-color: rgba(255,255,255,0.7); cursor: default;">
                             <span>-</span>
-                            <input type="text" id="invoiceCarrier" maxlength="10" placeholder="FEDEX" style="width: 100px; text-transform: uppercase;">
-                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" required>
+                            <input type="text" id="invoiceSerial" class="serial" maxlength="3" required placeholder="001">
+                            <input type="text" id="invoiceSuffix" maxlength="5" value="F" style="width: 50px; text-transform: uppercase;">
                         </div>
                     </div>
                     <div class="summary-item">
@@ -1697,6 +1697,11 @@
             // Bandana - Woven
             "Bandana-Woven-A-Cotton": "62132010",
             "Bandana-Woven-A-Other": "62139010",
+
+            // Hairband - Knit only（ヘアバンドは必ずKnit）
+            "Hairband-Knit-A-Cotton": "61171090",
+            "Hairband-Knit-A-Wool": "61171020",
+            "Hairband-Knit-A-Other": "61171090",
             
             // Key holder (All genders, no Knit/Woven distinction)
             "Key holder-A-A-Other": "71171900",
@@ -1704,8 +1709,8 @@
             // Bag (All genders, no Knit/Woven distinction)
             "Bag-A-A-Other": "42029260",
             
-            // Shoe (All genders, no Knit/Woven distinction)
-            "Shoe-A-A-Other": "64041900"
+            // Textile Accessories (ネックレス・イヤリング等) - All genders, no Knit/Woven distinction
+            "Textile Accessories-A-A-Other": "62171090"
         };
         
         const GOODS_KEYWORDS = {
@@ -1725,7 +1730,7 @@
             
             // Hat/Cap
             "帽子": "Hat", "ﾎﾞｳｼ": "Hat", "キャップ": "Hat", "ｷｬｯﾌﾟ": "Hat", 
-            "ハット": "Hat", "ﾊｯﾄ": "Hat", "Cap": "Hat", "cap": "Hat",
+            "ハット": "Hat", "ﾊｯﾄ": "Hat", "Cap": "Hat", "cap": "Hat", "CAP": "Hat",
             
             // Socks
             "靴下": "Socks", "ｸﾂｼﾀ": "Socks", "ソックス": "Socks", "ｿｯｸｽ": "Socks",
@@ -1745,9 +1750,20 @@
             
             // Bandana
             "バンダナ": "Bandana", "ﾊﾞﾝﾀﾞﾅ": "Bandana", "Bandana": "Bandana", "bandana": "Bandana",
+
+            // Hairband（ヘアバンド）- 必ずKnit
+            "ヘアバンド": "Hairband", "ﾍｱﾊﾞﾝﾄﾞ": "Hairband", "Hairband": "Hairband", "hairband": "Hairband", "HAIRBAND": "Hairband",
             
             // Key holder
             "キーホルダー": "Key holder", "ｷｰﾎﾙﾀﾞｰ": "Key holder",
+
+            // Textile Accessories (ネックレス・イヤリング等)
+            "ネックレス": "Textile Accessories", "ﾈｯｸﾚｽ": "Textile Accessories", "Necklace": "Textile Accessories", "necklace": "Textile Accessories",
+            "チョーカー": "Textile Accessories", "ﾁｮｰｶｰ": "Textile Accessories", "Choker": "Textile Accessories", "choker": "Textile Accessories",
+            "イヤリング": "Textile Accessories", "ｲﾔﾘﾝｸﾞ": "Textile Accessories", "Earring": "Textile Accessories", "earring": "Textile Accessories",
+            "ブレスレット": "Textile Accessories", "ﾌﾞﾚｽﾚｯﾄ": "Textile Accessories", "Bracelet": "Textile Accessories", "bracelet": "Textile Accessories",
+            "ブローチ": "Textile Accessories", "ﾌﾞﾛｰﾁ": "Textile Accessories", "Brooch": "Textile Accessories", "brooch": "Textile Accessories",
+            "ピアス": "Textile Accessories", "ﾋﾟｱｽ": "Textile Accessories", "Piercing": "Textile Accessories", "piercing": "Textile Accessories",
             
             // Shoe/Sneaker
             "スニーカー": "Shoe", "ｽﾆｰｶｰ": "Shoe", "Sneaker": "Shoe", "sneaker": "Shoe",
@@ -1809,8 +1825,8 @@
             const yy = uploadDate.getFullYear().toString().slice(-2);
             const mm = (uploadDate.getMonth() + 1).toString().padStart(2, '0');
             document.getElementById('invoiceYYMM').value = yy + mm;
-            document.getElementById('invoiceCarrier').value = 'FEDEX';
             document.getElementById('invoiceSerial').value = '';
+            document.getElementById('invoiceSuffix').value = 'F';
         }
         
         function toFullWidth(str) {
@@ -1949,7 +1965,12 @@
             // Knit/Woven判定
             const kwResult = determineKnitWoven(item, productName);
             const knitWoven = kwResult.result;
-            const matchType = kwResult.matchType;
+            let matchType = kwResult.matchType;
+            
+            // グッズでGOODS_KEYWORDSにマッチした場合はmatchTypeを更新
+            if (item === 'グッズ' && descMatched) {
+                matchType = 'keyword';
+            }
             
             // 素材判定（デニムチェック優先）
             const productNameFull = toFullWidth(productName).toLowerCase();
@@ -1993,8 +2014,8 @@
                         hsCode = leatherFallback[goodsCategory] || '42029260';
                     }
                 }
-                // Hat, Shoe, Bag, Ribbon, Key holderは性別・Knit/Woven不要（革製品以外）
-                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder'].includes(goodsCategory)) {
+                // Hat, Shoe, Bag, Ribbon, Key holder, Textile Accessoriesは性別・Knit/Woven不要（革製品以外）
+                else if (['Hat', 'Shoe', 'Bag', 'Ribbon', 'Key holder', 'Textile Accessories'].includes(goodsCategory)) {
                     const key = `${goodsCategory}-A-A-${material}`;
                     hsCode = HS_CODE_RULES[key];
                     if (!hsCode) {
@@ -2033,6 +2054,13 @@
                                 key = `${goodsCategory}-${knitWoven}-A-Other`;
                                 hsCode = HS_CODE_RULES[key];
                             }
+                        }
+                        } else if (goodsCategory === 'Hairband') {
+                        // Hairbandは必ずKnit
+                        key = `Hairband-Knit-A-${material}`;
+                        hsCode = HS_CODE_RULES[key];
+                        if (!hsCode) {
+                            hsCode = HS_CODE_RULES['Hairband-Knit-A-Other'];
                         }
                     } else if (goodsCategory === 'Tie' && knitWoven) {
                         key = `${goodsCategory}-${knitWoven}-A-${material}`;
@@ -2439,7 +2467,7 @@
         function generateInvoice() {
             // バリデーション
             const serialInput = document.getElementById('invoiceSerial').value.trim();
-            const carrierInput = document.getElementById('invoiceCarrier').value.trim().toUpperCase();
+            const suffixInput = document.getElementById('invoiceSuffix').value.trim().toUpperCase();
             
             if (!serialInput) {
                 alert('Invoice番号の連番を入力してください\nPlease enter the serial number');
@@ -2448,7 +2476,7 @@
             }
             
             const yymmInput = document.getElementById('invoiceYYMM').value;
-            const invoiceNo = 'RPM-' + yymmInput + '-' + carrierInput + serialInput;
+            const invoiceNo = 'RPM-EC-' + yymmInput + '-' + serialInput + suffixInput;
                     
                     console.log('=== DEBUG START ===');
                     console.log('Invoice No:', invoiceNo);
@@ -2694,9 +2722,9 @@
             
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -2990,21 +3018,21 @@
             window.open(pdfUrl, '_blank');
         }
 
-            async function generateAndDownloadPDF() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4',
-                    compress: true
-                });
-            
+        async function generateAndDownloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'mm',
+                format: 'a4',
+                compress: true
+            });
+        
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
-            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
+            const fileName = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}.pdf`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -3369,21 +3397,21 @@
             window.open(pdfUrl, '_blank');
         }
 
-            async function downloadPDF() {
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: 'p',
-                    unit: 'mm',
-                    format: 'a4',
-                    compress: true
-                });
-            
+        async function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: 'p',
+                unit: 'mm',
+                format: 'a4',
+                compress: true
+            });
+        
             // Get data
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
-            const fileName = `RPM-${yymmValue}-${carrierValue}${serialValue}.pdf`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
+            const fileName = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}.pdf`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
                 month: 'short', 
@@ -3738,9 +3766,9 @@
         function downloadExcel() {
             // Get invoice info
             const yymmValue = document.getElementById('invoiceYYMM').value || '0000';
-            const carrierValue = document.getElementById('invoiceCarrier').value.trim().toUpperCase() || 'FEDEX';
             const serialValue = document.getElementById('invoiceSerial').value || '000';
-            const invoiceNo = `RPM-${yymmValue}-${carrierValue}${serialValue}`;
+            const suffixValue = document.getElementById('invoiceSuffix').value.trim().toUpperCase() || '';
+            const invoiceNo = `RPM-EC-${yymmValue}-${serialValue}${suffixValue}`;
             const fileName = `${invoiceNo}.xlsx`;
             const dateStr = new Date().toLocaleDateString('en-US', { 
                 year: 'numeric', 
@@ -3884,8 +3912,8 @@
                 }
             }
             
-            // シート名を生成（RPM除外、形式: Invoice 2511-FEDEX001）
-            const sheetName = `Invoice ${yymmValue}-${carrierValue}${serialValue}`;
+        // シート名を生成
+        const sheetName = `Invoice ${yymmValue}-${serialValue}${suffixValue}`;
             XLSX.utils.book_append_sheet(wb, ws, sheetName);
             XLSX.writeFile(wb, fileName);
         }
