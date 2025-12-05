@@ -1957,7 +1957,12 @@
             // Knit/Woven判定
             const kwResult = determineKnitWoven(item, productName);
             const knitWoven = kwResult.result;
-            const matchType = kwResult.matchType;
+            let matchType = kwResult.matchType;
+            
+            // グッズでGOODS_KEYWORDSにマッチした場合はmatchTypeを更新
+            if (item === 'グッズ' && descMatched) {
+                matchType = 'keyword';
+            }
             
             // 素材判定（デニムチェック優先）
             const productNameFull = toFullWidth(productName).toLowerCase();
