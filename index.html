@@ -3854,11 +3854,24 @@
                 return sum + (unitValueHKD * item.units);
             }, 0);
             
+            // Invoice Total: 行（全アイテム合計）
             excelData.push(['Invoice Total:', totalUnits, '', '', '', 
-                { f: `SUM(F10:F${currentRow-1})`, z: '#,##0' },
                 '',
+                { f: `SUM(G10:G${currentRow-1})`, z: '#,##0' },
                 '',
                 { f: `SUM(I10:I${currentRow-1})`, z: '#,##0.00' }
+            ]);
+            
+            // 空白行を挿入
+            excelData.push([]);
+            
+            // Inventory Total: 行（itemCodeがある行のみ）
+            excelData.push(['Inventory Total:', 
+                { f: `SUMIF(A10:A${currentRow-1},"<>",B10:B${currentRow-1})`, z: '#,##0' },
+                '', '', '', '',
+                { f: `SUMIF(A10:A${currentRow-1},"<>",G10:G${currentRow-1})`, z: '#,##0' },
+                '',
+                { f: `SUMIF(A10:A${currentRow-1},"<>",I10:I${currentRow-1})`, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
