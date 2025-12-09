@@ -2309,7 +2309,7 @@
             renderNoCommercialTable();
         }
         
-        function updateNoCommercialDescription(idx, val) {
+　　　　　function updateNoCommercialDescription(idx, val) {
             noCommercialData[idx].description = val;
             const matched = Object.keys(presets).find(n => n === val);
             
@@ -2321,21 +2321,25 @@
                 noCommercialData[idx].weight = noCommercialData[idx].units * (preset.weight_per_unit || 0.1);
                 noCommercialData[idx].country = 'JP';
                 noCommercialData[idx].needsReview = true;
+                noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
             } else if (val.trim() !== '') {
                 // 手動入力された場合（空欄でない）
                 noCommercialData[idx].hsCode = '49111000';
                 noCommercialData[idx].unitValue = 0; // 空欄として扱う
                 noCommercialData[idx].country = 'JP';
                 noCommercialData[idx].needsReview = true; // 赤ハイライト表示
+                noCommercialData[idx].totalValue = 0;
             } else {
                 // 空欄の場合
                 noCommercialData[idx].hsCode = '';
                 noCommercialData[idx].unitValue = 0;
                 noCommercialData[idx].country = 'JP';
                 noCommercialData[idx].needsReview = false;
+                noCommercialData[idx].totalValue = 0;
             }
             
             renderNoCommercialTable();
+            updateGrandTotal();
         }
 
         function updateNoCommercialUnits(idx, val) {
