@@ -3815,9 +3815,9 @@
                     item.description,
                     item.country,
                     { t: 'n', v: item.originalRRP || 0, z: '#,##0' },
-                    { f: `E${currentRow}*0.42`, z: '#,##0' },
+                    { f: `ROUND(E${currentRow}*${pricePercentage/100},0)`, z: '#,##0' },
                     { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
-                    { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
+                    { f: `ROUND(F${currentRow}*$I$1,2)`, z: '#,##0.00' },
                     { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                 ]);
                 currentRow++;
@@ -3834,7 +3834,7 @@
                         { t: 'n', v: 0, z: '#,##0' },
                         item.unitValue,
                         { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
-                        { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
+                        { f: `ROUND(F${currentRow}*$I$1,2)`, z: '#,##0.00' },
                         { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                     ]);
                     currentRow++;
