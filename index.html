@@ -3846,13 +3846,6 @@
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
             const subtotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
                                 noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
-            const subtotalHKD = productData.reduce((sum, item) => {
-                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                return sum + (unitValueHKD * item.units);
-            }, 0) + noCommercialData.reduce((sum, item) => {
-                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                return sum + (unitValueHKD * item.units);
-            }, 0);
             
             // Invoice Total: 行（全アイテム合計）
             excelData.push(['Invoice Total:', totalUnits, '', '', '', 
