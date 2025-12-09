@@ -3868,17 +3868,13 @@
             // Inventory Total: 行（itemCodeがある行のみ）- JavaScript側で計算
             const inventoryUnits = productData.reduce((sum, item) => sum + item.units, 0);
             const inventoryTotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0);
-            const inventoryTotalHKD = productData.reduce((sum, item) => {
-                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                return sum + (unitValueHKD * item.units);
-            }, 0);
             
             excelData.push(['Inventory Total:', 
                 inventoryUnits,
                 '', '', '', '',
                 { t: 'n', v: inventoryTotalJPY, z: '#,##0' },
                 '',
-                { t: 'n', v: inventoryTotalHKD, z: '#,##0.00' }
+                { f: `G${currentRow+2}*$I$1`, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
