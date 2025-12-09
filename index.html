@@ -3865,13 +3865,20 @@
             // 空白行を挿入
             excelData.push([]);
             
-            // Inventory Total: 行（itemCodeがある行のみ）
+            // Inventory Total: 行（itemCodeがある行のみ）- JavaScript側で計算
+            const inventoryUnits = productData.reduce((sum, item) => sum + item.units, 0);
+            const inventoryTotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0);
+            const inventoryTotalHKD = productData.reduce((sum, item) => {
+                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
+                return sum + (unitValueHKD * item.units);
+            }, 0);
+            
             excelData.push(['Inventory Total:', 
-                { f: `SUMIF(A10:A${currentRow-1},"<>",B10:B${currentRow-1})`, z: '#,##0' },
+                inventoryUnits,
                 '', '', '', '',
-                { f: `SUMIF(A10:A${currentRow-1},"<>",G10:G${currentRow-1})`, z: '#,##0' },
+                { t: 'n', v: inventoryTotalJPY, z: '#,##0' },
                 '',
-                { f: `SUMIF(A10:A${currentRow-1},"<>",I10:I${currentRow-1})`, z: '#,##0.00' }
+                { t: 'n', v: inventoryTotalHKD, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
