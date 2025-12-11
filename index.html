@@ -1817,7 +1817,7 @@
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
-        function calculatePrice(p) { return Math.round((p * (pricePercentage / 100)) / 10) * 10; }
+        function calculatePrice(p) { return Math.round(p * (pricePercentage / 100)); }
         function getWeightByCategory(c) { return ITEM_WEIGHT_MAP[c] || 0.5; }
         function translateCategory(c) { return ITEM_CATEGORY_TRANSLATION[c] || c; }
         
