@@ -3132,8 +3132,12 @@
             
             // Product table
             const tableData = [];
-            
+            let productSubtotal = 0;
+
             productData.forEach(item => {
+                const recalcUnitValue = Math.round((item.originalRRP || 0) * pricePercentage / 100);
+                const recalcTotalValue = item.units * recalcUnitValue;
+                productSubtotal += recalcTotalValue;
                 tableData.push([
                     item.remarksText || '',
                     item.packageCount || 1,
@@ -3144,11 +3148,11 @@
                     item.description,
                     item.hsCode,
                     item.country,
-                    item.unitValue.toLocaleString(),
-                    item.totalValue.toLocaleString()
+                    recalcUnitValue.toLocaleString(),
+                    recalcTotalValue.toLocaleString()
                 ]);
             });
-            
+
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
                     tableData.push([
@@ -3166,12 +3170,12 @@
                     ]);
                 }
             });
-            
-            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) +
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) +
                                 noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+            const subtotal = productSubtotal +
                              noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
             pdf.autoTable({
@@ -3511,8 +3515,12 @@
             
             // Product table
             const tableData = [];
-            
+            let productSubtotal = 0;
+
             productData.forEach(item => {
+                const recalcUnitValue = Math.round((item.originalRRP || 0) * pricePercentage / 100);
+                const recalcTotalValue = item.units * recalcUnitValue;
+                productSubtotal += recalcTotalValue;
                 tableData.push([
                     item.remarksText || '',
                     item.packageCount || 1,
@@ -3523,11 +3531,11 @@
                     item.description,
                     item.hsCode,
                     item.country,
-                    item.unitValue.toLocaleString(),
-                    item.totalValue.toLocaleString()
+                    recalcUnitValue.toLocaleString(),
+                    recalcTotalValue.toLocaleString()
                 ]);
             });
-            
+
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
                     tableData.push([
@@ -3545,12 +3553,12 @@
                     ]);
                 }
             });
-            
-            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) +
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) +
                                 noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+            const subtotal = productSubtotal +
                              noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
             pdf.autoTable({
@@ -3978,18 +3986,20 @@
             
             // 合計計算
             const totalPackages = productData.length + noCommercialData.length;
-            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) +
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) +
                                 noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
-                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
-            
+            let productSubtotal = 0;
+
             // 商品テーブル行生成
             let productRows = '';
-            
+
             // Product Data
             productData.forEach(item => {
+                const recalcUnitValue = Math.round((item.originalRRP || 0) * pricePercentage / 100);
+                const recalcTotalValue = item.units * recalcUnitValue;
+                productSubtotal += recalcTotalValue;
                 productRows += `
                     <tr>
                         <td>${item.remarksText || ''}</td>
@@ -4001,11 +4011,13 @@
                         <td>${item.description}</td>
                         <td>${item.hsCode}</td>
                         <td>${item.country}</td>
-                        <td class="align-right">${item.unitValue.toLocaleString()}</td>
-                        <td class="align-right">${item.totalValue.toLocaleString()}</td>
+                        <td class="align-right">${recalcUnitValue.toLocaleString()}</td>
+                        <td class="align-right">${recalcTotalValue.toLocaleString()}</td>
                     </tr>
                 `;
             });
+            const subtotal = productSubtotal +
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
             // No Commercial Data
             noCommercialData.forEach(item => {
