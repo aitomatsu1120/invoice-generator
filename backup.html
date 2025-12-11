@@ -1817,7 +1817,7 @@
         
         function showLoading() { document.getElementById('loadingOverlay').classList.add('active'); }
         function hideLoading() { document.getElementById('loadingOverlay').classList.remove('active'); }
-        function calculatePrice(p) { return Math.round((p * (pricePercentage / 100)) / 10) * 10; }
+        function calculatePrice(p) { return Math.round(p * (pricePercentage / 100)); }
         function getWeightByCategory(c) { return ITEM_WEIGHT_MAP[c] || 0.5; }
         function translateCategory(c) { return ITEM_CATEGORY_TRANSLATION[c] || c; }
         
@@ -2309,7 +2309,7 @@
             renderNoCommercialTable();
         }
         
-        function updateNoCommercialDescription(idx, val) {
+　　　　　function updateNoCommercialDescription(idx, val) {
             noCommercialData[idx].description = val;
             const matched = Object.keys(presets).find(n => n === val);
             
@@ -2321,21 +2321,25 @@
                 noCommercialData[idx].weight = noCommercialData[idx].units * (preset.weight_per_unit || 0.1);
                 noCommercialData[idx].country = 'JP';
                 noCommercialData[idx].needsReview = true;
+                noCommercialData[idx].totalValue = noCommercialData[idx].units * noCommercialData[idx].unitValue;
             } else if (val.trim() !== '') {
                 // 手動入力された場合（空欄でない）
                 noCommercialData[idx].hsCode = '49111000';
                 noCommercialData[idx].unitValue = 0; // 空欄として扱う
                 noCommercialData[idx].country = 'JP';
                 noCommercialData[idx].needsReview = true; // 赤ハイライト表示
+                noCommercialData[idx].totalValue = 0;
             } else {
                 // 空欄の場合
                 noCommercialData[idx].hsCode = '';
                 noCommercialData[idx].unitValue = 0;
                 noCommercialData[idx].country = 'JP';
                 noCommercialData[idx].needsReview = false;
+                noCommercialData[idx].totalValue = 0;
             }
             
             renderNoCommercialTable();
+            updateGrandTotal();
         }
 
         function updateNoCommercialUnits(idx, val) {
@@ -3128,8 +3132,12 @@
             
             // Product table
             const tableData = [];
-            
+            let productSubtotal = 0;
+
             productData.forEach(item => {
+                const recalcUnitValue = Math.round((item.originalRRP || 0) * pricePercentage / 100);
+                const recalcTotalValue = item.units * recalcUnitValue;
+                productSubtotal += recalcTotalValue;
                 tableData.push([
                     item.remarksText || '',
                     item.packageCount || 1,
@@ -3140,11 +3148,11 @@
                     item.description,
                     item.hsCode,
                     item.country,
-                    item.unitValue.toLocaleString(),
-                    item.totalValue.toLocaleString()
+                    recalcUnitValue.toLocaleString(),
+                    recalcTotalValue.toLocaleString()
                 ]);
             });
-            
+
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
                     tableData.push([
@@ -3162,12 +3170,12 @@
                     ]);
                 }
             });
-            
-            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) +
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) +
                                 noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+            const subtotal = productSubtotal +
                              noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
             pdf.autoTable({
@@ -3507,8 +3515,12 @@
             
             // Product table
             const tableData = [];
-            
+            let productSubtotal = 0;
+
             productData.forEach(item => {
+                const recalcUnitValue = Math.round((item.originalRRP || 0) * pricePercentage / 100);
+                const recalcTotalValue = item.units * recalcUnitValue;
+                productSubtotal += recalcTotalValue;
                 tableData.push([
                     item.remarksText || '',
                     item.packageCount || 1,
@@ -3519,11 +3531,11 @@
                     item.description,
                     item.hsCode,
                     item.country,
-                    item.unitValue.toLocaleString(),
-                    item.totalValue.toLocaleString()
+                    recalcUnitValue.toLocaleString(),
+                    recalcTotalValue.toLocaleString()
                 ]);
             });
-            
+
             noCommercialData.forEach(item => {
                 if (item.units > 0) {
                     tableData.push([
@@ -3541,12 +3553,12 @@
                     ]);
                 }
             });
-            
-            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) +
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) +
                                 noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
+            const subtotal = productSubtotal +
                              noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
             pdf.autoTable({
@@ -3815,9 +3827,9 @@
                     item.description,
                     item.country,
                     { t: 'n', v: item.originalRRP || 0, z: '#,##0' },
-                    { f: `E${currentRow}*0.42`, z: '#,##0' },
+                    { f: `ROUND(E${currentRow}*${pricePercentage/100},0)`, z: '#,##0' },
                     { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
-                    { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
+                    { f: `ROUND(F${currentRow}*$I$1,2)`, z: '#,##0.00' },
                     { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                 ]);
                 currentRow++;
@@ -3834,7 +3846,7 @@
                         { t: 'n', v: 0, z: '#,##0' },
                         item.unitValue,
                         { f: `F${currentRow}*B${currentRow}`, z: '#,##0' },
-                        { f: `F${currentRow}*$I$1`, z: '#,##0.00' },
+                        { f: `ROUND(F${currentRow}*$I$1,2)`, z: '#,##0.00' },
                         { f: `H${currentRow}*B${currentRow}`, z: '#,##0.00' }
                     ]);
                     currentRow++;
@@ -3846,19 +3858,28 @@
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
             const subtotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
                                 noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
-            const subtotalHKD = productData.reduce((sum, item) => {
-                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                return sum + (unitValueHKD * item.units);
-            }, 0) + noCommercialData.reduce((sum, item) => {
-                const unitValueHKD = Math.round(item.unitValue * 0.054 * 100) / 100;
-                return sum + (unitValueHKD * item.units);
-            }, 0);
             
+            // Invoice Total: 行（全アイテム合計）
             excelData.push(['Invoice Total:', totalUnits, '', '', '', 
-                { f: `SUM(F10:F${currentRow-1})`, z: '#,##0' },
                 '',
+                { f: `SUM(G10:G${currentRow-1})`, z: '#,##0' },
                 '',
                 { f: `SUM(I10:I${currentRow-1})`, z: '#,##0.00' }
+            ]);
+            
+            // 空白行を挿入
+            excelData.push([]);
+            
+            // Inventory Total: 行（itemCodeがある行のみ）- JavaScript側で計算
+            const inventoryUnits = productData.reduce((sum, item) => sum + item.units, 0);
+            const inventoryTotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0);
+            
+            excelData.push(['Inventory Total:', 
+                inventoryUnits,
+                '', '', '', '',
+                { t: 'n', v: inventoryTotalJPY, z: '#,##0' },
+                '',
+                { f: `G${currentRow+2}*$I$1`, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
@@ -3965,18 +3986,20 @@
             
             // 合計計算
             const totalPackages = productData.length + noCommercialData.length;
-            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) + 
+            const totalUnits = productData.reduce((sum, item) => sum + item.units, 0) +
                                noCommercialData.reduce((sum, item) => sum + item.units, 0);
-            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) + 
+            const totalWeight = productData.reduce((sum, item) => sum + item.weight, 0) +
                                 noCommercialData.reduce((sum, item) => sum + item.weight, 0);
-            const subtotal = productData.reduce((sum, item) => sum + item.totalValue, 0) + 
-                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
-            
+            let productSubtotal = 0;
+
             // 商品テーブル行生成
             let productRows = '';
-            
+
             // Product Data
             productData.forEach(item => {
+                const recalcUnitValue = Math.round((item.originalRRP || 0) * pricePercentage / 100);
+                const recalcTotalValue = item.units * recalcUnitValue;
+                productSubtotal += recalcTotalValue;
                 productRows += `
                     <tr>
                         <td>${item.remarksText || ''}</td>
@@ -3988,11 +4011,13 @@
                         <td>${item.description}</td>
                         <td>${item.hsCode}</td>
                         <td>${item.country}</td>
-                        <td class="align-right">${item.unitValue.toLocaleString()}</td>
-                        <td class="align-right">${item.totalValue.toLocaleString()}</td>
+                        <td class="align-right">${recalcUnitValue.toLocaleString()}</td>
+                        <td class="align-right">${recalcTotalValue.toLocaleString()}</td>
                     </tr>
                 `;
             });
+            const subtotal = productSubtotal +
+                             noCommercialData.reduce((sum, item) => sum + item.totalValue, 0);
             
             // No Commercial Data
             noCommercialData.forEach(item => {
