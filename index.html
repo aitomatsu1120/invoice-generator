@@ -3886,16 +3886,26 @@
             // 空白行を挿入
             excelData.push([]);
             
-            // Inventory Total: 行（itemCodeがある行のみ）- JavaScript側で計算
+            // Inventory Total: 行（品番がある製品行のみを集計）
             const inventoryUnits = productData.reduce((sum, item) => sum + item.units, 0);
             const inventoryTotalJPY = productData.reduce((sum, item) => sum + item.totalValue, 0);
-            
-            excelData.push(['Inventory Total:', 
+
+            // 製品行（productData）のExcel上の行範囲。ヘッダーが9行目なので10行目から。
+            const productFirstRow = 10;
+            const productLastRow = 9 + productData.length;
+            const hasProductRows = productData.length > 0;
+
+            excelData.push(['Inventory Total:',
                 inventoryUnits,
                 '', '', '', '',
-                { t: 'n', v: inventoryTotalJPY, z: '#,##0' },
+                hasProductRows
+                    ? { f: `SUM(G${productFirstRow}:G${productLastRow})`, z: '#,##0' }
+                    : { t: 'n', v: inventoryTotalJPY, z: '#,##0' },
                 '',
-                { f: `G${currentRow+2}*$I$1`, z: '#,##0.00' }
+                // JPY合計×レートではなく、製品行のTotal Value (HKD)列を合計する
+                hasProductRows
+                    ? { f: `SUM(I${productFirstRow}:I${productLastRow})`, z: '#,##0.00' }
+                    : { t: 'n', v: 0, z: '#,##0.00' }
             ]);
             
             // Non-commercial items
